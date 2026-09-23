@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/ui/game_panel.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/journal_panel.gd" id="2"]
@@ -6,29 +6,42 @@
 [ext_resource type="Script" path="res://scripts/ui/world_map.gd" id="4"]
 [ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="5"]
 
-[sub_resource type="StyleBoxFlat" id="tab"]
-content_margin_left = 2.0
-content_margin_top = 6.0
-content_margin_right = 2.0
-content_margin_bottom = 6.0
-bg_color = Color(1, 1, 1, 0.055)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.847, 0.698, 0.353, 0.38)
+[ext_resource type="Texture2D" path="res://assets/ui/kit/btn.png" id="kit_btn"]
+[ext_resource type="Texture2D" path="res://assets/ui/kit/btn_hover.png" id="kit_hover"]
+[ext_resource type="Texture2D" path="res://assets/ui/kit/tab_on.png" id="kit_on"]
 
-[sub_resource type="StyleBoxFlat" id="tab_on"]
-content_margin_left = 2.0
+[sub_resource type="StyleBoxTexture" id="tab"]
+texture = ExtResource("kit_btn")
+texture_margin_left = 3.0
+texture_margin_top = 3.0
+texture_margin_right = 3.0
+texture_margin_bottom = 3.0
+content_margin_left = 4.0
 content_margin_top = 6.0
-content_margin_right = 2.0
+content_margin_right = 4.0
 content_margin_bottom = 6.0
-bg_color = Color(0.847, 0.698, 0.353, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 0.847, 0.29, 1)
+
+[sub_resource type="StyleBoxTexture" id="tab_hover"]
+texture = ExtResource("kit_hover")
+texture_margin_left = 3.0
+texture_margin_top = 3.0
+texture_margin_right = 3.0
+texture_margin_bottom = 3.0
+content_margin_left = 4.0
+content_margin_top = 6.0
+content_margin_right = 4.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxTexture" id="tab_on"]
+texture = ExtResource("kit_on")
+texture_margin_left = 3.0
+texture_margin_top = 3.0
+texture_margin_right = 3.0
+texture_margin_bottom = 3.0
+content_margin_left = 4.0
+content_margin_top = 6.0
+content_margin_right = 4.0
+content_margin_bottom = 6.0
 
 [sub_resource type="StyleBoxFlat" id="note"]
 content_margin_left = 12.0
@@ -60,21 +73,24 @@ title = "모험 일지"
 close_label = "닫기 (J)"
 tab_style = SubResource("tab")
 tab_on_style = SubResource("tab_on")
+tab_hover_style = SubResource("tab_hover")
 detail_btn_style = SubResource("detail_btn")
 
 [node name="Points" type="Label" parent="Frame/Lines/Head/Extra" index="0"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
 
-[node name="Tabs" type="HBoxContainer" parent="Frame/Lines/Body" index="0"]
+[node name="Tabs" type="HFlowContainer" parent="Frame/Lines/Body" index="0"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+alignment = 1
 
 [node name="quests" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(80, 0)
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_styles/normal = SubResource("tab")
 theme_override_styles/hover = SubResource("tab")
@@ -83,9 +99,9 @@ text = "퀘스트"
 
 [node name="map" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(80, 0)
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_styles/normal = SubResource("tab")
 theme_override_styles/hover = SubResource("tab")
@@ -94,9 +110,9 @@ text = "지도"
 
 [node name="bag" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(80, 0)
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_styles/normal = SubResource("tab")
 theme_override_styles/hover = SubResource("tab")
@@ -105,9 +121,9 @@ text = "소지품"
 
 [node name="folk" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(80, 0)
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_styles/normal = SubResource("tab")
 theme_override_styles/hover = SubResource("tab")
@@ -116,9 +132,9 @@ text = "마을 용들"
 
 [node name="skills" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(80, 0)
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_styles/normal = SubResource("tab")
 theme_override_styles/hover = SubResource("tab")
@@ -127,9 +143,9 @@ text = "스킬"
 
 [node name="growth" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(80, 0)
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_styles/normal = SubResource("tab")
 theme_override_styles/hover = SubResource("tab")
@@ -138,9 +154,9 @@ text = "성장"
 
 [node name="relics" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(80, 0)
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_styles/normal = SubResource("tab")
 theme_override_styles/hover = SubResource("tab")
@@ -149,9 +165,9 @@ text = "유물"
 
 [node name="codex" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(80, 0)
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_styles/normal = SubResource("tab")
 theme_override_styles/hover = SubResource("tab")
@@ -160,9 +176,9 @@ text = "도감"
 
 [node name="record" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(80, 0)
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_styles/normal = SubResource("tab")
 theme_override_styles/hover = SubResource("tab")
@@ -171,9 +187,9 @@ text = "기록"
 
 [node name="sound" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(80, 0)
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_styles/normal = SubResource("tab")
 theme_override_styles/hover = SubResource("tab")
@@ -216,13 +232,12 @@ theme_override_fonts/font = ExtResource("5")
 
 [node name="Text" type="Label" parent="Frame/Lines/Body/TreePage/Note/Lines"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 autowrap_mode = 3
 
 [node name="TreeScroll" type="ScrollContainer" parent="Frame/Lines/Body/TreePage"]
 layout_mode = 2
 size_flags_vertical = 3
-horizontal_scroll_mode = 0
 
 [node name="Tree" parent="Frame/Lines/Body/TreePage/TreeScroll" instance=ExtResource("3")]
 layout_mode = 2
@@ -241,8 +256,8 @@ script = ExtResource("4")
 
 [node name="Note" type="Label" parent="Frame/Lines/Body/MapPage"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
-text = "● 가 본 곳   ● 보스의 둥지   ● 마을   ◦ 석비를 깨운 곳 (석비에서 건너뛸 수 있다)"
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
+text = "● 가 본 곳   ● 보스의 둥지   ● 마을   ○ 석비를 깨운 곳 (석비에서 건너뛸 수 있다)"
 horizontal_alignment = 1
 
 [node name="DetailRule" type="Panel" parent="Frame/Lines/Body" index="4"]
@@ -270,7 +285,7 @@ theme_override_fonts/font = ExtResource("5")
 
 [node name="Text" type="Label" parent="Frame/Lines/Body/Detail/Info"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 autowrap_mode = 3
 
 [node name="Actions" type="HBoxContainer" parent="Frame/Lines/Body/Detail"]

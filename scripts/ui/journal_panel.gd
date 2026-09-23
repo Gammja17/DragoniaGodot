@@ -15,9 +15,10 @@ const WIDE := ["growth", "skills", "map"]
 
 @export var tab_style: StyleBox
 @export var tab_on_style: StyleBox
+@export var tab_hover_style: StyleBox
 @export var detail_btn_style: StyleBox
 
-@onready var _tabs: HBoxContainer = $Frame/Lines/Body/Tabs
+@onready var _tabs: HFlowContainer = $Frame/Lines/Body/Tabs
 @onready var _scroll: ScrollContainer = $Frame/Lines/Body/Scroll
 @onready var _list: VBoxContainer = $Frame/Lines/Body/Scroll/Center/List
 @onready var _tree_page: Control = $Frame/Lines/Body/TreePage
@@ -44,6 +45,13 @@ func _ready() -> void:
 		render())
 
 
+## 판이 좁으면(휴대폰) 글 목록도 좁힌다. 넓을 때는 2D판처럼 760 에서 멈추고 가운데 둔다
+func _layout() -> void:
+	super()
+	var f: Control = $Frame
+	_list.custom_minimum_size.x = minf(760, f.offset_right - f.offset_left - 60)
+
+
 ## 일지를 열거나 닫는다. tab_id 를 주면 그 탭으로 연다
 func toggle_tab(tab_id := "") -> void:
 	if visible and (tab_id == "" or tab_id == tab):
@@ -65,8 +73,9 @@ func refresh() -> void:
 func render() -> void:
 	for b in _tabs.get_children():
 		var on: bool = b.name == tab
-		for s in ["normal", "hover", "pressed"]: b.add_theme_stylebox_override(s, tab_on_style if on else tab_style)
-		b.add_theme_color_override("font_color", Color("#1a1206") if on else Color("#857e6e"))
+		for s in ["normal", "pressed"]: b.add_theme_stylebox_override(s, tab_on_style if on else tab_style)
+		b.add_theme_stylebox_override("hover", tab_on_style if on else tab_hover_style)
+		b.add_theme_color_override("font_color", Color("#1a1206") if on else Color("#cdc4af"))
 		b.add_theme_color_override("font_hover_color", Color("#1a1206") if on else Color("#ece3cf"))
 	var pts: int = GameState.growth.get("points", 0)
 	$Frame/Lines/Head/Extra/Points.text = "성장 포인트 %d" % pts if pts > 0 else ""
@@ -104,7 +113,7 @@ func _note(text: String) -> Label:
 	l.text = text
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.add_theme_color_override("font_color", Color("#857e6e"))
+	l.add_theme_color_override("font_color", Color("#a39a87"))
 	_list.add_child(l)
 	return l
 
@@ -257,7 +266,7 @@ func _render_relics() -> void:
 		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cell.custom_minimum_size.y = 38
 		cell.text = table[id].name if id else "빈 칸"
-		cell.add_theme_color_override("font_color", Color("#ffd84a") if id else Color("#857e6e"))
+		cell.add_theme_color_override("font_color", Color("#ffd84a") if id else Color("#a39a87"))
 		cell.disabled = id == null
 		if id: cell.pressed.connect(func():
 			Relics.toggle(id)
@@ -438,7 +447,7 @@ func _render_picked() -> void:
 			else:
 				var l := Label.new()
 				l.text = "끝까지 익힌 기술이다"
-				l.add_theme_color_override("font_color", Color("#857e6e"))
+				l.add_theme_color_override("font_color", Color("#a39a87"))
 				actions.add_child(l)
 
 

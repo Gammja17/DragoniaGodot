@@ -4,7 +4,7 @@
 
 [sub_resource type="LabelSettings" id="note"]
 font_size = 12
-font_color = Color(0.522, 0.494, 0.431, 1)
+font_color = Color(0.639, 0.604, 0.529, 1)
 
 [node name="FxToggle" type="VBoxContainer"]
 theme_override_constants/separation = 1

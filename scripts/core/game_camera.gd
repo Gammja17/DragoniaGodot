@@ -6,7 +6,6 @@ extends Camera2D
 # 멀리(2배) → 보통(3배) → 가까이(4배) → 아주 가까이(5배) 순으로 늘어놓는다.
 const ZOOMS := [2.0 / 3.0, 1.0, 4.0 / 3.0, 5.0 / 3.0]
 const ZOOM_NAMES := ["멀리", "보통", "가까이", "아주 가까이"]
-const SETTINGS := "user://settings.cfg"
 
 static var current: GameCamera     # 흔들림·반동을 어디서든 부를 수 있게
 
@@ -24,13 +23,10 @@ var _boost := 1.0         # 컷씬은 시점을 잠깐 더 당긴다. 줌 단계
 func _ready() -> void:
 	current = self
 	anchor_mode = Camera2D.ANCHOR_MODE_FIXED_TOP_LEFT
-	var screen := get_viewport_rect().size
-	# 저장된 값이 없으면: 작은 화면(휴대폰)은 '멀리', 아니면 '보통'
-	zoom_index = 0 if minf(screen.x, screen.y) < 600 else 1
-	var cfg := ConfigFile.new()
-	if cfg.load(SETTINGS) == OK:
-		var saved = cfg.get_value("view", "zoom", null)
-		if saved is int and saved >= 0 and saved < ZOOMS.size(): zoom_index = saved
+	# 저장된 값이 없으면: 휴대폰은 '멀리', 아니면 '보통'
+	zoom_index = 0 if UiScale.is_mobile() else 1
+	var saved = Prefs.get_value("view", "zoom", -1)
+	if saved is int and saved >= 0 and saved < ZOOMS.size(): zoom_index = saved
 	get_viewport().size_changed.connect(_apply_boost.bind(1.0))
 	_apply_boost(1.0)
 
@@ -41,7 +37,9 @@ func zoom_name() -> String:
 
 func _apply_boost(b: float) -> void:
 	_boost = b
-	var z: float = ZOOMS[zoom_index] * _boost
+	# UI 크기 배율만큼 되돌리고 화면 배율(고해상도)만큼 키운다: 세상은 UI 크기와 상관없이
+	# 늘 "화면 배율 1 에서 타일 3배 × 줌" 크기로 그린다 (2D판이 CSS px 로 그리던 것과 같다)
+	var z: float = ZOOMS[zoom_index] * _boost * UiScale.world_scale() / UiScale.factor()
 	zoom = Vector2(z, z)
 	var screen := get_viewport_rect().size
 	w = screen.x / z
@@ -53,10 +51,7 @@ func _apply_zoom(index: int) -> String:
 	var next := clampi(index, 0, ZOOMS.size() - 1)
 	if next == zoom_index: return ZOOM_NAMES[zoom_index]
 	zoom_index = next
-	var cfg := ConfigFile.new()
-	cfg.load(SETTINGS)
-	cfg.set_value("view", "zoom", zoom_index)
-	cfg.save(SETTINGS)
+	Prefs.set_value("view", "zoom", zoom_index)
 	var cx := cam_x + w / 2
 	var cy := cam_y + h / 2
 	_apply_boost(_boost)

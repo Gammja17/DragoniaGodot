@@ -35,7 +35,7 @@ font_color = Color(1, 0.847, 0.29, 1)
 
 [sub_resource type="LabelSettings" id="note"]
 font_size = 12
-font_color = Color(0.522, 0.494, 0.431, 1)
+font_color = Color(0.639, 0.604, 0.529, 1)
 
 [node name="SettingsPanel" instance=ExtResource("1")]
 script = ExtResource("2")
@@ -78,7 +78,7 @@ focus_mode = 0
 [node name="Num" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Music" index="2"]
 custom_minimum_size = Vector2(28, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 horizontal_alignment = 2
 
 [node name="Sfx" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="2"]
@@ -98,7 +98,7 @@ focus_mode = 0
 [node name="Num" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Sfx" index="2"]
 custom_minimum_size = Vector2(28, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 horizontal_alignment = 2
 
 [node name="Mute" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="3"]
@@ -145,7 +145,20 @@ layout_mode = 2
 focus_mode = 0
 text = "접기 · 펴기"
 
-[node name="Dlg" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="7"]
+[node name="UiSize" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="7"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/UiSize" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "UI 크기 (글자 · 판)"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/UiSize" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "보통"
+
+[node name="Dlg" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="8"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Dlg" index="0"]
@@ -158,7 +171,7 @@ layout_mode = 2
 focus_mode = 0
 text = "보통"
 
-[node name="Fx" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="8"]
+[node name="Fx" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="9"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Fx" index="0"]
@@ -171,12 +184,12 @@ layout_mode = 2
 focus_mode = 0
 text = "조절하기"
 
-[node name="GuideHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="9"]
+[node name="GuideHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="10"]
 layout_mode = 2
 text = "길잡이"
 label_settings = SubResource("section")
 
-[node name="Guide" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="10"]
+[node name="Guide" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="11"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Guide" index="0"]
@@ -189,18 +202,18 @@ layout_mode = 2
 focus_mode = 0
 text = "본 이야기만"
 
-[node name="GuideNote" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="11"]
+[node name="GuideNote" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="12"]
 layout_mode = 2
 text = "\"본 이야기만\" 이면 본 줄기의 할 일만 화살표가 가리키고, 마을 용들의 부탁과 \"그 자리에 가 있기\" 대목은 스스로 찾는다. 헤매기 싫으면 \"맡은 일 전부\", 다 찾아내고 싶으면 \"끔\"."
 label_settings = SubResource("note")
 autowrap_mode = 3
 
-[node name="TestHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="12"]
+[node name="TestHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="13"]
 layout_mode = 2
 text = "테스트 (진행을 건너뛴다)"
 label_settings = SubResource("section")
 
-[node name="Level" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="13"]
+[node name="Level" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="14"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Level" index="0"]
@@ -213,7 +226,7 @@ layout_mode = 2
 focus_mode = 0
 text = "올린다"
 
-[node name="Elements" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="14"]
+[node name="Elements" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="15"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Elements" index="0"]
@@ -226,7 +239,7 @@ layout_mode = 2
 focus_mode = 0
 text = "전부 준다"
 
-[node name="Lessons" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="15"]
+[node name="Lessons" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="16"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Lessons" index="0"]
@@ -239,12 +252,12 @@ layout_mode = 2
 focus_mode = 0
 text = "채운다"
 
-[node name="MoreHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="16"]
+[node name="MoreHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="17"]
 layout_mode = 2
 text = "그 밖에"
 label_settings = SubResource("section")
 
-[node name="Help" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="17"]
+[node name="Help" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="18"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Help" index="0"]
@@ -257,7 +270,7 @@ layout_mode = 2
 focus_mode = 0
 text = "보기"
 
-[node name="ToTitle" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="18"]
+[node name="ToTitle" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="19"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/ToTitle" index="0"]
@@ -270,7 +283,7 @@ layout_mode = 2
 focus_mode = 0
 text = "저장하고 처음 화면으로"
 
-[node name="Note" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="19"]
+[node name="Note" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="20"]
 layout_mode = 2
 text = "게임은 자동으로 저장된다. 기록 칸은 셋이고, 처음 화면에서 고른다.
 [테스트] 줄은 승급 시험 조건을 채워 주는 것뿐이다. 시험 자체는 카이론에게 청해야 한다."

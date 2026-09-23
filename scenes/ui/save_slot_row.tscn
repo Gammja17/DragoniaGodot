@@ -9,12 +9,12 @@ content_margin_left = 10.0
 content_margin_top = 8.0
 content_margin_right = 10.0
 content_margin_bottom = 8.0
-bg_color = Color(1, 1, 1, 0.04)
+bg_color = Color(0.094, 0.086, 0.137, 0.95)
 border_width_left = 3
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.847, 0.698, 0.353, 0.38)
+border_color = Color(0.415, 0.353, 0.22, 1)
 
 [sub_resource type="StyleBoxFlat" id="danger"]
 content_margin_left = 8.0
@@ -65,22 +65,23 @@ text = "빈 칸"
 
 [node name="Sub" type="Label" parent="Row/Info"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 text = "새 용을 만들어 시작한다"
 
 [node name="When" type="Label" parent="Row/Info"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 
 [node name="Play" type="Button" parent="Row"]
-custom_minimum_size = Vector2(84, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
+theme_type_variation = &"PrimaryButton"
 text = "이어 하기"
 
 [node name="New" type="Button" parent="Row"]
-custom_minimum_size = Vector2(84, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0

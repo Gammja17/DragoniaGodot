@@ -4,6 +4,7 @@
 [ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="2"]
 [ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/save_slot_row.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/ui/portrait.gd" id="5"]
 
 [sub_resource type="Gradient" id="sky"]
 offsets = PackedFloat32Array(0, 0.55, 1)
@@ -47,49 +48,37 @@ spacing_glyph = 5
 [sub_resource type="LabelSettings" id="sub"]
 font = SubResource("sub_font")
 font_size = 12
-font_color = Color(0.714, 0.682, 0.604, 1)
+font_color = Color(0.804, 0.769, 0.686, 1)
 
-[sub_resource type="StyleBoxFlat" id="start"]
-content_margin_left = 13.0
-content_margin_top = 11.0
-content_margin_right = 13.0
-content_margin_bottom = 11.0
-bg_color = Color(0.843, 0.678, 0.333, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.949, 0.863, 0.604, 1)
+[sub_resource type="Gradient" id="stage_g"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(0.847, 0.698, 0.353, 0.16, 0.847, 0.698, 0.353, 0)
 
-[sub_resource type="StyleBoxFlat" id="start_hover"]
-content_margin_left = 13.0
-content_margin_top = 11.0
-content_margin_right = 13.0
-content_margin_bottom = 11.0
-bg_color = Color(0.93, 0.76, 0.4, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 0.94, 0.75, 1)
+[sub_resource type="GradientTexture2D" id="stage_glow"]
+gradient = SubResource("stage_g")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.62)
+fill_to = Vector2(0.5, 0.05)
 
 [sub_resource type="StyleBoxFlat" id="name_field"]
-content_margin_left = 11.0
-content_margin_top = 11.0
-content_margin_right = 11.0
-content_margin_bottom = 11.0
-bg_color = Color(0, 0, 0, 0.35)
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+bg_color = Color(0.035, 0.031, 0.059, 0.9)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.847, 0.698, 0.353, 0.38)
+border_color = Color(0.415, 0.353, 0.22, 1)
 
 [sub_resource type="StyleBoxFlat" id="name_focus"]
-content_margin_left = 11.0
-content_margin_top = 11.0
-content_margin_right = 11.0
-content_margin_bottom = 11.0
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
 bg_color = Color(0, 0, 0, 0.35)
 border_width_left = 1
 border_width_top = 1
@@ -166,8 +155,14 @@ theme_override_constants/separation = 8
 
 [node name="Head" type="Label" parent="Center/Column/Slots/Lines"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.847, 0.698, 0.353, 1)
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+theme_override_fonts/font = ExtResource("2")
 text = "기록"
+
+[node name="Rule" type="ColorRect" parent="Center/Column/Slots/Lines"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.415, 0.353, 0.22, 1)
 
 [node name="Slot1" parent="Center/Column/Slots/Lines" instance=ExtResource("4")]
 layout_mode = 2
@@ -180,19 +175,78 @@ layout_mode = 2
 
 [node name="Note" type="Label" parent="Center/Column/Slots/Lines"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 text = "게임은 저절로 저장된다. 게임 안에서 [Esc] 설정 → 처음 화면으로 나오면 다른 칸을 불러올 수 있다."
 autowrap_mode = 3
 
 [node name="Create" type="PanelContainer" parent="Center/Column"]
 visible = false
+custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
 
 [node name="Lines" type="VBoxContainer" parent="Center/Column/Create"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
-[node name="Name" type="LineEdit" parent="Center/Column/Create/Lines"]
+[node name="Head" type="HBoxContainer" parent="Center/Column/Create/Lines"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Center/Column/Create/Lines/Head"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+theme_override_fonts/font = ExtResource("2")
+text = "새 용 만들기"
+
+[node name="Slot" type="Label" parent="Center/Column/Create/Lines/Head"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
+text = "1번 칸"
+
+[node name="Rule" type="ColorRect" parent="Center/Column/Create/Lines"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.415, 0.353, 0.22, 1)
+
+[node name="Body" type="HBoxContainer" parent="Center/Column/Create/Lines"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Left" type="VBoxContainer" parent="Center/Column/Create/Lines/Body"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Stage" type="PanelContainer" parent="Center/Column/Create/Lines/Body/Left"]
+custom_minimum_size = Vector2(0, 170)
+layout_mode = 2
+theme_type_variation = &"Inset"
+
+[node name="Glow" type="TextureRect" parent="Center/Column/Create/Lines/Body/Left/Stage"]
+layout_mode = 2
+mouse_filter = 2
+texture = SubResource("stage_glow")
+expand_mode = 1
+
+[node name="Portrait" type="Control" parent="Center/Column/Create/Lines/Body/Left/Stage"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("5")
+frame = false
+animate = true
+
+[node name="LookName" type="Label" parent="Center/Column/Create/Lines/Body/Left"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NameLabel" type="Label" parent="Center/Column/Create/Lines/Body/Left"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
+text = "이름 (12자까지)"
+
+[node name="Name" type="LineEdit" parent="Center/Column/Create/Lines/Body/Left"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_colors/caret_color = Color(1, 0.847, 0.29, 1)
@@ -203,40 +257,17 @@ text = "바하무트"
 alignment = 1
 max_length = 12
 
-[node name="LookTitle" type="HBoxContainer" parent="Center/Column/Create/Lines"]
+[node name="Accessory" type="HBoxContainer" parent="Center/Column/Create/Lines/Body/Left"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Center/Column/Create/Lines/LookTitle"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
-text = "나의 용:"
-
-[node name="LookName" type="Label" parent="Center/Column/Create/Lines/LookTitle"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
-
-[node name="Gallery" type="ScrollContainer" parent="Center/Column/Create/Lines"]
-custom_minimum_size = Vector2(0, 236)
-layout_mode = 2
-horizontal_scroll_mode = 0
-
-[node name="Grid" type="GridContainer" parent="Center/Column/Create/Lines/Gallery"]
+[node name="Label" type="Label" parent="Center/Column/Create/Lines/Body/Left/Accessory"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 5
-theme_override_constants/v_separation = 5
-columns = 7
-
-[node name="Accessory" type="HBoxContainer" parent="Center/Column/Create/Lines"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Center/Column/Create/Lines/Accessory"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 text = "장신구"
 
-[node name="Pick" type="OptionButton" parent="Center/Column/Create/Lines/Accessory"]
+[node name="Pick" type="OptionButton" parent="Center/Column/Create/Lines/Body/Left/Accessory"]
+custom_minimum_size = Vector2(110, 0)
 layout_mode = 2
 focus_mode = 0
 selected = 0
@@ -256,64 +287,94 @@ popup/item_5/id = 5
 popup/item_6/text = "왕관"
 popup/item_6/id = 6
 
-[node name="Colors" type="VBoxContainer" parent="Center/Column/Create/Lines"]
+[node name="Colors" type="VBoxContainer" parent="Center/Column/Create/Lines/Body/Left"]
 visible = false
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 6
 
-[node name="Body" type="HBoxContainer" parent="Center/Column/Create/Lines/Colors"]
+[node name="Body" type="HBoxContainer" parent="Center/Column/Create/Lines/Body/Left/Colors"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Center/Column/Create/Lines/Colors/Body"]
+[node name="Label" type="Label" parent="Center/Column/Create/Lines/Body/Left/Colors/Body"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 text = "몸 색"
 
-[node name="Pick" type="ColorPickerButton" parent="Center/Column/Create/Lines/Colors/Body"]
-custom_minimum_size = Vector2(44, 28)
+[node name="Pick" type="ColorPickerButton" parent="Center/Column/Create/Lines/Body/Left/Colors/Body"]
+custom_minimum_size = Vector2(44, 24)
 layout_mode = 2
 focus_mode = 0
 color = Color(0.753, 0.224, 0.169, 1)
 edit_alpha = false
 
-[node name="Wing" type="HBoxContainer" parent="Center/Column/Create/Lines/Colors"]
+[node name="Wing" type="HBoxContainer" parent="Center/Column/Create/Lines/Body/Left/Colors"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Center/Column/Create/Lines/Colors/Wing"]
+[node name="Label" type="Label" parent="Center/Column/Create/Lines/Body/Left/Colors/Wing"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 text = "날개 · 배 색"
 
-[node name="Pick" type="ColorPickerButton" parent="Center/Column/Create/Lines/Colors/Wing"]
-custom_minimum_size = Vector2(44, 28)
+[node name="Pick" type="ColorPickerButton" parent="Center/Column/Create/Lines/Body/Left/Colors/Wing"]
+custom_minimum_size = Vector2(44, 24)
 layout_mode = 2
 focus_mode = 0
 color = Color(0.878, 0.627, 0.125, 1)
 edit_alpha = false
 
-[node name="Start" type="Button" parent="Center/Column/Create/Lines"]
+[node name="Right" type="VBoxContainer" parent="Center/Column/Create/Lines/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Label" type="Label" parent="Center/Column/Create/Lines/Body/Right"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
+text = "생김새 30가지 · 마지막 넷은 색을 바꿀 수 있다"
+
+[node name="Gallery" type="ScrollContainer" parent="Center/Column/Create/Lines/Body/Right"]
+custom_minimum_size = Vector2(0, 280)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Grid" type="GridContainer" parent="Center/Column/Create/Lines/Body/Right/Gallery"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 7
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Column/Create/Lines"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Back" type="Button" parent="Center/Column/Create/Lines/Buttons"]
+custom_minimum_size = Vector2(110, 0)
 layout_mode = 2
 focus_mode = 0
-theme_override_colors/font_color = Color(0.165, 0.114, 0.0235, 1)
-theme_override_colors/font_hover_color = Color(0.165, 0.114, 0.0235, 1)
-theme_override_colors/font_pressed_color = Color(0.165, 0.114, 0.0235, 1)
+text = "← 돌아간다"
+
+[node name="Space" type="Control" parent="Center/Column/Create/Lines/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Start" type="Button" parent="Center/Column/Create/Lines/Buttons"]
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+focus_mode = 0
+theme_type_variation = &"PrimaryButton"
 theme_override_fonts/font = ExtResource("2")
 theme_override_font_sizes/font_size = 24
-theme_override_styles/normal = SubResource("start")
-theme_override_styles/hover = SubResource("start_hover")
-theme_override_styles/pressed = SubResource("start_hover")
 text = "눈을 뜬다"
-
-[node name="Back" type="Button" parent="Center/Column/Create/Lines"]
-layout_mode = 2
-focus_mode = 0
-text = "돌아간다"
 
 [node name="Confirm" type="PanelContainer" parent="Center/Column"]
 visible = false
+custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
+size_flags_horizontal = 4
 
 [node name="Lines" type="VBoxContainer" parent="Center/Column/Confirm"]
 layout_mode = 2
@@ -341,4 +402,5 @@ text = "그래도 한다"
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 focus_mode = 0
+theme_type_variation = &"PrimaryButton"
 text = "그만둔다"

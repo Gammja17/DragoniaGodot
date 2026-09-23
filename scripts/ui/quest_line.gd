@@ -2,15 +2,18 @@ class_name QuestLine
 extends PanelContainer
 ## 2D판 추적창의 한 줄. 추적 중인 퀘스트 하나만 보여 주고, 맡은 일이 없으면 "다음에 할 만한 일"을 띄운다.
 ## 누르면 그곳까지 알아서 걸어간다 (Guide). 할 일이 바뀌면 한 번 번쩍인다.
+## 읽기 쉽게: 제목은 밝은 양피지색 굵은 글씨, 할 일은 한 톤 낮게, 상태는 윗줄 글씨와 테두리 색으로만 알린다.
 
 const BG := Color(14 / 255.0, 13 / 255.0, 22 / 255.0, 0.9)
-const BG_HOVER := Color(40 / 255.0, 36 / 255.0, 20 / 255.0, 0.92)
+const BG_HOVER := Color(30 / 255.0, 27 / 255.0, 40 / 255.0, 0.95)
 const GOLD_LIT := Color("#ffd84a")
 const GOLD := Color("#d8b25a")
 const GOOD := Color("#7dd36a")
 const COLD := Color("#7fd4ff")
-const PARCH_MID := Color("#b6ae9a")
-const PARCH_DIM := Color("#857e6e")
+const PARCH := Color("#f3ead6")
+const GOLD_DIM := Color("#6a5a38")
+const PARCH_MID := Color("#cdc4af")
+const PARCH_DIM := Color("#a39a87")
 
 @onready var _kind: Label = $Lines/Kind
 @onready var _title: Label = $Lines/Title
@@ -23,7 +26,7 @@ var _style: StyleBoxFlat
 var _last_key := ""
 var _flash := 0.0
 var _hover := false
-var _left := GOLD_LIT
+var _left := GOLD_DIM
 
 
 func _ready() -> void:
@@ -58,9 +61,9 @@ func refresh() -> void:
 	_where.visible = _where.text != ""
 	_prog.text = line.get("text", "") if line.get("text") else ""
 	_prog.visible = _prog.text != ""
-	_left = PARCH_DIM if suggest else GOOD if line.complete else GOLD_LIT
-	_kind.add_theme_color_override("font_color", PARCH_MID if suggest else GOOD if line.complete else GOLD)
-	_title.add_theme_color_override("font_color", GOOD if line.complete else GOLD_LIT)
+	_left = Color("#4a4538") if suggest else GOOD if line.complete else GOLD_DIM
+	_kind.add_theme_color_override("font_color", PARCH_DIM if suggest else GOOD if line.complete else GOLD)
+	_title.add_theme_color_override("font_color", PARCH)
 	# 할 일이 바뀌면 한 번 번쩍여서 눈길을 끈다
 	var key: String = line.title + "|" + line.goal
 	if _last_key != "" and key != _last_key: _flash = 1.6
@@ -75,8 +78,8 @@ func _process(dt: float) -> void:
 	var nav: bool = GameState.nav != null
 	_go.text = "🧭 걸어가는 중… (누르거나 방향키로 멈춤)" if nav else "🧭 누르면 %s까지 알아서 간다" % (t.label if t.label else "그곳") if t else ""
 	_go.visible = _go.text != ""
-	_go.add_theme_color_override("font_color", COLD if nav else GOLD)
+	_go.add_theme_color_override("font_color", COLD if nav else PARCH_DIM)
 	_style.border_color = COLD if nav else _left
 	_flash = maxf(0, _flash - dt)
 	var base := BG_HOVER if _hover else BG
-	_style.bg_color = base.lerp(Color(1, 216 / 255.0, 74 / 255.0, 0.45), _flash / 1.6)
+	_style.bg_color = base.lerp(Color(216 / 255.0, 178 / 255.0, 90 / 255.0, 0.3), _flash / 1.6)

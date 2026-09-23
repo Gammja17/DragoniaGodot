@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud_right.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/minimap.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/ui/quest_line.gd" id="3"]
+[ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="4"]
 
 [sub_resource type="StyleBoxFlat" id="badge"]
 content_margin_left = 11.0
@@ -32,7 +33,7 @@ content_margin_right = 10.0
 content_margin_bottom = 5.0
 bg_color = Color(0.055, 0.051, 0.086, 0.86)
 border_width_left = 3
-border_color = Color(0.522, 0.494, 0.431, 1)
+border_color = Color(0.639, 0.604, 0.529, 1)
 
 [sub_resource type="StyleBoxFlat" id="raid_active"]
 content_margin_left = 10.0
@@ -44,18 +45,20 @@ border_width_left = 3
 border_color = Color(0.878, 0.271, 0.227, 1)
 
 [sub_resource type="StyleBoxFlat" id="quest"]
-content_margin_left = 10.0
-content_margin_top = 7.0
+content_margin_left = 11.0
+content_margin_top = 8.0
 content_margin_right = 10.0
-content_margin_bottom = 8.0
-bg_color = Color(0.055, 0.051, 0.086, 0.9)
+content_margin_bottom = 9.0
+bg_color = Color(0.055, 0.051, 0.086, 0.92)
 border_width_left = 3
 border_width_top = 1
-border_color = Color(1, 0.847, 0.29, 1)
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.415, 0.353, 0.22, 1)
 
 [sub_resource type="LabelSettings" id="shadow"]
 font_size = 12
-font_color = Color(0.522, 0.494, 0.431, 1)
+font_color = Color(0.639, 0.604, 0.529, 1)
 shadow_size = 3
 shadow_color = Color(0, 0, 0, 0.9)
 shadow_offset = Vector2(0, 1)
@@ -90,7 +93,7 @@ horizontal_alignment = 2
 
 [node name="Sub" type="Label" parent="Biome/Lines"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 text = "낮 · 맑음"
 horizontal_alignment = 2
 
@@ -99,19 +102,19 @@ layout_mode = 2
 size_flags_horizontal = 8
 tooltip_text = "오른쪽 접기 (U)"
 focus_mode = 0
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_styles/normal = SubResource("collapse")
 text = "접기 ▶"
 
 [node name="Minimap" type="Control" parent="."]
-custom_minimum_size = Vector2(232, 232)
+custom_minimum_size = Vector2(200, 200)
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("2")
 
 [node name="Raid" type="Label" parent="."]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 theme_override_styles/normal = SubResource("raid")
 horizontal_alignment = 2
 
@@ -134,25 +137,34 @@ text = "지금 할 일"
 
 [node name="Title" type="Label" parent="Quest/Lines"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+theme_override_colors/font_color = Color(0.953, 0.918, 0.839, 1)
+theme_override_fonts/font = ExtResource("4")
 autowrap_mode = 3
+
+[node name="Rule" type="ColorRect" parent="Quest/Lines"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.29, 0.25, 0.17, 1)
 
 [node name="Goal" type="Label" parent="Quest/Lines"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.867, 0.835, 0.765, 1)
+theme_override_constants/line_spacing = 3
 autowrap_mode = 3
 
 [node name="Where" type="Label" parent="Quest/Lines"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 autowrap_mode = 3
 
 [node name="Prog" type="Label" parent="Quest/Lines"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 
 [node name="Go" type="Label" parent="Quest/Lines"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.847, 0.698, 0.353, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 autowrap_mode = 3
 
 [node name="More" type="Label" parent="."]

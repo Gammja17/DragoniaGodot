@@ -50,7 +50,7 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(11, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
-text = "▸"
+text = "▶"
 
 [node name="Title" type="Label" parent="Lines/Head/Row"]
 layout_mode = 2
@@ -61,7 +61,7 @@ clip_text = true
 
 [node name="Prog" type="Label" parent="Lines/Head/Row"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 
 [node name="Body" type="MarginContainer" parent="Lines"]
 visible = false
@@ -88,7 +88,7 @@ text = "의뢰"
 [node name="Text" type="Label" parent="Lines/Body/Lines/Giver"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 autowrap_mode = 3
 
 [node name="Summary" type="Label" parent="Lines/Body/Lines"]
@@ -109,7 +109,7 @@ text = "진행"
 [node name="Text" type="Label" parent="Lines/Body/Lines/Chapter"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 
 [node name="Steps" type="VBoxContainer" parent="Lines/Body/Lines"]
 layout_mode = 2
@@ -129,12 +129,12 @@ text = "해야 할 일"
 [node name="Text" type="Label" parent="Lines/Body/Lines/Hint"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 autowrap_mode = 3
 
 [node name="DoneText" type="Label" parent="Lines/Body/Lines"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 theme_override_styles/normal = SubResource("done_text")
 autowrap_mode = 3
 
@@ -158,7 +158,7 @@ text = "보상"
 [node name="Text" type="Label" parent="Lines/Body/Lines/Reward"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 autowrap_mode = 3
 
 [node name="Track" type="Button" parent="Lines/Body/Lines"]

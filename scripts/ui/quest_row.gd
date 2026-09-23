@@ -18,7 +18,7 @@ func setup(r: Dictionary, open: bool) -> void:
 	st.border_color = Color("#3b414c") if r.get("upcoming") else Color("#4e5560") if r.get("done") else GOOD if r.get("complete") else GOLD_LIT
 	add_theme_stylebox_override("panel", st)
 	modulate.a = 0.5 if r.get("done") or r.get("upcoming") else 1.0
-	$Lines/Head/Row/Mark.text = "·" if r.get("upcoming") else "✔" if r.get("done") else "!" if r.get("complete") else "▸"
+	$Lines/Head/Row/Mark.text = "·" if r.get("upcoming") else "✔" if r.get("done") else "!" if r.get("complete") else "▶"
 	$Lines/Head/Row/Mark.add_theme_color_override("font_color", GOOD if r.get("complete") else GOLD_LIT)
 	$Lines/Head/Row/Title.text = r.title
 	$Lines/Head/Row/Prog.text = "" if r.get("upcoming") else r.get("progress", "")
@@ -42,10 +42,10 @@ func setup(r: Dictionary, open: bool) -> void:
 	for s in r.steps:
 		var row: Control = STEP.instantiate()
 		L.get_node("Steps").add_child(row)
-		row.get_node("Mark").text = "▸" if s.now else "✔"
+		row.get_node("Mark").text = "▶" if s.now else "✔"
 		row.get_node("Mark").add_theme_color_override("font_color", GOLD_LIT if s.now else GOOD)
 		row.get_node("Text").text = s.hint
-		row.get_node("Text").add_theme_color_override("font_color", Color("#ece3cf") if s.now else Color("#b6ae9a"))
+		row.get_node("Text").add_theme_color_override("font_color", Color("#ece3cf") if s.now else Color("#cdc4af"))
 		if s.done and s.scene:
 			row.get_node("Replay").visible = true
 			row.get_node("Replay").pressed.connect(func(): replay.emit(r.title, s.scene))

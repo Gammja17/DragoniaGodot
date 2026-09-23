@@ -28,7 +28,7 @@ height = 15
 
 [sub_resource type="LabelSettings" id="note"]
 font_size = 12
-font_color = Color(0.522, 0.494, 0.431, 1)
+font_color = Color(0.639, 0.604, 0.529, 1)
 
 [node name="FxRow" type="VBoxContainer"]
 theme_override_constants/separation = 1
@@ -55,7 +55,7 @@ theme_override_styles/grabber_area_highlight = SubResource("fill")
 [node name="Num" type="Label" parent="Line"]
 custom_minimum_size = Vector2(44, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 horizontal_alignment = 2
 
 [node name="Note" type="Label" parent="."]

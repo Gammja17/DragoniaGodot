@@ -15,12 +15,14 @@ const ACCESSORIES := [null, "PLUME", "FLOWER", "LEAF", "HELM", "HAT", "CROWN"]
 @onready var _slots: PanelContainer = $Center/Column/Slots
 @onready var _create: PanelContainer = $Center/Column/Create
 @onready var _confirm: PanelContainer = $Center/Column/Confirm
-@onready var _grid: GridContainer = $Center/Column/Create/Lines/Gallery/Grid
-@onready var _look_name: Label = $Center/Column/Create/Lines/LookTitle/LookName
-@onready var _colors: Control = $Center/Column/Create/Lines/Colors
-@onready var _body: ColorPickerButton = $Center/Column/Create/Lines/Colors/Body/Pick
-@onready var _wing: ColorPickerButton = $Center/Column/Create/Lines/Colors/Wing/Pick
-@onready var _name: LineEdit = $Center/Column/Create/Lines/Name
+@onready var _grid: GridContainer = $Center/Column/Create/Lines/Body/Right/Gallery/Grid
+@onready var _look_name: Label = $Center/Column/Create/Lines/Body/Left/LookName
+@onready var _preview: Control = $Center/Column/Create/Lines/Body/Left/Stage/Portrait
+@onready var _gallery: ScrollContainer = $Center/Column/Create/Lines/Body/Right/Gallery
+@onready var _colors: Control = $Center/Column/Create/Lines/Body/Left/Colors
+@onready var _body: ColorPickerButton = $Center/Column/Create/Lines/Body/Left/Colors/Body/Pick
+@onready var _wing: ColorPickerButton = $Center/Column/Create/Lines/Body/Left/Colors/Wing/Pick
+@onready var _name: LineEdit = $Center/Column/Create/Lines/Body/Left/Name
 
 var _slot := 1
 var _choice := { species = "LOOK", look = 0 }
@@ -34,8 +36,8 @@ func _ready() -> void:
 		row.play_pressed.connect(_play)
 		row.new_pressed.connect(_new)
 		row.delete_pressed.connect(_delete)
-	$Center/Column/Create/Lines/Start.pressed.connect(_start)
-	$Center/Column/Create/Lines/Back.pressed.connect(func(): _show(_slots))
+	$Center/Column/Create/Lines/Buttons/Start.pressed.connect(_start)
+	$Center/Column/Create/Lines/Buttons/Back.pressed.connect(func(): _show(_slots))
 	$Center/Column/Confirm/Lines/Buttons/Yes.pressed.connect(func(): _on_yes.call())
 	$Center/Column/Confirm/Lines/Buttons/No.pressed.connect(func(): _show(_slots))
 	_body.color_changed.connect(func(_c): _recolor())
@@ -48,7 +50,12 @@ func _show(page: Control) -> void:
 	for p in [_slots, _create, _confirm]: p.visible = p == page
 	if page == _slots:
 		for i in Save.SLOTS: $Center/Column/Slots/Lines.get_node("Slot%d" % (i + 1)).show_slot(i + 1)
+	# 새 용 판은 키가 커서, 낮은 화면(휴대폰)에서는 제목을 접고 외형 목록을 줄인다
+	var h := get_viewport_rect().size.y
+	for n in ["Logo", "Subtitle", "Gap"]: $Center/Column.get_node(n).visible = page != _create or h >= 600
+	_gallery.custom_minimum_size.y = clampf(h - 250, 150, 280)
 	if page == _create:
+		$Center/Column/Create/Lines/Head/Slot.text = "%d번 칸" % _slot
 		_name.grab_focus()
 		_name.select_all()
 
@@ -105,6 +112,8 @@ func _select(cell: LookCell) -> void:
 	_choice = cell.value
 	for c in _cells: c.set_selected(c == cell)
 	_look_name.text = cell.look_name
+	_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), int(_choice.look))
+	_preview.queue_redraw()
 	_colors.visible = _choice.species != "LOOK"   # 한 장짜리 외형은 색을 바꿀 수 없다
 
 
@@ -116,6 +125,9 @@ func _colors_now() -> Dictionary:
 func _recolor() -> void:
 	for c in _cells:
 		if c.value.species != "LOOK": c.setup(c.value, c.look_name, _colors_now())
+	if _choice.species != "LOOK":
+		_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), 0)
+		_preview.queue_redraw()
 
 
 func _start() -> void:
@@ -125,7 +137,7 @@ func _start() -> void:
 		name = nm if nm != "" else "Player",
 		species = _choice.species,
 		look = _choice.look,
-		accessory = ACCESSORIES[$Center/Column/Create/Lines/Accessory/Pick.selected],
+		accessory = ACCESSORIES[$Center/Column/Create/Lines/Body/Left/Accessory/Pick.selected],
 		colors = _colors_now(),
 	})
 	Save.slot = _slot

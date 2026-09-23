@@ -74,10 +74,11 @@ func show_game_ui(on: bool) -> void:
 	if on: refresh_tracker()
 
 
-## 작은 화면(폰 가로·태블릿)에서는 좌우 판을 줄인다 (2D판 @media max-width 900 · max-height 540)
+## 작은 화면(폰 가로)에서는 좌우 판을 줄인다 (2D판 @media max-width 900 · max-height 540).
+## UI 는 UiScale 이 이미 화면에 맞춰 늘려 두었으니, 논리 크기가 휴대폰 기준(780×420)쯤일 때만
 func _fit_screen() -> void:
 	var s := get_viewport().get_visible_rect().size
-	var small := s.x <= 900 or s.y <= 540
+	var small := s.x <= 820 or s.y <= 440
 	status.scale = Vector2.ONE * (0.72 if small else 1.0)
 	status.position = Vector2(6, 6) if small else Vector2(18, 18)
 	right.scale = Vector2.ONE * (0.7 if small else 1.0)

@@ -11,6 +11,7 @@ static var current: DenPanel
 
 @export var tab_style: StyleBox
 @export var tab_on_style: StyleBox
+@export var tab_hover_style: StyleBox
 
 var _tab := "have"
 
@@ -53,8 +54,9 @@ func _hold(id: String) -> void:
 func _render() -> void:
 	for b in $Frame/Lines/Body/Tabs.get_children():
 		var on: bool = b.name == _tab
-		for s in ["normal", "hover", "pressed"]: b.add_theme_stylebox_override(s, tab_on_style if on else tab_style)
-		b.add_theme_color_override("font_color", Color("#1a1206") if on else Color("#857e6e"))
+		for s in ["normal", "pressed"]: b.add_theme_stylebox_override(s, tab_on_style if on else tab_style)
+		b.add_theme_stylebox_override("hover", tab_on_style if on else tab_hover_style)
+		b.add_theme_color_override("font_color", Color("#1a1206") if on else Color("#cdc4af"))
 		b.add_theme_color_override("font_hover_color", Color("#1a1206") if on else Color("#ece3cf"))
 	var cozy := Den.cozy_of(Den.MY_DEN)
 	$Frame/Lines/Body/Meta/Cozy.text = "아늑함 %d · %s" % [cozy.score, cozy.name]

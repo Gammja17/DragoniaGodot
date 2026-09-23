@@ -395,7 +395,7 @@ static func draw_tell(ci: CanvasItem, e) -> void:
 	if a.s == "stun":
 		# 기절 별
 		for i in 3:
-			Fonts.draw_centered(ci, ThemeDB.fallback_font, "✦", e.x + cos(t * 6 + i * 2.1) * 20, e.y - 44 + sin(t * 6 + i * 2.1) * 6, 16, Color("#ffe27a"))
+			Fonts.draw_centered(ci, ThemeDB.fallback_font, "★", e.x + cos(t * 6 + i * 2.1) * 20, e.y - 44 + sin(t * 6 + i * 2.1) * 6, 16, Color("#ffe27a"))
 	if mv == "guard" and a.s != "act" and e.guard_angle != null:
 		# 방패 호
 		ci.draw_arc(Vector2(e.x, e.y - 14), 30, e.guard_angle - 1.25, e.guard_angle + 1.25, 24, Color(180 / 255.0, 200 / 255.0, 230 / 255.0, 0.8), 5)

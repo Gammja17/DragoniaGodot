@@ -94,11 +94,11 @@ static func update(dt: float) -> void:
 		f.stackT -= dt
 		if f.stackT <= 0: f.stacks = 0
 	f.idle += dt
-	if f.idle > 5 and f.m > 0: f.m = maxf(0, f.m - 7 * dt)   # 싸움이 끊기면 식는다
+	if f.idle > 8 and f.m > 0: f.m = maxf(0, f.m - 5 * dt)   # 싸움이 끊기면 식는다 (무리와 무리 사이에서 다 식던 것)
 
 
 static func _boss_attacking(b) -> bool:
-	return (b.charge and not (b.charge.get("windup", 0) > 0)) or b.beam or b.spiral or b.blizzard or b.pattern_timer > 2.2
+	return (b.charge and not (b.charge.get("windup", 0) > 0)) or b.beam or b.spiral or b.blizzard or b.threat > 0
 
 
 ## 간발: 대시 첫머리에 적의 탄이나 내려치는 공격을 스치듯 피했는가. 대시 한 번에 한 번만

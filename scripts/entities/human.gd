@@ -183,6 +183,14 @@ func die() -> void:
 	Quests.notify("kill", "HUNTER")
 	Quests.notify("killAny")
 	Vfx.spawn_effect("SMOKE", x, y - 16, { size = 1.8 if def.get("scale") else 1.0 })
+	var big: bool = type == "CAPTAIN" or type == "HEAVY"
+	Feedback.hit_stop(0.12 if big else 0.06)
+	if GameCamera.current: GameCamera.current.shake(10 if big else 3)
+	Sfx.play("dieBig" if big else "die")
+	Particles.burst(x, y - 20, "#e8d8c0", 0.7, 14 if big else 9, 300.0)
+	if def.get("sprite"):
+		var sp: Array = def.sprite
+		Vfx.spawn_shatter(x, y - 4, TileImages.get_image("dungeon"), Rect2(sp[0] * 16, sp[1] * 16, 16, 16), { scale = _scale(), flip = cos(angle) < 0, color = "#e8d8c0" })
 	World.add_entity("items", Item.make(x, y, "GOLD", def.gold))
 	if randf() < 0.6: World.add_entity("items", Item.make(x + 20, y, "MEAT"))
 	# 사냥꾼의 갑옷 조각 — 대장간 소재 중 가장 귀한 것

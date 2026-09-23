@@ -7,12 +7,14 @@ class Particle:
 	var y: float
 	var color: Color
 	var life: float
-	var vx := (randf() - 0.5) * 90
-	var vy := (randf() - 0.5) * 90
+	var vx := 0.0
+	var vy := 0.0
 	var remove := false
 
-	func _init(px: float, py: float, c: Color, l: float) -> void:
+	func _init(px: float, py: float, c: Color, l: float, spread := 90.0) -> void:
 		x = px; y = py; color = c; life = l
+		vx = (randf() - 0.5) * spread
+		vy = (randf() - 0.5) * spread
 
 	func update(dt: float) -> void:
 		x += vx * dt
@@ -27,10 +29,10 @@ class Particle:
 
 
 ## 파티클을 count개 뿌리고 상한을 유지. color 는 "#rrggbb", Color, 또는 색을 돌려주는 Callable
-static func burst(x: float, y: float, color, life := 1.0, count := 1) -> void:
+static func burst(x: float, y: float, color, life := 1.0, count := 1, spread := 90.0) -> void:
 	var P: Array = GameState.entities.particles
 	for i in count:
 		var c = color.call() if color is Callable else color
-		P.append(Particle.new(x, y, Color(c) if c is String else c, life))
+		P.append(Particle.new(x, y, Color(c) if c is String else c, life, spread))
 	var cap: int = Data.get_module("core_config").MAX_PARTICLES
 	if P.size() > cap: P.assign(P.slice(P.size() - cap))

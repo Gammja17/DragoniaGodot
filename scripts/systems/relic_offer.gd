@@ -17,8 +17,10 @@ static func clear() -> void: _queue.clear()
 
 
 static func update() -> void:
-	if _queue.is_empty() or GameState.isDialogueOpen or GameState.prologue or Cutscene.on: return
-	if GameState.raid.active or GameState.ambush or GameState.entities.bosses.any(func(b): return b.awake and not b.remove): return
+	if _queue.is_empty() or GameState.isDialogueOpen or GameState.prologue or Cutscene.on or Ending.playing: return
+	if GameState.raid.active or GameState.ambush or Combat.in_fight(): return
+	# 보스가 살아 있거나, 무너지는 중이거나, 마지막 말을 남기는 중이면 기다린다 (작별 장면이 먼저다)
+	if GameState.entities.bosses.any(func(b): return b.awake and not b.remove): return
 	var o: Dictionary = _queue.pop_front()
 	var close := func():
 		GameState.isDialogueOpen = false

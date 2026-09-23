@@ -237,6 +237,10 @@ class FloatText:
 		var fs := 24 if size >= 18 else 12
 		var font := Fonts.bold()
 		var w := Fonts.text_width(font, text, fs)
-		var pos := Vector2(roundf(x - w / 2), roundf(y))
+		# 월드 배율을 되돌려 화면 픽셀 그대로 그린다 (멀리 보기에서 8px 로 뭉개지던 것)
+		var k := 1.0 / GameCamera.current.zoom.x if GameCamera.current else 1.0
+		ci.draw_set_transform(Vector2(roundf(x), roundf(y)), 0, Vector2(k, k))
+		var pos := Vector2(roundf(-w / 2), 0)
 		ci.draw_string_outline(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 4, Color(0, 0, 0, 0.75 * a))
 		ci.draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color(color, color.a * a))
+		ci.draw_set_transform(Vector2.ZERO)

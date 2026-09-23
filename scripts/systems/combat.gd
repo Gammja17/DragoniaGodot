@@ -4,6 +4,18 @@ class_name Combat
 const HIT_RADIUS := 30
 
 
+## 싸우는 중인가: 나를 알아챈 적이 r 안에 있다 (도망치는 사냥감 · 허수아비는 빼고)
+static func in_fight(r := 600.0) -> bool:
+	var p = GameState.player
+	if p == null: return false
+	for e in GameState.entities.enemies:
+		if e.remove or e.def.get("move") == "flee" or e.type == "DUMMY": continue
+		if e.get("aggro") and Util.dist(e, p) < r: return true
+	for h in GameState.entities.humans:
+		if not h.remove and Util.dist(h, p) < r: return true
+	return false
+
+
 ## 플레이어 편에서 싸우는 용들: 쓰러지지 않은 마을 고정 NPC, 짝, 동료
 static func allies() -> Array:
 	return GameState.entities.npcs.filter(func(n): return n.down_timer <= 0 and (n.config.get("fixed") or n.state != "WANDER"))

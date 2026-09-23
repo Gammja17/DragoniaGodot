@@ -278,10 +278,10 @@ func _update_player(dt: float) -> void:
 		Particles.burst(x, y - 30 * stage.scale, colors.get("body", "#ffffff"), 0.35)
 	elif ax != Vector2.ZERO:
 		move_by(ax.x, ax.y, base_speed * (SPRINT_MULT if GameInput.down("sprint") else 1.0) * (1.45 if flying else 1.0), dt)
-		hunger -= 0.35 * dt * hunger_mult * (3 if flying else 1)   # 나는 건 배가 빨리 꺼진다
+		hunger -= 0.22 * dt * hunger_mult * (3 if flying else 1)   # 나는 건 배가 빨리 꺼진다
 		Tutorial.mark("moved")
 	else:
-		hunger -= 0.08 * dt * hunger_mult * (3 if flying else 1)
+		hunger -= 0.06 * dt * hunger_mult * (3 if flying else 1)
 	if GameInput.pressed("fly"): toggle_flight()
 	if flying and hunger <= 0 and can_land(): land("배가 꺼져서 내려앉았다.")
 	if Relics.has("LIFE_STONE"): hp = minf(max_hp, hp + 1.5 * dt)
@@ -461,7 +461,7 @@ func gain_xp(amount: float) -> void:
 		level += 1
 		levels += 1
 		xp -= max_xp
-		max_xp = floorf(max_xp * 1.38)
+		max_xp = floorf(max_xp * (1.38 if level <= 8 else 1.25))
 		max_hp += 12
 	hp = max_hp
 	if not is_player: return
@@ -911,7 +911,7 @@ func _lock_target(foes: Array):
 func attack() -> void:
 	var el: Dictionary = Data.get_module("elements").ELEMENTS[element]
 	var st := stage_index
-	var slug: float = [1.0, 1.25, 1.5][hunger_level]   # 배가 고프면 숨결이 굼떠진다
+	var slug: float = [1.0, 1.1, 1.25][hunger_level]   # 배가 고프면 숨결이 굼떠진다
 	fire_timer = (el.rateByStage[st] if el.get("rateByStage") else el.rate) * (0.75 if fury > 0 else 1.0) * slug * (0.65 if gale > 0 else 1.0) * Flow.rate_mult()
 	animator.play("attack")
 	var aim := aim_angle()

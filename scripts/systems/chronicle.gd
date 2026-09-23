@@ -67,6 +67,7 @@ static func update(dt: float) -> void:
 	if _playing or Ending.playing or GameState.isDialogueOpen or GameState.dungeon or GameState.activity or GameState.raid.active: return
 	if GameState.bannerUntil and GameState.play_time < GameState.bannerUntil: return   # 지역 이름이 떠 있는 동안은 기다린다
 	if GameState.entities.bosses.any(func(b): return b.dying > 0): return   # 보스가 무너지는 동안은 기다린다 (작별은 그 뒤에)
+	if Combat.in_fight(): return   # 싸움 한복판에 장면이 끼어들지 않게 (조용해지면 튼다)
 	_check_timer -= dt
 	if _check_timer > 0: return
 	_check_timer = 0.8

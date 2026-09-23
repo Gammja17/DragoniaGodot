@@ -246,8 +246,11 @@ static func offer_for(npc):
 	var cand = _find_offer(npc)
 	if not cand: return null
 	if active_quests().size() >= MAX_ACTIVE: return null
-	# 본 이야기가 굴러가는 동안 곁가지는 기다린다. 다섯 용이 한꺼번에 부탁하면 정신이 없다
-	if cand.act != "main" and active_quests().any(func(q): return q.act == "main"): return null
+	# 본 이야기가 굴러가는 동안 곁가지는 기다린다. 다섯 용이 한꺼번에 부탁하면 정신이 없다.
+	# 다만 본 이야기가 '자라기'(레벨·승급)를 기다리는 동안은 곁가지를 받는다 — 그 시간에 할 이야기가 없었다
+	if cand.act != "main" and active_quests().any(func(q):
+		var st = cur_step(q)
+		return q.act == "main" and not (st and st.goal.type == "stage")): return null
 	return cand
 
 

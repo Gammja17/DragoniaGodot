@@ -692,7 +692,7 @@
    "ch": 15,
    "seed": 104,
    "trees": 0.55,
-   "enemyCap": 9,
+   "enemyCap": 12,
    "ponds": [
     [
      5,
@@ -1450,7 +1450,7 @@
    "ch": 15,
    "seed": 110,
    "trees": 0.55,
-   "enemyCap": 9,
+   "enemyCap": 12,
    "ponds": [
     [
      17,

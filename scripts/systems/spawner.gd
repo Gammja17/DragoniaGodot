@@ -90,8 +90,15 @@ static func update(dt: float) -> void:
 		for i in 3:
 			if alive.call() >= _cap(): break
 			spawn_pack()
-	# 퀘스트가 잡으라는 놈을 늘 두어 마리 두는 것은 퀘스트를 옮길 때
+	# 퀘스트가 잡으라는 놈은 이 지도에 나오는 놈이면 늘 두어 마리는 있어야 한다 ('첫 사냥'인데 슬라임이 안 보이던 것)
+	for q in Quests.active_quests():
+		var st = Quests.cur_step(q)
+		var g = st.goal if st else null
+		if g == null or g.type != "kill" or not World.map_enemies().has(g.get("target")): continue
+		if E.enemies.filter(func(e): return e.type == g.target and not e.remove).size() < 2:
+			spawn_pack(g.target)
+			break
 	_next_pack -= dt
 	if _next_pack > 0: return
-	_next_pack = Util.rand_range(8, 14)
+	_next_pack = Util.rand_range(5, 9)
 	if alive.call() < _cap(): spawn_pack()

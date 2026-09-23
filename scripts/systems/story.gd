@@ -485,6 +485,7 @@ static func update_bedtime() -> void:
 			Hud.pop("습격이 끝났다. 잠들기 전에 마을을 한 바퀴 돌아보자.", "🌙")
 		return
 	if GameState.nav: return   # 알아서 걸어가는 중이면 다 가고 나서
+	if Combat.in_fight(): return   # 싸우는 중에 잠자리로 끌려가지 않게
 	if GameState.raid.active or Ambush.active() or Raid.wanted() or GameState.activity or GameState.dungeon or GameState.tour or GameState.prologue \
 		or GameState.entities.bosses.any(func(b): return b.awake): return
 	var near = null

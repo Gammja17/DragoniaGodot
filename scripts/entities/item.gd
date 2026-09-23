@@ -27,11 +27,16 @@ static func make(px: float, py: float, kind: String, v = 0) -> Item:
 func update(dt: float) -> void:
 	t += dt * 3
 	queue_redraw()
-	if type != "GOLD" and type != "MAT": return
+	if type != "GOLD" and type != "MAT" and type != "MEAT": return
 	var p = GameState.player
 	var d := Util.dist(self, p)
 	if d < 40:
-		if type == "MAT":
+		if type == "MEAT":
+			p.inventory.meat += 1
+			Vfx.spawn_text(p.x, p.y - 90, "고기 +1", "#ff9a6a", 14)
+			Sfx.play("pickup")
+			Quests.changed()
+		elif type == "MAT":
 			GameState.materials[value] = GameState.materials.get(value, 0) + 1
 			Vfx.spawn_text(p.x, p.y - 90, "%s +1" % Data.get_module("materials").MATERIALS[value].name, "#d8c39a", 14)
 			Sfx.play("pickup")

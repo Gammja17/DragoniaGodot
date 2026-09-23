@@ -53,6 +53,10 @@ var dying := 0.0             # 쓰러지는 중: 흰 빛 속에 무너지는 남
 var lingering := false       # 무너진 뒤: 흐릿하게 남아 마지막 말을 한다 (이그나르는 무릎을 꿇은 채 남는다). 장면이 끝나면 흩어진다
 var vanishing := 0.0         # 빛가루로 흩어지는 남은 시간
 var _linger_until := 0
+var tell = null              # 탄막을 뿜기 직전의 예고 { pat, t } — 몸이 번쩍이고 경고음이 난다. 이 동안 피할 자리를 찾는다
+var threat := 0.0            # 큰 공격이 날아오는 중인 남은 시간 (간발 판정 창)
+const TELL_PATTERNS := ["RING", "AIMED", "SPIRAL", "HOMING"]
+const GROUND_PATTERNS := ["BONE_RAIN", "ICE_FIELD", "METEOR_RAIN", "QUAKE", "FLAME_WALL"]
 const DYING_TIME := 1.8
 const VANISH_TIME := 1.6
 static var _introduced := {} # 이번 판에 등장 장면을 본 보스
@@ -149,6 +153,13 @@ func update(dt: float) -> void:
 		stagger -= dt
 		pattern_timer = maxf(pattern_timer, 0.6)
 		if stagger <= 0: opening = false
+	if threat > 0: threat -= dt
+	if tell:
+		tell.t -= dt
+		if tell.t <= 0:
+			var pat: String = tell.pat
+			tell = null
+			_fire(pat)
 
 	var moving := false
 	if burrow: _update_burrow(dt)
@@ -163,7 +174,7 @@ func update(dt: float) -> void:
 		facing = Dragon.facing_from_vector(player.x - x, player.y - y, facing)
 		moving = speed_mult > 0
 		pattern_timer -= dt * (1 if speed_mult > 0 else 0)
-		if pattern_timer <= 0: _start_pattern()
+		if pattern_timer <= 0 and tell == null: _start_pattern()
 	if spiral: _update_spiral(dt)
 	if blizzard: _update_blizzard(dt)
 
@@ -186,6 +197,7 @@ func reset() -> void:
 	is_hidden = false; phase2 = false
 	phase = 0; stagger = 0.0   # 쓰러지면 처음부터 다시다
 	charge = null; spiral = null; beam = null; burrow = null; blizzard = null
+	tell = null; threat = 0.0
 	Hud.current.set_boss_bar(null)
 
 
@@ -196,6 +208,7 @@ func _enter_phase(i: int) -> void:
 	pattern_index = 0
 	stagger = 1.4
 	charge = null; spiral = null; beam = null; burrow = null; blizzard = null
+	tell = null
 	is_hidden = false
 	for b in GameState.entities.bullets:
 		if b.faction == "ENEMY": b.remove = true
@@ -235,12 +248,23 @@ func _summon(types: Array) -> void:
 	Sfx.play("summon")
 
 
+## 다음 패턴을 고른다. 탄을 곧바로 쏟는 패턴은 짧게 예고한 뒤에 쏜다 (몸이 번쩍이고 경고음) —
+## 예전에는 고르는 그 프레임에 열여섯 발이 한꺼번에 나와서 읽을 틈이 없었다
 func _start_pattern() -> void:
 	var patterns: Array = def.phases[phase].patterns if def.get("phases") else def.patterns
 	var pat: String = patterns[pattern_index % patterns.size()]
 	pattern_index += 1
+	pattern_timer = 1.9 if rage else 2.9
+	if TELL_PATTERNS.has(pat):
+		tell = { pat = pat, t = 0.35 if rage else 0.5 }
+		Sfx.play("warn")
+		return
+	_fire(pat)
+
+
+func _fire(pat: String) -> void:
 	var r := rage
-	pattern_timer = 1.9 if r else 2.9
+	threat = 2.0 if GROUND_PATTERNS.has(pat) else 0.9
 	animator.play("attack")
 	var player = GameState.player
 	var m := _mouth()
@@ -532,6 +556,8 @@ func _draw() -> void:
 	var tint = Status.tint(self)
 	if tint: Pixel.draw_glow(self, 0, -60 * sc, 90 * sc, tint, 0.5)
 	if phase2: Pixel.draw_glow(self, 0, -60 * sc, 150 * sc, Color("#ff5a1f"), 0.3 + sin(GameState.game_time * 8) * 0.1)
+	if tell:   # 뿜기 직전: 몸 둘레가 빠르게 번쩍인다
+		Pixel.draw_glow(self, 0, -60 * sc, 130 * sc, _el_color(), 0.35 + sin(GameState.game_time * 40) * 0.25)
 
 
 ## 회전 광선 (예고 중엔 가는 선)

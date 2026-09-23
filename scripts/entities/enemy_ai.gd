@@ -15,12 +15,12 @@ class_name EnemyAI
 ##
 ## 각 행동은 fsm 하나: e.ai = { s: 상태, t: 남은 시간, ... }
 
-const RING := 150             # flank: 링 반지름
+const RING := 120             # flank: 링 반지름 (150 이면 달려들어도 몸에 안 닿았다)
 const LUNGE_RANGE := 78       # chase/flank: 덤비는 거리
 const REACH := 46             # 맞았다고 치는 거리
 const LEASH := 1100           # 이보다 멀어지면 쫓기를 그만두고 제자리로 돌아간다
 # 어그로 반경. 이 안에 들어가거나 먼저 때려야 덤빈다. 그 전엔 제 자리 근처를 어슬렁거린다
-const AGGRO := { "chase": 240, "charge": 330, "flank": 260, "kite": 360, "ranged": 360, "burrow": 200, "guard": 220, "summon": 300, "swarm": 230, "erratic": 230, "flee": 0 }
+const AGGRO := { "chase": 300, "charge": 380, "flank": 320, "kite": 380, "ranged": 380, "burrow": 240, "guard": 270, "summon": 320, "swarm": 290, "erratic": 290, "flee": 0 }
 
 
 static func init_ai(e) -> void:
@@ -36,7 +36,7 @@ static func strike(e, mult := 1.0) -> bool:
 	var p = GameState.player
 	if p.flying and not e.def.get("flying"): return false   # 하늘에 있는 놈은 발톱이 안 닿는다
 	var base: float = e.def.hit if e.def.get("hit") != null else e.def.damage * 2
-	var dmg: float = base * (1.5 if e.elite else 1.0) * (1.35 if e.frenzied else 1.0) * mult
+	var dmg: float = base * float(e.power) * (1.5 if e.elite else 1.0) * (1.35 if e.frenzied else 1.0) * mult
 	if Util.dist(e, p) < REACH + (16 if e.elite else 0) + e.ai.reach:
 		p.take_damage(dmg)
 		return true
@@ -155,7 +155,7 @@ static func flank(e, dt: float, d: float, speed: float) -> void:
 		a.t -= dt
 		a.dir = atan2(p.y - e.y, p.x - e.x)
 		if a.t <= 0:
-			a.s = "act"; a.t = 0.24; a.hit = false
+			a.s = "act"; a.t = 0.30; a.hit = false
 		return
 	if a.s == "recover":
 		a.t -= dt
@@ -195,7 +195,7 @@ static func kite(e, dt: float, d: float, speed: float) -> void:
 			a.shots -= 1; a.t = 0.16
 			var aim := atan2(p.y - 30 - (e.y - 16), p.x - e.x) + Util.rand_range(-0.06, 0.06)
 			var base: float = e.def.hit if e.def.get("hit") != null else e.def.damage
-			Projectile.add(Projectile.new(e.x, e.y - 16, aim, { faction = "ENEMY", element = e.def.get("element"), damage = base * (1.5 if e.elite else 1.0), speed = 330, life = 2.4, scale = 0.7 }))
+			Projectile.add(Projectile.new(e.x, e.y - 16, aim, { faction = "ENEMY", element = e.def.get("element"), damage = base * float(e.power) * (1.5 if e.elite else 1.0), speed = 330, life = 2.4, scale = 0.7 }))
 			Sfx.play("shoot")
 		if a.shots <= 0 and a.t <= 0:
 			a.s = "idle"; a.cd = Util.rand_range(1.8, 2.8)

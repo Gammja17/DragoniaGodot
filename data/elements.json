@@ -262,12 +262,23 @@
     "name": "감전",
     "mult": 1.6,
     "chain": 2
+   },
+   "SLOW": {
+    "name": "과부하",
+    "mult": 1.35,
+    "chain": 1
    }
   },
   "ICE": {
    "WET": {
     "name": "빙결",
     "stun": 1.6,
+    "clear": true
+   },
+   "BURN": {
+    "name": "급랭",
+    "mult": 1.5,
+    "stun": 0.8,
     "clear": true
    }
   },
@@ -277,6 +288,11 @@
     "mult": 1.4,
     "burn": 3,
     "spread": 140,
+    "clear": true
+   },
+   "SLOW": {
+    "name": "열충격",
+    "mult": 1.6,
     "clear": true
    }
   },

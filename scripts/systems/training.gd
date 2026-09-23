@@ -10,7 +10,7 @@ class_name Training
 
 # 여덟 번의 기본기는 스승의 일정 안에 날짜가 박혀 있다: n번째 기본기는 일과를 이만큼 받은 뒤에야 나온다.
 # 그날이 와도 레벨이 모자라면 다른 일과로 넘어가고, 레벨이 차는 대로 바로 다음 날 나온다.
-const LESSON_DAYS := [0, 2, 4, 6, 9, 12, 15, 18]
+const LESSON_DAYS := [0, 1, 2, 4, 6, 8, 10, 12]   # 하루가 길어진 만큼 (DAY_LENGTH 360)
 
 static var _shown := ""
 
@@ -48,7 +48,7 @@ static func _choose():
 	# 어제 습격을 막았거나 날이 궂으면 쉬어 간다
 	var rough: bool = GameState.story.get("yesterday", {}).get("raid", false) or ["RAIN", "SNOW"].has(GameState.weather.type)
 	if rough and last != "REST" and _next_rest(): return "REST"
-	if can_drill and last != "DRILL": return "DRILL"
+	if can_drill and (last != "DRILL" or L < 3): return "DRILL"   # 처음 세 기본기는 이어서 배워도 된다
 
 	var others := ["HUNT_CLEAN"]
 	if _next_trip(): others.append("TRIP")

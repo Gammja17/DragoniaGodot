@@ -7,7 +7,7 @@ const OPTION := preload("res://scenes/ui/dialogue_option.tscn")
 const TIERS := ["낯선 사이", "아는 사이", "친구", "절친"]
 const SEL_STYLE_BG := Color(1, 216 / 255.0, 74 / 255.0, 0.16)
 const TYPE_SPEED := 125.0          # 평소 글자 찍는 빠르기 (초당 글자)
-const CINE_SPEED := 52.0           # 컷씬에서는 말하듯 천천히
+const CINE_SPEED := 64.0           # 컷씬에서는 말하듯 조금 천천히
 ## 컷씬에서 문장 부호를 만나면 한 박자 쉰다 (초)
 const PAUSES := { ".": 0.2, "…": 0.28, "!": 0.18, "?": 0.2, ",": 0.08, "—": 0.14 }
 const NARRATION_COLOR := Color("#cfc2a4")   # 해설(내 속말·장면 묘사)은 이름표 없이 바랜 금빛으로

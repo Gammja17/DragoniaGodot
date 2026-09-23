@@ -54,6 +54,16 @@ var _cur_pose := {}           # 이번 프레임의 몸 자리 (테두리와 몸
 
 
 ## elite: 정예 — 크고 단단하고 아프지만 보상이 두둑하다
+## 땅마다 적의 세기. 체력은 그대로 곱하고, 때리는 힘은 절반만큼 곱한다 (굴은 입구가 있는 지도를 따른다)
+const MAP_POWER := { "SOUTH_ROAD": 1.35, "HOLLOW": 1.25, "HOLLOW_DEEP": 1.6, "MORGATH_LAIR": 1.6,
+	"JUNGLE": 1.8, "JUNGLE_DEEP": 2.0, "ZALGORA_LAIR": 2.0, "SKY_RUINS": 1.9, "ROOTVALE": 1.8,
+	"SNOW_ROAD": 2.0, "SNOW_RIDGE": 2.2, "GLACIA_LAIR": 2.2, "DESERT": 2.2, "DESERT_BONES": 2.4,
+	"BASIL_LAIR": 2.4, "STONEBACK": 2.2, "ASH_CITY": 2.4, "AUTUMN": 2.4, "VOLCANO": 2.6, "VOLCANO_PATH": 2.7, "IGNAR_LAIR": 2.7 }
+var power := 1.0
+
+static func map_power() -> float: return MAP_POWER.get(GameState.map_id, 1.0)
+
+
 static func make(px: float, py: float, t: String, is_elite := false) -> Enemy:
 	var e := Enemy.new()
 	e.x = px; e.y = py
@@ -62,6 +72,9 @@ static func make(px: float, py: float, t: String, is_elite := false) -> Enemy:
 	e.elite = is_elite
 	if is_elite: e.affix = _roll_affix(e.def)
 	e.max_hp = e.def.hp * (2.2 if is_elite else 1.0) * (0.8 if e.affix and e.affix.id == "SPLIT" else 1.0)
+	var k := map_power() if t != "DUMMY" else 1.0
+	e.max_hp *= k
+	e.power = 1.0 + (k - 1.0) * 0.45
 	e.hp = e.max_hp
 	EnemyAI.init_ai(e)
 	e.name = "Enemy_%s_%d" % [t, e.get_instance_id()]
@@ -155,7 +168,7 @@ func die() -> void:
 		for side in [-1, 1]:
 			var c := Enemy.make(x + side * 34, y + 8, type, false)
 			c.split_child = true; c.aggro = true
-			c.max_hp = roundf(def.hp * 0.35); c.hp = c.max_hp
+			c.max_hp = roundf(def.hp * 0.35 * map_power()); c.hp = c.max_hp; c.power = power
 			World.add_entity("enemies", c)
 			Particles.burst(c.x, c.y, def.color, 0.6, 6)
 	# 몸이 가로 띠로 쪼개져 흩날린다
@@ -165,10 +178,13 @@ func die() -> void:
 	var bonus := 3 if elite else 1
 	GameState.player.gain_xp(def.xp * bonus * NightEvents.xp_mult())
 	GameState.stats.kills[type] = GameState.stats.kills.get(type, 0) + 1
-	if elite and randf() < 0.3:
+	if elite and not GameState.stats.get("eliteOffer"):
+		GameState.stats.eliteOffer = true   # 처음 쓰러뜨린 우두머리: 유물을 셋 중 하나 고른다 (첫 시간에 고를 거리가 없던 것)
+		RelicOffer.offer("처음 쓰러뜨린 우두머리에게서")
+	elif elite and randf() < 0.3:
 		var id = Relics.random_relic()
 		if id: Relics.grant(id, x, y)
-	Particles.burst(x, y, def.color, 1.4 if elite else 1.0, 16 if elite else 10)
+	Particles.burst(x, y, def.color, 0.8 if elite else 0.6, 18 if elite else 12, 380.0 if elite else 300.0)
 	Vfx.spawn_effect("PUFF" if def.get("flying") else "SMOKE", x, y - 16, { size = 1.8 if elite else 1.0 })
 	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 1.2 if elite else 0.6, color = def.color })
 	Sfx.play("dieBig" if elite else "die")

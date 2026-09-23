@@ -160,7 +160,9 @@ func die() -> void:
 	var bonus := 3 if elite else 1
 	GameState.player.gain_xp(def.xp * bonus * NightEvents.xp_mult())
 	GameState.stats.kills[type] = GameState.stats.kills.get(type, 0) + 1
-	# 정예가 떨어뜨리는 유물(30%)은 유물을 옮길 때
+	if elite and randf() < 0.3:
+		var id = Relics.random_relic()
+		if id: Relics.grant(id, x, y)
 	Particles.burst(x, y, def.color, 1.4 if elite else 1.0, 16 if elite else 10)
 	Vfx.spawn_effect("PUFF" if def.get("flying") else "SMOKE", x, y - 16, { size = 1.8 if elite else 1.0 })
 	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 1.2 if elite else 0.6, color = def.color })

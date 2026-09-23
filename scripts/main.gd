@@ -40,7 +40,8 @@ func _process(delta: float) -> void:
 func _update(dt: float) -> void:
 	var E: Dictionary = GameState.entities
 	GameState.game_time += dt
-	# 습격·길목 습격, 조명·밤 이벤트·날씨는 그 단계에서
+	if not GameState.dungeon: Raid.update(dt)   # 굴 속에서는 마을 습격이 없다. 길목 습격(베르단)은 이야기를 옮길 때
+	# 조명·밤 이벤트·날씨는 그 단계에서
 	if GameState.rally > 0: GameState.rally -= dt
 	Flow.update(dt)
 	GameState.player.update(dt)
@@ -63,7 +64,7 @@ func _mark_fade_targets() -> void:
 	var near := func(e) -> bool:
 		return e.x + 420 > camera.cam_x and e.x - 420 < camera.cam_x + camera.w \
 			and e.y + 420 > camera.cam_y and e.y - 420 < camera.cam_y + camera.h
-	for e in E.npcs + E.enemies + E.items + [GameState.player]:
+	for e in E.npcs + E.enemies + E.humans + E.bosses + E.items + [GameState.player]:
 		if not e.get("is_hidden") and near.call(e): list.append(e)
 	for p in E.props:
 		if (p.type == "CHEST" and not p.opened) or (p.type == "BERRY" and p.ripe):

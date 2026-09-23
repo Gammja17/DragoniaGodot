@@ -3,7 +3,7 @@ extends Node2D
 ## 노드가 아닌 가벼운 개체들(탄·효과·빛 알갱이)을 한꺼번에 그리는 층.
 ## 2D판은 한 캔버스에 그리며 그때그때 섞기('lighter')를 바꿨는데, Godot 는 노드마다 섞기가 하나라
 ## 빛을 더하는 것과 그냥 얹는 것을 층을 나눠 그린다. 층 순서는 2D판 render() 의 순서를 따른다:
-##   바닥 예고(TELLS) → [y 정렬 개체] → 탄 → 효과 → 빛 알갱이 → 조준점
+##   바닥 장판·예고(TELLS) → [y 정렬 개체] → 탄 → 효과 → 빛 알갱이 → 조준점
 
 enum Mode { TELLS, BULLETS, BULLETS_ADD, EFFECTS, EFFECTS_ADD, PARTICLES, CROSSHAIR }
 
@@ -26,6 +26,7 @@ func _draw() -> void:
 	if E.is_empty(): return
 	match mode:
 		Mode.TELLS:
+			for h in E.hazards: h.draw(self)   # 바닥 장판은 개체들 밑에
 			for e in E.enemies: EnemyAI.draw_tell(self, e)
 		Mode.BULLETS, Mode.BULLETS_ADD:
 			var add := mode == Mode.BULLETS_ADD

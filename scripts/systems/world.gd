@@ -177,7 +177,17 @@ static func _populate(id: String) -> Dictionary:
 				npc.home_x = pos.x; npc.home_y = pos.y
 				npc.is_hidden = false; npc.remove = false
 				pools.npcs.append(npc)
-			# "BOSS", "NEST" 는 보스·둥지를 옮길 때
+			"BOSS":
+				if GameState.bossesDefeated.get(f.id): continue
+				if f.id == "IGNAR" and GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): continue
+				# 사건을 겪기 전에는 둥지가 비어 있다. 지나가다 덜컥 마주치지 않게
+				var need = Data.get_module("enemies").BOSSES.get(f.id, {}).get("needs")
+				if need and not GameState.story.get("events", []).has(need): continue
+				var boss := Boss.make(f.id)
+				boss.x = pos.x; boss.y = pos.y
+				boss.home = pos
+				pools.bosses.append(boss)
+			# "NEST" 는 둥지를 옮길 때
 
 	# 3-2) 이 지도에 입구가 있는 굴들
 	for den_id in dens():

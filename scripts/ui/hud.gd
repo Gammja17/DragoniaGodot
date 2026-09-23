@@ -11,7 +11,16 @@ const MAX_TOASTS := 4
 @onready var _region_sub: Label = $RegionBanner/Sub
 @onready var _toasts: VBoxContainer = $ToastBox
 
+@onready var _boss_bar: Control = $BossBar
+@onready var _boss_name: Label = $BossBar/Name
+@onready var _boss_track: Control = $BossBar/Track
+@onready var _boss_fill: Control = $BossBar/Track/Fill
+
+@onready var _raid: Label = $RaidWarning
+
 var _banner_tween: Tween
+var _boss_ratio := 1.0
+var _raid_until := 0
 
 static var current: Hud
 
@@ -52,6 +61,33 @@ func show_region_banner(name_text: String, sub := "") -> void:
 
 func _banner_top() -> float:
 	return get_viewport().get_visible_rect().size.y * 0.12
+
+
+## 보스 체력바. name 이 null 이면 감춘다. 너비는 0.15초에 걸쳐 따라간다 (2D판 transition)
+func set_boss_bar(name_text, ratio := 0.0) -> void:
+	if name_text == null:
+		_boss_bar.visible = false
+		return
+	_boss_bar.visible = true
+	_boss_name.text = name_text
+	_boss_ratio = maxf(0, ratio)
+
+
+## 습격 경고. 3.5초 동안 크게 떨며 떠 있다
+func show_raid_warning(text: String) -> void:
+	_raid.text = text
+	_raid.visible = true
+	_raid_until = Time.get_ticks_msec() + 3500
+
+
+func _process(dt: float) -> void:
+	if _raid.visible:
+		if Time.get_ticks_msec() > _raid_until: _raid.visible = false
+		# 좌우로 흔들린다 (2D판 shake 0.5초 반복: 화면 폭의 ±1.5%)
+		else: _raid.position.x = sin(Time.get_ticks_msec() / 500.0 * TAU) * get_viewport().get_visible_rect().size.x * 0.015
+	if not _boss_bar.visible: return
+	var inner := _boss_track.size.x - 4
+	_boss_fill.size.x = move_toward(_boss_fill.size.x, inner * _boss_ratio, inner * dt / 0.15)
 
 
 ## 알림은 화면 위쪽 가운데에 차곡차곡 쌓인다. 한 번에 최대 4개, 3.4초

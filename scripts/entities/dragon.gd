@@ -2,9 +2,9 @@ class_name Dragon
 extends Node2D
 ## 2D판 entities/Dragon.js. 플레이어와 NPC 공용.
 ##
-## 지금까지 옮긴 것: 걷기·달리기·대시(간발·물어뜯기), 숨결 쏘기와 조준, 맞기·쓰러지기, 경험치·레벨,
-## 마을 용의 어슬렁거림과 혼잣말, 그리기(이름표·말풍선·장신구·머리 위 체력바).
-## 스킬·필살기·비행·상호작용·마을 용의 전투와 따라다니기는 그 시스템을 옮기는 단계에서 같은 자리에 붙인다.
+## 지금까지 옮긴 것: 걷기·달리기·대시(간발·물어뜯기), 숨결 쏘기와 조준, 스킬, 필살기, 맞기·쓰러지기, 경험치·레벨,
+## 마을 용의 어슬렁거림·혼잣말·전투·따라다니기, 그리기(이름표·말풍선·장신구·머리 위 체력바).
+## 비행·상호작용(말 걸기·줍기·낚시)·승급은 그 시스템을 옮기는 단계에서 같은 자리에 붙인다.
 ##
 ## 좌표는 2D판처럼 x, y(발 위치)로 다룬다. 노드 위치가 곧 발 위치라 부모의 y 정렬이 앞뒤를 가른다.
 
@@ -64,8 +64,13 @@ var elements := ["FIRE"]
 var element := "FIRE"
 var skills := []             # 배운 스킬 id
 var slots := { Q = null, F = null, R = null }
-var cooldowns := {}
+var cooldowns := {}          # 스킬 id → 남은 대기 시간
+var cd_max := {}             # 스킬 id → 그때 걸린 전체 대기 시간 (HUD 의 대기 표시용)
+var channels := []           # 진행 중인 스킬 (systems/skills)
+var tail_twin := false
+var unlock_timer := 0.0
 var ult := 0.0               # 필살기 게이지 0~100 (숨결이 셋 모이면 찬다)
+var beam = null              # 삼원 융합 브레스 { time, angle, tick }
 var fire_timer := 0.0        # 다음 브레스까지
 var slow_timer := 0.0        # 빙판·얼음·그물에 느려진 시간
 var gale := 0.0              # 성장 트리 '질풍': 대시 뒤 연사가 빨라지는 남은 시간
@@ -73,6 +78,7 @@ var fury := 0.0              # 포효 뒤 분노 시간
 var guard := 0.0             # 강철 비늘 남은 시간
 var feast := 0.0
 var dash_edge := false       # 이번 대시에서 간발을 이미 냈나
+var dash_trail := 0.0        # 유물 '불씨 발자국': 다음 불길까지
 var invisible := false
 var status := {}             # 대련 상대가 되면 상태 이상도 받는다
 var status_immune := false
@@ -94,6 +100,8 @@ var doing = null          # 일과에서 지금 하는 일 (systems/routine)
 var job = null
 var walk_to = null        # 일과대로 걸어가는 중이면 { x, y }
 var home_map = null
+var atk_timer := 0.0      # NPC 전투: 다음 사격까지
+var passive := false      # 오늘은 구경만 하기로 한 스승 (수련)
 var remove := false
 var is_hidden := false
 
@@ -193,21 +201,28 @@ func _update_player(dt: float) -> void:
 	var hunger_slow: float = [1.0, 0.86, 0.7][hunger_level]
 	var base_speed: float = WALK_SPEED * stage.speed * (1 + 0.04 * GameState.upgrades.get("spd", 0)) * (1 + Growth.stat("speed")) \
 		* (1.08 if Relics.has("WIND_FEATHER") else 1.0) * (0.55 if slow_timer > 0 else 1.0) * hunger_slow
+	var locked := channels.any(func(c): return c.get("lock"))   # 급강하 중엔 조작 불가
 	# Shift 를 탁 누르면 대시(잠깐 무적), 계속 누르고 있으면 달리기
-	if GameInput.pressed("sprint") and ax != Vector2.ZERO and dash_cd <= 0:
+	if locked: pass   # 스킬이 몸을 움직이는 중
+	elif GameInput.pressed("sprint") and ax != Vector2.ZERO and dash_cd <= 0:
 		dash_dir = ax.normalized()
 		dash_time = DASH_TIME; dash_cd = DASH_COOLDOWN * (1 - minf(0.6, Growth.stat("dash"))); invuln = DASH_TIME + 0.12
-		dash_edge = false
+		dash_edge = false; dash_trail = 0.0
 		if Relics.resonates("wing"): dash_cd *= 0.75
 		if Growth.has_perk("GALE"): gale = 3.0   # 성장 트리 '질풍'
 		Sfx.play("dash")
 		Vfx.spawn_effect("PUFF", x, y - 6)
-	if dash_time > 0:
+	if locked: pass
+	elif dash_time > 0:
 		if dash_time > DASH_TIME - 0.16: Flow.try_perfect_dodge(self)   # 대시 첫머리에 스친 것만 간발로 친다
 		dash_time -= dt
 		move_by(dash_dir.x, dash_dir.y, base_speed * DASH_MULT, dt)
 		Flow.try_bite(self)
-		# 유물 '불씨 발자국'(대시 자리에 남는 불길)은 장판을 옮길 때
+		# 유물 '불씨 발자국': 대시가 지나간 자리에 불길이 남는다
+		dash_trail -= dt
+		if Relics.has("EMBER_TRAIL") and dash_trail <= 0:
+			dash_trail = 0.06
+			Hazard.add(x, y, { faction = "ALLY", r = 60, delay = 0.05, linger = 2.2, damage = 4 * damage_mult, dps = 9 * damage_mult, color = "#ff7a2a", effect = "FLAMES", effectSize = 0.9, status = { type = "BURN", duration = 2 } })
 		Particles.burst(x, y - 30 * stage.scale, colors.get("body", "#ffffff"), 0.35)
 	elif ax != Vector2.ZERO:
 		move_by(ax.x, ax.y, base_speed * (SPRINT_MULT if GameInput.down("sprint") else 1.0) * (1.45 if flying else 1.0), dt)
@@ -215,8 +230,11 @@ func _update_player(dt: float) -> void:
 	else:
 		hunger -= 0.08 * dt * hunger_mult * (3 if flying else 1)
 	if Relics.has("LIFE_STONE"): hp = minf(max_hp, hp + 1.5 * dt)
+	if Relics.has("VOW_RING") and GameState.partner and GameState.partner.state != "WANDER" and Util.dist(self, GameState.partner) < 420: hp = minf(max_hp, hp + 2 * dt)
 	hunger = maxf(0, hunger)
 
+	for k in cooldowns: cooldowns[k] = maxf(0, cooldowns[k] - dt * Flow.cooldown_rate())   # 기세가 절정이면 기술이 빨리 돌아온다
+	Skills.update_channels(self, dt)
 	# 숨결 바꾸기 (1~6)
 	var all_els: Array = Data.get_module("elements").ELEMENTS.keys()
 	for i in all_els.size():
@@ -225,16 +243,101 @@ func _update_player(dt: float) -> void:
 	# 마우스 왼쪽 버튼을 꾹 누르고 있으면 연사 (터치의 [불] 버튼은 터치 조작을 옮길 때)
 	var firing := GameInput.down("attack") or GameInput.mouse_down
 	if firing and fire_timer <= 0: attack()
+	for slot in Data.get_module("skills").SKILL_SLOTS:
+		if GameInput.pressed("skill" + slot): Skills.use_slot(self, slot)
+	if GameInput.pressed("ultimate"): use_ultimate()
+	if GameInput.pressed("nextElement"): cycle_element()   # 터치의 [속성] 버튼
+	if beam: _update_beam(dt)
 
 	# 보는 방향은 프레임 끝에 딱 한 번, 아래 순서대로 정한다.
 	#   1) 쏘는 중이면 겨눈 쪽   — 숨결이 엉뚱한 쪽에서 나가지 않게
 	#   2) 걷는 중이면 가는 쪽   — 방향키로도 자연스럽게 몸을 튼다
 	#   3) 가만히 서 있으면 커서 쪽
-	var look = null
-	if firing: look = aim_angle().angle
-	elif ax != Vector2.ZERO: look = atan2(ax.y, ax.x)
-	elif GameInput.mouse_inside: look = aim_angle().angle
-	if look != null: facing = facing_from_vector(cos(look), sin(look), facing)
+	if not locked:
+		var look = null
+		if firing: look = aim_angle().angle
+		elif ax != Vector2.ZERO: look = atan2(ax.y, ax.x)
+		elif GameInput.mouse_inside: look = aim_angle().angle
+		if look != null: facing = facing_from_vector(cos(look), sin(look), facing)
+
+	# 스스로 깨우치는 스킬·각성은 1초에 한 번만 살펴본다
+	unlock_timer -= dt
+	if unlock_timer <= 0:
+		unlock_timer = 1.0
+		Skills.check_unlocks()
+
+
+## 땅을 겨누는 스킬(운석·급강하)이 떨어질 자리. 커서가 적 위면 그 적, 아니면 커서 자리(최대 사거리까지)
+func aim_point(max_range: float) -> Vector2:
+	var aim := aim_angle()
+	if aim.target: return Vector2(aim.target.x, aim.target.y)
+	if GameInput.mouse_inside:
+		var c: Vector2 = GameCamera.current.screen_to_world(GameInput.mouse_pos)
+		var d := Vector2(c.x - x, c.y - y).length()
+		if d == 0: d = 1
+		var k := minf(1, max_range / d)
+		return Vector2(x + (c.x - x) * k, y + (c.y - y) * k)
+	return Vector2(x + cos(aim.angle) * max_range, y + sin(aim.angle) * max_range)
+
+
+func cycle_element() -> void:
+	var have: Array = Data.get_module("elements").ELEMENTS.keys().filter(func(el): return elements.has(el))
+	if have.size() < 2: return
+	element = have[(have.find(element) + 1) % have.size()]
+	Hud.pop("숨결: %s" % Data.get_module("elements").ELEMENTS[element].name, "🔥")
+
+
+## 새 숨결을 품는다
+func unlock_element(id: String) -> void:
+	if elements.has(id): return
+	elements.append(id)
+	element = id
+	var el: Dictionary = Data.get_module("elements").ELEMENTS[id]
+	Hud.pop("새 숨결 [%s] 획득! %s ([%s]번 키)" % [el.name, el.desc, el.key], "✨")
+	var gift = Data.get_module("skills").ELEMENT_SKILLS.get(id)
+	if is_player and gift: Skills.learn(gift)   # 맡겨 받은 숨결은 기술도 같이 온다
+	# 숨결이 셋이 되는 순간 필살기가 열린다
+	if elements.size() == 3: Hud.pop("품은 숨결이 셋이 되었다. 적을 맞혀 게이지를 채우면 [X]로 융합 브레스를 쓸 수 있다.", "🌈")
+
+
+## 필살기: 삼원 융합 브레스. 세 숨결을 하나로 뭉쳐 2.6초 동안 앞을 쓸어버린다
+func use_ultimate() -> void:
+	if elements.size() < 3: return
+	if ult < 100:
+		Hud.pop("필살기 게이지 %d%%. 적을 맞혀 채우세요." % floori(ult), "🌈")
+		return
+	ult = 0
+	beam = { time = 2.6, angle = aim_angle().angle, tick = 0.0 }
+	invuln = maxf(invuln, 0.6)
+	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 3.5, color = "#ffffff" })
+	Vfx.spawn_effect("RUNE", x, y, { size = 2.6, color = "#ffffff" })
+	Vfx.spawn_effect("BLOOM", x, y - 40, { size = 1.65, color = "#fff2b0" })
+	Feedback.flash(0.3, Color.WHITE)
+	Feedback.hit_stop(0.1); GameCamera.current.shake(14); Sfx.play("evolve")
+
+
+func _update_beam(dt: float) -> void:
+	var b: Dictionary = beam
+	var E: Dictionary = GameState.entities
+	b.time -= dt; b.tick -= dt
+	# 빔은 바라보는 쪽으로 천천히 따라 돈다
+	var da: float = aim_angle().angle - b.angle
+	da = atan2(sin(da), cos(da))
+	b.angle += clampf(da, -1.4 * dt, 1.4 * dt)
+	if b.tick <= 0:
+		b.tick = 0.1
+		var sc: float = stage.scale
+		var ox := x
+		var oy := y - 40 * sc
+		for e in E.enemies + E.humans + E.bosses:
+			if e.get("awake") == false: continue
+			var t := clampf((e.x - ox) * cos(b.angle) + (e.y - 20 - oy) * sin(b.angle), 0, 950)
+			if Vector2(e.x - (ox + cos(b.angle) * t), e.y - 20 - (oy + sin(b.angle) * t)).length() > 75 + (50 if e.def.get("scale") else 0): continue
+			e.take_damage(9 * damage_mult)
+			Status.apply(e, "BURN", 3); Status.apply(e, "SLOW", 2)
+			if randf() < 0.3: Vfx.spawn_effect(["FIRE_HIT", "ICE_HIT", "THUNDER_HIT"].pick_random(), e.x, e.y - 20, { size = 0.9 })
+		GameCamera.current.shake(3); Sfx.play(["flame", "freeze", "zap"].pick_random())
+	if b.time <= 0: beam = null
 
 
 ## 0 배부름 · 1 출출함(조금 느려짐) · 2 굶주림(많이 느려짐)
@@ -289,7 +392,11 @@ func take_damage(dmg: float, _silent := false, _from = null) -> void:
 		if Relics.resonates("scale"): dmg *= 0.92
 		if dmg >= 3:
 			Flow.on_player_hurt()   # 기세가 꺾인다
-			# 유물 '가시 껍질'(되돌려 주기)은 유물을 옮길 때
+			if Relics.has("THORN_SHELL"):   # 맞은 만큼 둘레에 되돌려 주고 밀어낸다
+				for e in GameState.entities.enemies + GameState.entities.humans:
+					if e.remove or Util.dist(e, self) > 150: continue
+					e.take_damage(dmg * 1.5 + 6, false, self)
+				Vfx.spawn_effect("SHOCKWAVE", x, y - 20, { size = 1.2, color = "#9fe07a" })
 	var was_safe := is_player and hp > max_hp * 0.2
 	hp -= dmg
 	# 위기를 몇 번 넘겼는지는 '허물 벗기'를 스스로 깨우치는 조건이 된다
@@ -311,7 +418,14 @@ func take_damage(dmg: float, _silent := false, _from = null) -> void:
 		say(talk.down if talk and talk.get("down") else "으윽…")
 		if config.get("fixed"): Hud.pop("%s(이)가 쓰러졌습니다! 잠시 후 일어납니다." % Names.npc(config.name), "💫")
 	if hp <= 0 and is_player:
-		# 유물 '마지막 불씨'는 장판을 옮길 때. 성장 트리 '불사의 심장': 하루 한 번은 쓰러지지 않고 버틴다
+		# 유물 '마지막 불씨': 하루 한 번, 쓰러질 일격을 버티고 둘레를 불태운다
+		if Relics.has("LAST_EMBER") and GameState.emberDay != GameState.day:
+			GameState.emberDay = GameState.day
+			hp = 1; invuln = 3
+			Hazard.add(x, y, { faction = "ALLY", r = 220, delay = 0.1, linger = 0, damage = 60 * damage_mult, color = "#ff7a2a", effect = "FIRE_HIT", effectSize = 2.4, sound = "boom", shake = 10, status = { type = "BURN", duration = 4 } })
+			Hud.pop("마지막 불씨가 타올랐다! 체력 1로 버텼습니다 (하루 한 번)", "🔥")
+			return
+		# 성장 트리 '불사의 심장': 하루 한 번은 쓰러지지 않고 버틴다
 		if Growth.has_perk("UNDYING") and GameState.revivedDay != GameState.day:
 			GameState.revivedDay = GameState.day
 			hp = 1; invuln = 3
@@ -409,8 +523,55 @@ func _update_npc(dt: float) -> void:
 	if walk_to:   # 일과대로 걸어가는 중 (systems/routine 이 옮긴다)
 		facing = facing_from_vector(walk_to.x - x, walk_to.y - y, facing)
 		return
-	# 마을 용의 전투와 짝·동료의 따라다니기는 전투·관계를 옮길 때 붙인다
-	if state == "WANDER": _update_wander(dt)
+	# 대련·술래잡기 중의 움직임은 마을 용과의 놀이를 옮길 때
+	var following := state != "WANDER"
+	var busy: bool = (config.get("fixed") or following) and _fight(dt, following)
+	if following: _update_partner(dt, busy)
+	elif not busy: _update_wander(dt)
+
+
+## 마을 용·짝·동료의 전투. 싸우는 중이면 true
+func _fight(dt: float, following: bool) -> bool:
+	var E: Dictionary = GameState.entities
+	if passive: return false   # 오늘은 구경만 하기로 한 스승 (수련)
+	var foe = null
+	var best := 460.0
+	for e in E.humans + E.enemies + E.bosses:
+		if e.get("awake") == false or e.type == "DUMMY": continue   # 허수아비는 제자의 몫이다
+		var d := Util.dist(self, e)
+		if d < best:
+			best = d; foe = e
+	if foe == null: return false
+	# 따라다니는 중이 아니면 적당한 거리를 유지하며 맞선다
+	if not following:
+		var a := atan2(foe.y - y, foe.x - x)
+		var mv := a if best > 280 else a + PI if best < 170 else a + PI / 2
+		move_by(cos(mv), sin(mv), 130, dt)
+	facing = facing_from_vector(foe.x - x, foe.y - y, facing)
+	atk_timer -= dt
+	if atk_timer <= 0 and best < 400:
+		var el: String = config.get("element", "FIRE") if config.get("element") else "FIRE"
+		var aim := atan2(foe.y - 20 - (y - 40), foe.x - x)
+		var dmg: float = config.get("power", 8) * (1.5 if GameState.rally > 0 else 1.0) \
+			* (1.5 if Relics.has("TWIN_SOUL") and (self == GameState.partner or self == GameState.companion) else 1.0) \
+			* (1.3 if Relics.has("VOW_RING") and self == GameState.partner else 1.0) \
+			* (1.3 if Relics.has("CAPTAIN_HORN") and GameState.raid.active else 1.0)
+		Projectile.add(Projectile.new(x, y - 40, aim, { faction = "ALLY", element = el, damage = dmg }))
+		animator.play("attack")
+		atk_timer = 1.25
+		var talk = Data.get_module("npcTalk").NPC_TALK.get(config.get("name"))
+		if talk and talk.get("battle") and randf() < 0.18: say(talk.battle.pick_random())
+	return true
+
+
+## 짝·동료: 플레이어를 따라다닌다. 싸우는 중엔 조금 더 떨어져도 봐준다
+func _update_partner(dt: float, fighting := false) -> void:
+	var p = GameState.player
+	if Util.dist(self, p) > (260 if fighting else 110):
+		# 싸우는 중이라면 몸은 플레이어를 쫓아가도 얼굴은 적에게 둔다
+		var look := facing
+		move_by(p.x - x, p.y - y, 240, dt)
+		if fighting: facing = look
 
 
 ## 혼잣말 한 줄. 때(밤·비)와 성격을 섞어 고른다
@@ -472,6 +633,7 @@ static func outline_for(f: Dictionary, player: bool) -> Dictionary:
 func _draw() -> void:
 	if is_hidden: return   # 프롤로그에서 떨어지는 동안: 용이 아니라 빛으로만 보인다
 	var sc := _draw_scale()
+	if beam: _draw_beam()
 	# 고룡의 기운: 발밑의 넓은 빛과, 둘레를 도는 불티 셋 (마을의 고룡들도 같다)
 	if stage_index >= 3 or config.get("elder"):
 		var ssc: float = stage.scale
@@ -518,6 +680,22 @@ func _draw_player_bar() -> void:
 	if r <= 0.3:
 		draw_rect(Rect2(-W / 2 - 2, -H - 2, W + 4, H + 4), Color(1, 90 / 255.0, 77 / 255.0, 0.5 + sin(GameState.game_time * 8) * 0.4), false, 2)
 	draw_set_transform(Vector2.ZERO)
+
+
+## 삼원 융합 브레스: 불·얼음·번개 세 가닥이 꼬인 빛줄기.
+## 2D판은 더하기('lighter')로 그린다. 한 노드 안에서 섞기를 바꿀 수 없어 반투명으로 얹는다 (조명을 옮길 때 더하기 층으로)
+func _draw_beam() -> void:
+	var b: Dictionary = beam
+	var sc: float = stage.scale
+	var o := Vector2(0, -40 * sc)
+	var k := minf(1, b.time * 3)
+	var n := Vector2(-sin(b.angle), cos(b.angle))
+	var dir := Vector2(cos(b.angle), sin(b.angle))
+	var strands := [[Color("#ff7a2a"), -1], [Color("#7fd4ff"), 0], [Color("#ffe27a"), 1]]
+	for i in 3:
+		var wob := sin(GameState.game_time * 22 + i * 2) * 14
+		draw_line(o, o + dir * 950 + n * (strands[i][1] * 30 + wob), Color(strands[i][0], 0.5), 46 * k, true)
+	draw_line(o, o + dir * 950, Color(1, 1, 1, 0.95), 18 * k, true)
 
 
 func _draw_shadow(r: float, alpha: float) -> void:

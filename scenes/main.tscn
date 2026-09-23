@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/world/terrain.gd" id="2"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://scripts/render/weather_view.gd" id="11"]
 [ext_resource type="Script" path="res://scripts/render/post_fx.gd" id="12"]
 [ext_resource type="Shader" path="res://assets/shaders/postfx.gdshader" id="13"]
+[ext_resource type="PackedScene" path="res://scenes/ui/cinema_overlay.tscn" id="14"]
 
 [sub_resource type="CanvasItemMaterial" id="add"]
 blend_mode = 1
@@ -136,5 +137,7 @@ layer = 6
 
 [node name="CutsceneView" type="Node2D" parent="CutsceneLayer"]
 script = ExtResource("9")
+
+[node name="CinemaOverlay" parent="CutsceneLayer" instance=ExtResource("14")]
 
 [node name="Hud" parent="." instance=ExtResource("5")]

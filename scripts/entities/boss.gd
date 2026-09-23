@@ -49,6 +49,9 @@ var beam = null              # { time, angle, spin, warm }
 var burrow = null            # { time, erupting }
 var blizzard = null          # { time, angle, timer }
 var type := "BOSS"
+var dying := 0.0             # 쓰러지는 중: 빛가루로 흩어지는 남은 시간 (끝나면 보상과 이야기)
+const DYING_TIME := 1.8
+static var _introduced := {} # 이번 판에 등장 장면을 본 보스
 
 var _fx: Node2D
 var _body: Node2D
@@ -109,11 +112,19 @@ func update(dt: float) -> void:
 			or (GameState.quests.active.has("m6") and not GameState.story.get("choices", {}).get("ev_ignar_meet")))
 		if d < WAKE_RANGE and not held:
 			awake = true
-			Hud.pop("%s, %s" % [def.name, def.title], "⚔️")
-			Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 3, color = _el_color() })
-			GameCamera.current.shake(10); Sfx.play("dieBig")
+			# 처음 만날 때는 장면으로 (카메라가 건너가고, 포효와 이름패). 다시 덤빌 때는 짧게
+			if not _introduced.has(id) and not GameState.isDialogueOpen:
+				_introduced[id] = true
+				BossShow.intro(self)
+			else:
+				Cutscene.show_card(def.name, def.title, 1.8)
+				Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 3, color = _el_color() })
+				GameCamera.current.shake(10); Sfx.play("roar")
 		animator.play_base("idle")
 		animator.update(dt)
+		return
+	if dying > 0:
+		_update_dying(dt)
 		return
 	if Util.dist(self, home) > LEASH_RANGE or d > LEASH_RANGE * 1.3:
 		reset()
@@ -179,7 +190,7 @@ func _enter_phase(i: int) -> void:
 	for b in GameState.entities.bullets:
 		if b.faction == "ENEMY": b.remove = true
 	if i == def.phases.size() - 1: phase2 = bool(def.get("glow", false))
-	Hud.pop("%s — %s" % [ph.name, ph.say] if ph.get("say") else ph.name, "⚔️")
+	BossShow.phase(self, ph)   # 세상이 잠깐 느려지고 보스의 한마디가 자막으로
 	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 3.5, color = _el_color() })
 	GameCamera.current.shake(12); Sfx.play("dieBig")
 	if ph.get("summon"): _summon(ph.summon)
@@ -374,7 +385,7 @@ func _update_blizzard(dt: float) -> void:
 
 
 func take_damage(dmg: float, silent := false, _from = null) -> void:
-	if not awake or is_hidden: return
+	if not awake or is_hidden or dying > 0: return
 	if opening: dmg *= 2   # 간발로 만든 빈틈
 	hp -= dmg
 	if not silent:
@@ -391,18 +402,46 @@ func take_damage(dmg: float, silent := false, _from = null) -> void:
 	die()
 
 
+## 쓰러진다: 세상이 느려지고 흰 빛 속에 무너진 뒤(_update_dying) 빛가루로 흩어진다. 보상과 이야기는 다 흩어진 뒤에
 func die() -> void:
-	remove = true
+	if dying > 0 or remove: return
+	dying = DYING_TIME
+	awake = true
+	charge = null; spiral = null; beam = null; burrow = null; blizzard = null
+	is_hidden = false
 	Hud.current.set_boss_bar(null)
-	GameState.bossesDefeated[id] = true
+	GameState.bossesDefeated[id] = true   # 흩어지는 동안 나가도 쓰러뜨린 것은 남는다
+	for b in GameState.entities.bullets:
+		if b.faction == "ENEMY": b.remove = true
+	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 4, color = "#fff2b0" })
+	Vfx.spawn_effect("CRIT_FLASH", x, y - 60, { size = 3 })
+	BossShow.finale(self)
+
+
+## 무너지는 동안: 몸이 떨리며 흐려지고, 빛가루가 솟는다. 다 흩어지면 보상을 남기고 사라진다
+func _update_dying(dt: float) -> void:
+	dying -= dt
+	var k := 1.0 - dying / DYING_TIME
+	hit_flash = 1.0 if fmod(k * 14, 2.0) < 1.0 else 0.0
+	squash = 0.4
+	animator.play_base("hit")
+	animator.update(dt)
+	if randf() < 0.7: Vfx.spawn_effect("SPARKLE", x + Util.rand_range(-70, 70) * def.scale, y - Util.rand_range(10, 130) * def.scale, { size = 1.3, color = "#fff2b0" })
+	if randf() < 0.25: Vfx.spawn_effect("SMOKE", x + Util.rand_range(-90, 90), y - Util.rand_range(0, 120), { size = 1.4 })
+	if dying > 0: return
+	_rewards()
+
+
+func _rewards() -> void:
+	remove = true
 	for i in 6: Vfx.spawn_effect("SMOKE", x + Util.rand_range(-90, 90), y - Util.rand_range(0, 140), { size = 1.6 })
 	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 4, color = "#fff2b0" })
 	Vfx.spawn_effect("RING", x, y - 60, { size = 2.6 })
 	Vfx.spawn_effect("STAR", x, y - 60, { size = 3 })
-	GameCamera.current.shake(18); Sfx.play("dieBig")
+	Vfx.spawn_effect("BLOOM", x, y - 60, { size = 2.4 })
+	GameCamera.current.shake(18); Sfx.play("boom")
 	for i in 5: World.add_entity("items", Item.make(x + Util.rand_range(-80, 80), y + Util.rand_range(-50, 50), "MEAT"))
 	World.add_entity("items", Item.make(x, y + 40, "GOLD", 80 + roundi(def.xp / 10.0)))
-	Hud.pop("%s 처치!" % def.name, "🏆")
 	var player = GameState.player
 	if def.get("unlock"): player.unlock_element(def.unlock)
 	var skill = Data.get_module("skills").BOSS_SKILLS.get(id)
@@ -418,7 +457,7 @@ func die() -> void:
 
 func _process(_dt: float) -> void:
 	_body.material.set_shader_parameter("m", Basis.from_scale(Vector3(2.2, 2.2, 2.2)) if hit_flash > 0 else Basis.IDENTITY)   # 맞으면 brightness(2.2)
-	_body.modulate.a = 1.0 if awake else 0.75
+	_body.modulate.a = (clampf(dying / DYING_TIME * 1.4, 0, 1) if dying > 0 else 1.0) if awake else 0.75
 	queue_redraw(); _fx.queue_redraw(); _body.queue_redraw(); _top.queue_redraw()
 
 

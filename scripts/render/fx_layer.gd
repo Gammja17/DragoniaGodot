@@ -48,8 +48,8 @@ func _draw() -> void:
 func _draw_crosshair() -> void:
 	var p = GameState.player
 	if not p or GameState.isDialogueOpen: return
-	# 터치에는 커서가 없다. 대신 자동 조준이 붙잡은 적을 괄호로 감싸 "여기로 나간다"를 보여 준다
-	if not GameInput.mouse_inside and not GameInput.touch: return
+	# 터치·게임패드에는 커서가 없다. 대신 자동 조준이 붙잡은 적을 괄호로 감싸 "여기로 나간다"를 보여 준다
+	if not GameInput.mouse_inside and not GameInput.touch and not GameInput.pad: return
 	var color := Color(Data.get_module("elements").ELEMENTS[p.element].color)
 	var aim: Dictionary = p.aim_angle()
 	var target = aim.target
@@ -62,6 +62,12 @@ func _draw_crosshair() -> void:
 		for s in [[-1, -1], [1, -1], [-1, 1], [1, 1]]:
 			draw_polyline(PackedVector2Array([Vector2(cx + s[0] * r, cy + s[1] * r - s[1] * arm), Vector2(cx + s[0] * r, cy + s[1] * r),
 				Vector2(cx + s[0] * r - s[0] * arm, cy + s[1] * r)]), c, 2)
+	elif GameInput.pad:
+		# 게임패드: 오른쪽 스틱을 민 쪽으로 조금 떨어진 곳에 작은 조준점
+		if GameInput.aim_stick() == Vector2.ZERO: return
+		var a: float = aim.angle
+		var c := Vector2(roundf(p.x + cos(a) * 170), roundf(p.y - 30 + sin(a) * 170))
+		draw_arc(c, 7, 0, TAU, 24, Color(color, 0.75), 2)
 	elif GameInput.mouse_inside:
 		var w: Vector2 = GameCamera.current.screen_to_world(GameInput.mouse_pos)
 		var cx := roundf(w.x)

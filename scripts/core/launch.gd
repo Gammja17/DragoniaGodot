@@ -23,13 +23,9 @@ static func reset_run() -> void:
 	Chronicle._choosing = false
 	Chronicle._current = null
 	Chronicle._check_timer = 0.0
-	Cutscene.on = false
-	Cutscene.bars = 0.0
-	Cutscene.dim = 0.0
-	Cutscene.boost = 1.0
-	Cutscene.focus = null
-	Cutscene.poi = null
-	Cutscene._cast = []
+	Cutscene.reset()
+	BossShow.reset()
+	Boss._introduced = {}
 	Chatter._running = null
 	Chatter._timer = 30.0
 	Delve._saved = null

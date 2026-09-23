@@ -10,5 +10,11 @@ func _process(_dt: float) -> void:
 	var m := material as ShaderMaterial
 	for k in ["bloom", "threshold", "aberration", "vignette", "brightness", "contrast", "saturation"]:
 		m.set_shader_parameter(k, ScreenFx.value(k))
+	# 컷씬이 고른 화면 색 (회상은 바랜 색, 슬픔은 색이 빠진다). 설정 값 위에 곱한다
+	var tone: Dictionary = Cutscene.tone
+	m.set_shader_parameter("saturation", ScreenFx.value("saturation") * tone.sat)
+	m.set_shader_parameter("vignette", ScreenFx.value("vignette") * tone.vig)
+	m.set_shader_parameter("brightness", ScreenFx.value("brightness") * tone.bri)
+	m.set_shader_parameter("contrast", ScreenFx.value("contrast") * tone.con)
 	m.set_shader_parameter("warp", Feedback.flash_amount() * ScreenFx.value("warp"))
 	m.set_shader_parameter("time", GameState.game_time)

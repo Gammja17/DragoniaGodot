@@ -98,7 +98,7 @@ func follow(target, smooth := 0.1) -> void:
 	if shot != null:
 		tx = shot.x
 		ty = shot.y
-		smooth = 1.0 if Cutscene.snap else 0.055
+		smooth = 1.0 if Cutscene.snap or Cutscene.exact else 0.055   # 카메라 박자는 제 속도로 옮겨 간다
 		Cutscene.snap = false
 	if absf(_boost - Cutscene.boost) > 0.0015: _apply_boost(Cutscene.boost)
 	cam_x += (tx - w / 2 - cam_x) * smooth

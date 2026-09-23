@@ -257,6 +257,7 @@ func _draw_sprite() -> void:
 	var hides := false
 	if type == "TREE":
 		for e in GameState.fadeTargets:
+			if not is_instance_valid(e): continue   # 굴 층을 옮긴 프레임엔 지난 층의 것이 남아 있다
 			if e.y < y + 10 and e.y > top - 20 and absf(e.x - x) < w * 0.5:
 				hides = true
 				break

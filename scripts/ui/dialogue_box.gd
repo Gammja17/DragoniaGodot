@@ -6,12 +6,18 @@ extends PanelContainer
 const OPTION := preload("res://scenes/ui/dialogue_option.tscn")
 const TIERS := ["낯선 사이", "아는 사이", "친구", "절친"]
 const SEL_STYLE_BG := Color(1, 216 / 255.0, 74 / 255.0, 0.16)
+const TYPE_SPEED := 125.0          # 평소 글자 찍는 빠르기 (초당 글자)
+const CINE_SPEED := 52.0           # 컷씬에서는 말하듯 천천히
+## 컷씬에서 문장 부호를 만나면 한 박자 쉰다 (초)
+const PAUSES := { ".": 0.2, "…": 0.28, "!": 0.18, "?": 0.2, ",": 0.08, "—": 0.14 }
+const NARRATION_COLOR := Color("#cfc2a4")   # 해설(내 속말·장면 묘사)은 이름표 없이 바랜 금빛으로
 
 static var current: DialogueBox
 ## 대사 글자 크기 단계 (설정의 --dlg-step, 1~4. 12px 의 배수라야 픽셀 글꼴이 안 뭉개진다)
 static var step := 2
 
 @onready var _pad: MarginContainer = $Pad
+@onready var _header: Control = $Pad/Body/Header
 @onready var _portrait: Control = $Pad/Body/Header/Portrait
 @onready var _name: Label = $Pad/Body/Header/Who/Name
 @onready var _job: Label = $Pad/Body/Header/Who/Meta/Job
@@ -23,14 +29,19 @@ static var step := 2
 
 var _selected := 0
 var _typed := 0.0
+var _pause := 0.0          # 문장 부호에서 쉬는 남은 시간
+var _auto := 0.0           # 다 찍히고 이만큼 뒤 저절로 넘어간다 (0 이면 기다린다)
+var _auto_t := 0.0
 var _list := []
 var _cinematic := false
+var _body_color: Color
 var _style_normal: StyleBoxFlat
 var _style_selected: StyleBoxFlat
 
 
 func _ready() -> void:
 	current = self
+	_body_color = _text.label_settings.font_color
 	step = clampi(int(Prefs.get_value("dialogue", "step", 2)), 1, 4)   # 설정의 대사 글자 크기
 	_style_normal = OPTION.instantiate().get_theme_stylebox("normal").duplicate()
 	_style_selected = _style_normal.duplicate()
@@ -55,8 +66,9 @@ static func fill_name(text: String) -> String:
 	return text.replace("{name}(이)", nm + ("이" if batchim else "")).replace("{name}", nm)
 
 
-## opts: { name, text, options: [{ label, on_select }], on_close, sheet, npc }.
-## options 가 비어 있으면 '닫기' 하나. npc 를 넘기면 머리에 맡은 일·사이·호감도 막대를 함께 보여 준다
+## opts: { name, text, options: [{ label, on_select }], on_close, sheet, npc, narration?, auto? }.
+## options 가 비어 있으면 '닫기' 하나. npc 를 넘기면 머리에 맡은 일·사이·호감도 막대를 함께 보여 준다.
+## narration: 이름표·초상화 없이 해설로 · auto: 다 찍히고 이만큼(초) 뒤 저절로 첫 선택지를 고른다
 func show_dialogue(opts: Dictionary) -> void:
 	_portrait.sheet = opts.get("sheet")
 	_portrait.queue_redraw()
@@ -68,10 +80,16 @@ func show_dialogue(opts: Dictionary) -> void:
 	_tier.text = "" if rel == null else ("· " if job != "" else "") + TIERS[_tier_of(rel)]
 	_rel.visible = rel != null
 	_portrait.visible = true
+	var narration: bool = opts.get("narration", false)
+	_header.visible = not narration
+	_text.label_settings.font_color = NARRATION_COLOR if narration else _body_color
 	if rel != null: _rel_fill.size.x = (_rel.size.x - 2) * minf(100, rel) / 100.0
 	_text.text = fill_name(opts.get("text", ""))
 	_text.visible_characters = 0
 	_typed = 0.0
+	_pause = 0.0
+	_auto = float(opts.get("auto", 0.0))
+	_auto_t = 0.0
 	for c in _options.get_children():
 		_options.remove_child(c); c.queue_free()
 	_list = opts.get("options", [])
@@ -123,14 +141,38 @@ func _layout() -> void:
 
 func _process(dt: float) -> void:
 	if not visible: return
-	# 대사를 한 글자씩 찍는다 (16ms 에 두 글자)
-	var total := _text.get_total_character_count()
-	if _text.visible_characters >= 0 and _text.visible_characters < total:
+	# 대사를 한 글자씩 찍는다. 컷씬에서는 말하듯 천천히, 문장 부호에서 한 박자 쉬며
+	if typing():
+		if _pause > 0:
+			_pause -= dt
+			return
+		var total := _text.get_total_character_count()
 		var before := int(_typed)
-		_typed += dt * 125
-		_text.visible_characters = mini(int(_typed), total)
+		_typed += dt * (CINE_SPEED if _cinematic else TYPE_SPEED)
+		var now := mini(int(_typed), total)
+		if _cinematic:
+			var s := _text.text
+			for i in range(before, mini(now, s.length())):
+				var ch := s[i]
+				var next := s[i + 1] if i + 1 < s.length() else " "
+				if PAUSES.has(ch) and not PAUSES.has(next):   # 말줄임표·느낌표가 이어지면 마지막 것에서만
+					now = i + 1
+					_typed = now
+					_pause = PAUSES[ch]
+					break
+		_text.visible_characters = now
 		if int(_typed) / 6 != before / 6: Sfx.play("talk")
-		if _text.visible_characters >= total: _text.visible_characters = -1
+		if now >= total: _text.visible_characters = -1
+	elif _auto > 0 and _list.size() == 1:
+		_auto_t += dt
+		if _auto_t >= _auto:
+			_auto = 0.0
+			_choose(0)
+
+
+## 아직 글자를 찍는 중인가
+func typing() -> bool:
+	return _text.visible_characters >= 0 and _text.visible_characters < _text.get_total_character_count()
 
 
 func _tier_of(r: float) -> int:
@@ -151,6 +193,12 @@ func _select(i: int) -> void:
 
 func _choose(i: int) -> void:
 	if i >= _list.size(): return
+	# 글자가 아직 찍히는 중이면 첫 번째 누름은 남은 글을 한 번에 다 보여 준다
+	# (골라야 하는 메뉴는 기다리게 하지 않는다 — 장면과 '다음' 한 줄짜리만)
+	if typing() and (_cinematic or _list.size() == 1):
+		_text.visible_characters = -1
+		_pause = 0.0
+		return
 	Sfx.play("ui")
 	_list[i].on_select.call()
 

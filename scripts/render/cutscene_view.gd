@@ -4,6 +4,7 @@ extends Node2D
 ## 어둠과 빛 구멍 · 말하는 쪽 머리 위 삼각 표시 · 가리키는 것의 금빛 테와 이름표 · 위아래 띠
 
 const DIM_SHADER := preload("res://shaders/cutscene_dim.gdshader")
+const MAX_LIGHTS := 6   # shaders/cutscene_dim.gdshader 의 배열 크기와 같아야 한다
 
 var camera: GameCamera
 var _dim: ColorRect
@@ -28,22 +29,24 @@ func _process(_dt: float) -> void:
 	_dim.size = size
 	_dim.visible = Cutscene.bars > 0.004 and Cutscene.DIM * Cutscene.dim > 0.01
 	if _dim.visible:
-		# 1) 어둡게 깔고, 말하는 쪽과 나에게만 구멍을 뚫는다
+		# 1) 어둡게 깔고, 무대 위의 이들에게만 구멍을 뚫는다. 말하는 쪽과 나는 넓게, 곁에 선 이들은 조금 좁게
 		var centers := PackedVector2Array()
 		var radii := PackedFloat32Array()
-		for e in [GameState.player, Cutscene.focus, Cutscene.poi.target if Cutscene.poi else null]:
-			if e == null or not is_instance_valid(e): continue
+		for pair in Cutscene.lit():
+			var e = pair[0]
 			var sp := _to_screen(e.x, e.y - 22)
 			# FRAGCOORD 는 화면 위가 0 인 좌표 (canvas_item 은 위에서 아래로)
 			centers.append(sp)
-			radii.append(210 * camera.zoom.x * Cutscene.dim)
-		while centers.size() < 3:
+			radii.append(210 * camera.zoom.x * Cutscene.dim * pair[1])
+			if centers.size() >= MAX_LIGHTS: break
+		var n := centers.size()
+		while centers.size() < MAX_LIGHTS:
 			centers.append(Vector2.ZERO); radii.append(0.0)
 		var m: ShaderMaterial = _dim.material
 		m.set_shader_parameter("dim", Cutscene.DIM * Cutscene.dim)
 		m.set_shader_parameter("centers", centers)
 		m.set_shader_parameter("radii", radii)
-		m.set_shader_parameter("count", 3)
+		m.set_shader_parameter("count", n)
 	queue_redraw()
 
 

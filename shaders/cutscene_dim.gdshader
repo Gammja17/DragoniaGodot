@@ -1,10 +1,10 @@
-// 2D판 systems/cutscene.js 의 어둠. 화면을 어둡게 깔고, 나·말하는 쪽·가리키는 것에만 빛 구멍을 뚫는다.
+// 2D판 systems/cutscene.js 의 어둠. 화면을 어둡게 깔고, 무대 위의 이들(나·말하는 쪽·가리키는 것·곁에 선 이들)에게만 빛 구멍을 뚫는다.
 // 구멍 하나는 가운데 r·0.2 까지 온전히, 0.5 에서 85%, 1 에서 0 으로 사라지는 원 (destination-out 을 차례로 건다)
 shader_type canvas_item;
 
 uniform float dim = 0.0;
-uniform vec2 centers[3];
-uniform float radii[3];
+uniform vec2 centers[6];
+uniform float radii[6];
 uniform int count = 0;
 
 void fragment() {

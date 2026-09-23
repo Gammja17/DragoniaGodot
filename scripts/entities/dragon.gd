@@ -196,6 +196,24 @@ func say(text: String) -> void:
 	chat_fade = 3.0
 
 
+## 세상이 멈춘 동안(대화·컷씬) 겉모습만 움직인다: 숨쉬기 · 걷는 발 · 날갯짓. 자리와 싸움은 그대로 둔다
+func animate_only(dt: float) -> void:
+	hover_y = sin(GameState.game_time * 2 + anim_phase) * 6 if sheet.flying else 0.0
+	if is_player: hover_y += fly_lift
+	animator.play_base("move" if moving else "idle")
+	animator.update(dt)
+	self_modulate.a = 0.55 if down_timer > 0 else 1.0
+	queue_redraw()
+
+
+## 머리 위에 잠깐 뜨는 표시 (!, ?, …, ♥ …). 컷씬 연출이 부른다
+var _emote := ""
+var _emote_at := 0
+func emote(icon: String) -> void:
+	_emote = icon
+	_emote_at = Time.get_ticks_msec()
+
+
 ## 방향 벡터로 이동하고 facing/angle 갱신. 물·나무·집은 통과하지 못하고 미끄러진다
 func move_by(dx: float, dy: float, speed: float, dt: float) -> void:
 	var len := Vector2(dx, dy).length()
@@ -280,13 +298,14 @@ func _update_player(dt: float) -> void:
 		if GameInput.pressed("num%d" % (i + 1)) and elements.has(all_els[i]): element = all_els[i]
 	fire_timer -= dt
 	aim_lock_timer -= dt   # 터치 자동 조준이 붙잡은 적
-	# 마우스 왼쪽 버튼(모바일은 [불] 단추)을 꾹 누르고 있으면 연사
-	var firing := GameInput.down("attack") or GameInput.mouse_down
+	# 마우스 왼쪽 버튼(모바일은 [불] 단추, 게임패드는 RT 나 오른쪽 스틱을 끝까지)을 꾹 누르고 있으면 연사
+	var firing := GameInput.down("attack") or GameInput.mouse_down or GameInput.aim_stick().length() > 0.6
 	if firing and fire_timer <= 0: attack()
 	for slot in Data.get_module("skills").SKILL_SLOTS:
 		if GameInput.pressed("skill" + slot): Skills.use_slot(self, slot)
 	if GameInput.pressed("ultimate"): use_ultimate()
-	if GameInput.pressed("nextElement"): cycle_element()   # 터치의 [속성] 버튼
+	if GameInput.pressed("nextElement"): cycle_element()   # 터치의 [속성] 버튼 · 게임패드 십자키 →
+	if GameInput.pressed("prevElement"): cycle_element(-1)
 	if beam: _update_beam(dt)
 	if GameInput.pressed("interact"): interact()
 	if GameInput.pressed("eat"): eat()
@@ -298,8 +317,9 @@ func _update_player(dt: float) -> void:
 	if not locked:
 		var look = null
 		if firing: look = aim_angle().angle
+		elif GameInput.pad and GameInput.aim_stick() != Vector2.ZERO: look = GameInput.aim_stick().angle()
 		elif ax != Vector2.ZERO: look = atan2(ax.y, ax.x)
-		elif GameInput.mouse_inside: look = aim_angle().angle
+		elif GameInput.mouse_inside and not GameInput.pad: look = aim_angle().angle
 		if look != null: facing = facing_from_vector(cos(look), sin(look), facing)
 
 	# 스스로 깨우치는 스킬·각성은 1초에 한 번만 살펴본다
@@ -354,10 +374,10 @@ func aim_point(max_range: float) -> Vector2:
 	return Vector2(x + cos(aim.angle) * max_range, y + sin(aim.angle) * max_range)
 
 
-func cycle_element() -> void:
+func cycle_element(step := 1) -> void:
 	var have: Array = Data.get_module("elements").ELEMENTS.keys().filter(func(el): return elements.has(el))
 	if have.size() < 2: return
-	element = have[(have.find(element) + 1) % have.size()]
+	element = have[(have.find(element) + step + have.size()) % have.size()]
 	Hud.pop("숨결: %s" % Data.get_module("elements").ELEMENTS[element].name, "🔥")
 
 
@@ -552,7 +572,22 @@ func aim_angle() -> Dictionary:
 	var sc: float = stage.scale
 	var ox := x
 	var oy := y - 40 * sc
-	if GameInput.mouse_inside:
+	# 게임패드: 오른쪽 스틱이 가리키는 쪽. 그쪽 ±0.3 안의 적에게 살짝 붙여 준다
+	var stick := GameInput.aim_stick() if GameInput.pad else Vector2.ZERO
+	if stick != Vector2.ZERO:
+		var want := stick.angle()
+		var near = null
+		var near_d := float(AIM_RANGE) * 1.2
+		for e in foes:
+			if e.get("awake") == false: continue
+			var d := Util.dist(self, e)
+			var da := atan2(e.y - 20 - oy, e.x - ox) - want
+			da = atan2(sin(da), cos(da))
+			if d < near_d and absf(da) < 0.3:
+				near = e; near_d = d
+		if near: return { angle = atan2(near.y - 20 - oy, near.x - ox), target = near }
+		return { angle = want, target = null }
+	if GameInput.mouse_inside and not GameInput.pad:
 		var c: Vector2 = GameCamera.current.screen_to_world(GameInput.mouse_pos)
 		var near = null
 		var near_d := float(AIM_MAGNET)
@@ -1191,6 +1226,7 @@ func crisp_anchor() -> Vector2:
 
 ## 월드 좌표계가 아니라 화면 픽셀 단위로 그린다. 그래야 멀리 당겨 봐도 글씨가 같은 크기로 또렷하게 남는다
 func draw_crisp(ci: CanvasItem, _zoom: float) -> void:
+	if not is_hidden and _emote != "": _draw_emote(ci)
 	if is_player or is_hidden or Cutscene.on: return   # 컷씬에서는 대화창이 말하는 이를 알려 준다
 	var nm := Names.npc(config.get("name", ""))
 	var bold := Fonts.bold()
@@ -1222,6 +1258,37 @@ func draw_crisp(ci: CanvasItem, _zoom: float) -> void:
 		_bubble(ci, -w / 2, top, w, h, bottom, alpha)
 		for i in lines.size():
 			Fonts.draw_centered(ci, font, lines[i], 0, top + pad_y + lh * i + 11, 12, Color(32 / 255.0, 32 / 255.0, 42 / 255.0, alpha))
+
+
+## 머리 위 표시. 톡 튀어나왔다가(0.12초) 머물고, 끝에 스르르 사라진다
+func _draw_emote(ci: CanvasItem) -> void:
+	var t := (Time.get_ticks_msec() - _emote_at) / 1000.0
+	if t > Cutscene.EMOTE_TIME:
+		_emote = ""
+		return
+	var pop := minf(1, t / 0.12)
+	var sc := 1.0 + (1 - pop) * 0.6 if t < 0.12 else 1.0 + sin(minf(1, (t - 0.12) / 0.2) * PI) * 0.08
+	var alpha := minf(1, (Cutscene.EMOTE_TIME - t) / 0.35)
+	var col := Color("#ffd84a")
+	match _emote:
+		"?", "!?": col = Color("#9fd6ff")
+		"♥": col = Color("#ff7aa8")
+		"💢": col = Color("#ff6a5a")
+		"💧": col = Color("#8fc8ff")
+		"…": col = Color("#ece3cf")
+		"♪": col = Color("#b7f0a0")
+	var glyph := _emote
+	if glyph == "💢": glyph = "#"      # 픽셀 글꼴에 없는 그림 글자는 비슷한 모양으로
+	elif glyph == "💧": glyph = ";"
+	var font := Fonts.bold()
+	var fs := 24   # 12px 픽셀 글꼴은 12의 배수로만 또렷하다
+	var w := maxf(34, Fonts.text_width(font, glyph, fs) + 18) * sc
+	var h := 32.0 * sc
+	var by := -34.0 - h - (30 if Quests.marker(self) != "" and config.get("fixed") else 0)
+	var bob := sin(t * 5) * 2
+	_bubble(ci, -w / 2, by + bob, w, h, by + h + bob, alpha)
+	var tw := Fonts.text_width(font, glyph, fs)
+	ci.draw_string(font, Vector2(-tw / 2, by + bob + h / 2 + fs * 0.36), glyph, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color(col.darkened(0.55), alpha))
 
 
 ## 흰 바탕 기본 말풍선. 몸통(x,y,w,h)과 아래를 가리키는 꼬리

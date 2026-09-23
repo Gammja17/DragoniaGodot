@@ -54,6 +54,7 @@ static func music_volume() -> float: return float(Prefs.get_value("sound", "musi
 ## 지금 틀어야 할 곡. 위에 있는 줄이 먼저다
 func scene_now() -> String:
 	if not GameState.gameActive: return "title"
+	if Cutscene.music != "": return Cutscene.music   # 장면이 고른 곡 ("none" 이면 정적)
 	if World.map_has_boss(): return "boss"
 	if GameState.raid.get("active"): return "raid"
 	if GameState.dungeon: return "dungeon"
@@ -75,13 +76,14 @@ func _process(dt: float) -> void:
 	_fading = _fading.filter(func(t): return t.gain > 0)
 
 
-## 이 장면의 곡으로 갈아 끼운다. 이미 그 곡이면 아무것도 하지 않는다
+## 이 장면의 곡으로 갈아 끼운다. 이미 그 곡이면 아무것도 하지 않는다. "none" 은 곡을 걷기만 한다
 func _set_scene(id: String) -> void:
 	if id == scene: return
 	scene = id
 	if _playing:
 		_fading.append(_playing)
 		_playing = null
+	if id == "none": return
 	var back := -1
 	for i in _fading.size():
 		if _fading[i].id == id: back = i

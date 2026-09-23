@@ -36,6 +36,12 @@ func _ready() -> void:
 	if is_instance_valid(b) and not b.remove:
 		print("한 번 쓰러뜨림: 되살아남 %s, 체력 %d" % [b.revived, b.hp])
 		b.take_damage(b.hp + 1)
+	# 쓰러지는 장면(느려짐 · 빛가루)이 끝나야 보상이 떨어진다
+	var t1 := Time.get_ticks_msec()
+	print("쓰러지는 중: %s, 세상 빠르기 %.2f, 이름패 %s" % [b.dying > 0, Engine.time_scale, Cutscene.card.get("sub", "")])
+	while is_instance_valid(b) and not b.remove and Time.get_ticks_msec() - t1 < 8000:
+		await get_tree().process_frame
+		if OS.get_cmdline_user_args().has("debug") and Engine.get_process_frames() % 30 == 0: print("  dying=%.2f dlg=%s cut=%s ts=%.2f chapter=%s" % [b.dying, GameState.isDialogueOpen, Cutscene.on, Engine.time_scale, Hud.chapter_card_on()])
 	for i in 3: await get_tree().process_frame
-	print("다시 쓰러뜨림: 처치 기록 %s, 숨결 %s, 기술 %s, 유물 %s, 레벨 %d" % [GameState.bossesDefeated, p.elements, p.skills, GameState.relics, p.level])
+	print("다시 쓰러뜨림 (%.1f초 뒤): 처치 기록 %s, 숨결 %s, 기술 %s, 유물 %s, 레벨 %d, 빠르기 %.2f" % [(Time.get_ticks_msec() - t1) / 1000.0, GameState.bossesDefeated, p.elements, p.skills, GameState.relics, p.level, Engine.time_scale])
 	get_tree().quit()

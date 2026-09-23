@@ -1,0 +1,151 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/cinema_overlay.gd" id="1"]
+[ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="2"]
+[ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="3"]
+
+[sub_resource type="FontVariation" id="caption_font"]
+base_font = ExtResource("2")
+spacing_glyph = 4
+
+[sub_resource type="LabelSettings" id="caption_text"]
+font = SubResource("caption_font")
+font_size = 36
+font_color = Color(0.925, 0.89, 0.812, 1)
+outline_size = 6
+outline_color = Color(0.0235, 0.0196, 0.0471, 0.9)
+
+[sub_resource type="Gradient" id="rule_grad"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(0.847, 0.698, 0.353, 0, 0.847, 0.698, 0.353, 0.8, 0.847, 0.698, 0.353, 0)
+
+[sub_resource type="GradientTexture2D" id="rule_tex"]
+gradient = SubResource("rule_grad")
+width = 260
+height = 2
+
+[sub_resource type="LabelSettings" id="card_name"]
+font = ExtResource("3")
+font_size = 36
+font_color = Color(1, 0.847, 0.29, 1)
+outline_size = 8
+outline_color = Color(0.0235, 0.0196, 0.0471, 0.95)
+shadow_size = 0
+
+[sub_resource type="LabelSettings" id="card_sub"]
+font = ExtResource("2")
+font_size = 24
+font_color = Color(0.925, 0.89, 0.812, 1)
+outline_size = 6
+outline_color = Color(0.0235, 0.0196, 0.0471, 0.9)
+
+[sub_resource type="LabelSettings" id="subtitle_text"]
+font = ExtResource("2")
+font_size = 24
+font_color = Color(1, 0.953, 0.847, 1)
+outline_size = 8
+outline_color = Color(0.0235, 0.0196, 0.0471, 0.95)
+
+[node name="CinemaOverlay" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="Curtain" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0118, 0.0118, 0.0314, 1)
+
+[node name="Caption" type="VBoxContainer" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -60.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Text" type="Label" parent="Caption"]
+layout_mode = 2
+label_settings = SubResource("caption_text")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Rule" type="TextureRect" parent="Caption"]
+custom_minimum_size = Vector2(260, 1)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+texture = SubResource("rule_tex")
+expand_mode = 1
+
+[node name="Card" type="VBoxContainer" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.66
+anchor_right = 1.0
+anchor_bottom = 0.66
+offset_top = -50.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Name" type="Label" parent="Card"]
+layout_mode = 2
+label_settings = SubResource("card_name")
+horizontal_alignment = 1
+
+[node name="Rule" type="TextureRect" parent="Card"]
+custom_minimum_size = Vector2(420, 2)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+texture = SubResource("rule_tex")
+expand_mode = 1
+
+[node name="Sub" type="Label" parent="Card"]
+layout_mode = 2
+label_settings = SubResource("card_sub")
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 0.74
+anchor_right = 1.0
+anchor_bottom = 0.74
+offset_left = 80.0
+offset_top = -24.0
+offset_right = -80.0
+offset_bottom = 24.0
+grow_horizontal = 2
+mouse_filter = 2
+label_settings = SubResource("subtitle_text")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

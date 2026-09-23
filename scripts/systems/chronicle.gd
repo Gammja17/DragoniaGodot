@@ -166,14 +166,15 @@ static func _find(who):
 	return World.any_npc(who) if who is String else null
 
 
-## 여러 줄짜리 장면을 차례로 보여 준다. 아침 장면(Story)도 이걸 쓴다. line = { who: NPC 이름 | '나' | '???', text, look?, label? }
+## 여러 줄짜리 장면을 차례로 보여 준다. 아침 장면(Story)도 이걸 쓴다.
+## line = { who: NPC 이름 | '나' | '???', text, look?, label?, do?, zoom?, auto? } — do·zoom·auto 는 Cutscene 의 연출 박자
 static func play_scene(title, lines: Array, then = null, cinematic := true, place = null) -> void:
 	# 장면이 벌어질 곳이 따로 있으면 먼저 그리로 간다
 	if place and place != GameState.map_id and not GameState.dungeon: World.travel_to(place)
 	# 말할 이들은 처음부터 무대에 올린다 — 제 차례에 불쑥 튀어나오지 않게
 	var speakers := []
 	for l in lines:
-		var e = _find(l.who)
+		var e = _find(l.get("who"))
 		if e and e != GameState.player and not (e is Boss) and not speakers.has(e): speakers.append(e)
 	if cinematic: Cutscene.begin(title if title else "", speakers)
 	elif title: Hud.pop(title, "📖")
@@ -181,8 +182,10 @@ static func play_scene(title, lines: Array, then = null, cinematic := true, plac
 	var me := {}
 	_current = me
 	var step := func(self_ref: Callable) -> void:
+		if _current != me and st.i < lines.size(): return   # 건너뛴 장면의 박자가 뒤늦게 부른 것
 		if st.i >= lines.size():
 			if _current == me: _current = null
+			if Cutscene.busy(): Cutscene.cancel_beats()
 			GameState.isDialogueOpen = false
 			DialogueBox.current.hide_dialogue()
 			if cinematic: Cutscene.finish()
@@ -190,21 +193,43 @@ static func play_scene(title, lines: Array, then = null, cinematic := true, plac
 			return
 		var line: Dictionary = lines[st.i]
 		st.i += 1
-		var speaker = _find(line.who)
-		if cinematic:
-			Cutscene.focus_on(speaker)
-			Cutscene.point_at(_look_target(line.look) if line.get("look") else null, line.get("label", "") if line.get("label") else "")
-		GameState.isDialogueOpen = true
-		var nxt := func(): self_ref.call(self_ref)
-		DialogueBox.current.show_dialogue({
-			name = GameState.player.config.get("name", "") if line.who == "나" else Names.npc(line.who),
-			text = line.text,
-			sheet = GameState.player.sheet if line.who == "나" else (speaker.sheet if speaker else null),
-			on_close = nxt,
-			options = [{ label = "다음" if st.i < lines.size() else "끝", on_select = nxt }],
-		})
-		Sfx.play("talk")
+		var show := func(): _show_line(line, st.i < lines.size(), cinematic, func(): self_ref.call(self_ref))
+		# 연출 박자가 있으면 대화창을 내리고 먼저 돌린다 (세상은 그대로 멈춰 있다)
+		if line.get("do") and Cutscene.on:
+			GameState.isDialogueOpen = true
+			DialogueBox.current.hide_dialogue()
+			Cutscene.run(line.do, show)
+		else:
+			show.call()
 	me.skip = func():
 		st.i = lines.size()
 		step.call(step)
 	step.call(step)
+
+
+## 한 줄을 대화창에 띄운다. 대사가 없는 줄(연출만 하는 줄)은 곧바로 다음으로
+static func _show_line(line: Dictionary, more: bool, cinematic: bool, nxt: Callable) -> void:
+	if not line.get("text"):
+		nxt.call()
+		return
+	var who = line.get("who", "나")
+	var speaker = _find(who)
+	if cinematic or Cutscene.on:
+		Cutscene.focus_on(speaker)
+		Cutscene.point_at(_look_target(line.look) if line.get("look") else null, line.get("label", "") if line.get("label") else "")
+		Cutscene.line_zoom(line.get("zoom"))
+	GameState.isDialogueOpen = true
+	var text: String = line.text
+	# 내 속말·장면 묘사 "(…)" 는 이름표 없이 해설로 보여 준다
+	var narration: bool = who == "나" and text.begins_with("(") and text.ends_with(")")
+	if narration: text = text.substr(1, text.length() - 2)
+	DialogueBox.current.show_dialogue({
+		name = GameState.player.config.get("name", "") if who == "나" else Names.npc(who),
+		text = text,
+		narration = narration,
+		auto = float(line.get("auto", 0.0)),
+		sheet = GameState.player.sheet if who == "나" else (speaker.sheet if speaker and speaker.get("sheet") else null),
+		on_close = nxt,
+		options = [{ label = "다음" if more else "끝", on_select = nxt }],
+	})
+	Sfx.play("talk")

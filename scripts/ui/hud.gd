@@ -298,6 +298,7 @@ func show_raid_warning(text: String) -> void:
 
 
 func _process(dt: float) -> void:
+	_cinema_fade()
 	# 판의 숫자는 0.1초마다 (2D판 hudAccumulator)
 	_refresh_t -= dt
 	if _refresh_t <= 0 and GameState.player and status.get_parent():
@@ -321,8 +322,24 @@ func _process(dt: float) -> void:
 	_boss_fill.size.x = move_toward(_boss_fill.size.x, inner * _boss_ratio, inner * dt / 0.15)
 
 
+## 컷씬이면 상태판·오른쪽 기둥·기술 칸이 띠를 따라 물러났다가 끝나면 돌아온다 (띠 위로 판이 떠 있으면 장면이 깨진다).
+## 그동안 쌓인 알림은 장면이 끝난 뒤에 띄운다
+var _held_toasts := []
+func _cinema_fade() -> void:
+	var a := 1.0 - Cutscene.bars
+	for n in [status, right, bottom, $HelpChip, $ShowStatus, $ShowRight, _toasts]:
+		n.modulate.a = a
+	if not Cutscene.on and Cutscene.bars < 0.05 and not _held_toasts.is_empty():
+		var held := _held_toasts
+		_held_toasts = []
+		for t in held: toast(t[0], t[1])
+
+
 ## 알림은 화면 위쪽 가운데에 차곡차곡 쌓인다. 한 번에 최대 4개, 3.4초
 func toast(msg: String, icon := "✨") -> void:
+	if Cutscene.on and not GameState.prologue:
+		if _held_toasts.size() < MAX_TOASTS: _held_toasts.append([msg, icon])
+		return
 	var t: Control = TOAST_SCENE.instantiate()
 	t.get_node("Label").text = "%s %s" % [icon, msg]
 	_toasts.add_child(t)

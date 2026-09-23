@@ -117,7 +117,13 @@ func _process(delta: float) -> void:
 			# 장면이면 끝까지 건너뛴다 (대화창만 닫으면 장면의 끝이 영영 안 불려 사건 시계가 굳는다)
 			if not Chronicle.skip_scene():
 				Dialogue.close()
+		elif Cutscene.busy() and not DialogueBox.is_open():
+			# 연출 박자가 도는 동안: [Space]·클릭으로 지금 박자를 곧바로 끝낸다
+			if GameInput.pressed("confirm") or GameInput.pressed("interact") or GameInput.mouse_clicked: Cutscene.rush()
 		else: DialogueBox.current.handle_keys()   # 방향키 + Space 로 선택
+		# 세상은 멈춰 있어도 그림은 흐른다: 폭포·불빛·비, 무대 위 용들의 숨쉬기와 걸음
+		GameState.game_time += dt
+		Cutscene.animate(dt)
 	else:
 		_update(dt)
 	Cutscene.update(dt)   # 세계가 멈춰 있어도 띠와 어둠은 계속 움직여야 한다

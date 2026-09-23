@@ -142,11 +142,14 @@ func _say() -> String:
 	return "%s | %s | %s" % [_box._name.text, _box._text.text.left(60).replace("\n", " "), opts]
 
 
-## 대화창이 떠 있으면 첫 줄을 골라 넘긴다. 닫히면 멈춘다
+## 대화창이 떠 있으면 첫 줄을 골라 넘긴다. 닫히면 멈춘다 (연출 박자가 도는 동안은 기다린다)
 func _click_through(limit: int) -> void:
 	for i in limit:
 		await _wait(0.15)
+		var t := Time.get_ticks_msec()
+		while Cutscene.busy() and not DialogueBox.is_open() and Time.get_ticks_msec() - t < 8000: await get_tree().process_frame
 		if not DialogueBox.is_open(): return
+		_box._text.visible_characters = -1   # 다 찍힌 셈 친다
 		_box._choose(0)
 
 

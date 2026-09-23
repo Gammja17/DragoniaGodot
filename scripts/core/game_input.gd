@@ -30,10 +30,40 @@ const KEYMAP := {
 	"zoom": [KEY_V],
 	"debug": [KEY_F3],         # 밸런스 오버레이
 	"cancel": [KEY_ESCAPE],
-	# 키가 없고 터치 버튼만 누르는 동작 (TouchLayer)
+	# 키가 없고 터치 버튼·게임패드만 누르는 동작 (TouchLayer)
 	"attack": [],
 	"nextElement": [],
+	"prevElement": [],
 }
+
+## 게임패드 (Xbox 배치 기준. 다른 패드도 같은 자리에 들어온다).
+##   왼쪽 스틱 이동 · 오른쪽 스틱 조준(밀면 쏜다) · RT 숨결 · LB 대시/달리기
+##   A 말 걸기·결정 · B 닫기 · X 눈앞의 것 · Y 기술 R · RB 기술 Q · LT 기술 F · R3 필살기 · L3 날기
+##   십자키 ←→ 숨결 바꾸기 · ↑ 곁의 용에게 말 걸기 · ↓ 고기 먹기 · Back 일지 · Start 설정
+const PADMAP := {
+	"confirm": [JOY_BUTTON_A],
+	"cancel": [JOY_BUTTON_B, JOY_BUTTON_START],
+	"interact": [JOY_BUTTON_X],
+	"skillR": [JOY_BUTTON_Y],
+	"skillQ": [JOY_BUTTON_RIGHT_SHOULDER],
+	"sprint": [JOY_BUTTON_LEFT_SHOULDER],
+	"ultimate": [JOY_BUTTON_RIGHT_STICK],
+	"fly": [JOY_BUTTON_LEFT_STICK],
+	"nextElement": [JOY_BUTTON_DPAD_RIGHT],
+	"prevElement": [JOY_BUTTON_DPAD_LEFT],
+	"talk": [JOY_BUTTON_DPAD_UP],
+	"eat": [JOY_BUTTON_DPAD_DOWN],
+	"journal": [JOY_BUTTON_BACK],
+}
+## 스틱·방아쇠 → 동작 [축, 방향]. 이동 네 방향은 왼쪽 스틱 (대화창 고르기도 이것으로)
+const PADAXIS := {
+	"left": [JOY_AXIS_LEFT_X, -1.0], "right": [JOY_AXIS_LEFT_X, 1.0],
+	"up": [JOY_AXIS_LEFT_Y, -1.0], "down": [JOY_AXIS_LEFT_Y, 1.0],
+	"attack": [JOY_AXIS_TRIGGER_RIGHT, 1.0],
+	"skillF": [JOY_AXIS_TRIGGER_LEFT, 1.0],
+}
+const STICK_DEADZONE := 0.3
+const AIM_DEADZONE := 0.35
 
 ## 터치 스틱이 주는 이동 벡터 (ui/touch 가 넣는다)
 var virtual_axis := Vector2.ZERO
@@ -50,6 +80,8 @@ var mouse_clicked := false
 var mouse_right := false
 ## 터치로 하는 중인가 (터치 화면이 있거나, 한 번이라도 화면을 짚었으면). 터치 조작 층이 뜨고, 숨결이 겨눈 적을 따라간다
 var touch := false
+## 게임패드로 하는 중인가 (패드를 건드리면 켜지고, 마우스를 움직이면 꺼진다). 조준이 오른쪽 스틱을 따른다
+var pad := false
 
 
 func _ready() -> void:
@@ -60,6 +92,17 @@ func _ready() -> void:
 			var ev := InputEventKey.new()
 			ev.physical_keycode = key
 			InputMap.action_add_event(action, ev)
+	for action in PADMAP:
+		for b in PADMAP[action]:
+			var ev := InputEventJoypadButton.new()
+			ev.button_index = b
+			InputMap.action_add_event(action, ev)
+	for action in PADAXIS:
+		var ev := InputEventJoypadMotion.new()
+		ev.axis = PADAXIS[action][0]
+		ev.axis_value = PADAXIS[action][1]
+		InputMap.action_add_event(action, ev)
+		InputMap.action_set_deadzone(action, STICK_DEADZONE)
 	touch = DisplayServer.is_touchscreen_available()
 	# 휠은 프레임 끝에 비운다. 다른 노드들이 다 읽은 뒤여야 하니 가장 늦게 돈다
 	process_priority = 1000
@@ -80,6 +123,8 @@ func _notification(what: int) -> void:
 ## 버튼을 놓는 것은 판 위에서 놓아도 받는다 (세상에서 누르고 판 위에서 떼면 연사가 멈추지 않던 것)
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch: touch = true
+	if event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value) > 0.5): pad = true
+	elif event is InputEventMouseMotion and not _emulated(event) and event.relative.length() > 2: pad = false
 	if _emulated(event): return
 	if event is InputEventMouseButton and not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		mouse_down = false
@@ -131,10 +176,18 @@ func tap_at(pos: Vector2) -> void:
 	mouse_inside = false
 
 
-## 이동 벡터 (-1..1, -1..1). 키보드가 우선이고, 안 누르고 있으면 터치 스틱
+## 이동 벡터 (-1..1, -1..1). 키보드·게임패드 왼쪽 스틱이 우선이고, 안 누르고 있으면 터치 스틱
 func axis() -> Vector2:
 	var dx := (1 if down("right") else 0) - (1 if down("left") else 0)
 	var dy := (1 if down("down") else 0) - (1 if down("up") else 0)
 	if dx == 0 and dy == 0:
 		return virtual_axis
-	return Vector2(dx, dy)
+	# 스틱을 살짝만 밀면 그 기울기대로 (키보드는 늘 끝까지 민 셈)
+	var v := Input.get_vector("left", "right", "up", "down", STICK_DEADZONE)
+	return v if v.length() > 0.05 else Vector2(dx, dy)
+
+
+## 게임패드 오른쪽 스틱 (조준). 데드존 안이면 0
+func aim_stick() -> Vector2:
+	var v := Vector2(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X), Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y))
+	return v if v.length() > AIM_DEADZONE else Vector2.ZERO

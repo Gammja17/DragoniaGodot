@@ -1,0 +1,5 @@
+# Godot 파일은 LF 로 둔다
+* text=auto eol=lf
+*.png binary
+*.ogg binary
+*.woff2 binary

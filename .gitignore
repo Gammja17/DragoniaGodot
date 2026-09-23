@@ -1,0 +1,7 @@
+# Godot
+.godot/
+export_presets.cfg.bak
+builds/
+
+# 2D판 원본 사본 (읽기 전용 참고용, tools/export_data.mjs 가 읽는다)
+_ref2d/

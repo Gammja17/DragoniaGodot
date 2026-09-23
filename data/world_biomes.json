@@ -1,0 +1,201 @@
+{
+ "BIOMES": {
+  "VILLAGE": {
+   "name": "웨스턴 마을",
+   "safe": true,
+   "palette": 0,
+   "decor": [
+    "POT",
+    "CRATE_BIG",
+    "BARRELS",
+    "FENCE",
+    "ROCK_MOSS",
+    "PEBBLES"
+   ],
+   "landmarks": [
+    "WELL",
+    "STALL",
+    "BENCH",
+    "GARDEN"
+   ]
+  },
+  "LAKE": {
+   "name": "신비의 호수",
+   "safe": true,
+   "palette": 0,
+   "decor": [
+    "PEBBLES",
+    "ROCK_MOSS",
+    "STEPSTONE"
+   ],
+   "landmarks": [
+    "STUMP_TABLE",
+    "BENCH",
+    "WELL"
+   ],
+   "cliffs": 1
+  },
+  "FALLS": {
+   "name": "구름 폭포",
+   "safe": true,
+   "palette": 0,
+   "decor": [
+    "ROCK_MOSS",
+    "PEBBLES",
+    "GRAVEL"
+   ],
+   "landmarks": [
+    "RUIN",
+    "STONE_WALL",
+    "TEMPLE"
+   ],
+   "cliffs": 2
+  },
+  "CLOUDTOP": {
+   "name": "구름마루 마을",
+   "safe": true,
+   "palette": 0,
+   "decor": [
+    "POT",
+    "CRATE_BIG",
+    "FENCE",
+    "CROPS"
+   ],
+   "landmarks": [
+    "BANNER",
+    "TEMPLE",
+    "STALL"
+   ]
+  },
+  "FOREST": {
+   "name": "숲",
+   "safe": false,
+   "palette": 0,
+   "decor": [
+    "ROCK_MOSS",
+    "PEBBLES",
+    "DEAD_BRANCH"
+   ],
+   "landmarks": [
+    "RUIN",
+    "WELL",
+    "STUMP_TABLE"
+   ],
+   "cliffs": 2
+  },
+  "JUNGLE": {
+   "name": "밀림",
+   "safe": false,
+   "palette": 1,
+   "decor": [
+    "VINE_PILLAR",
+    "PEBBLES",
+    "ROCK_MOSS",
+    "DEAD_BRANCH"
+   ],
+   "landmarks": [
+    "RUIN",
+    "STONE_WALL",
+    "CAVE_ARCH"
+   ],
+   "cliffs": 2
+  },
+  "HOLLOW": {
+   "name": "골짜기",
+   "safe": false,
+   "palette": 2,
+   "decor": [
+    "GRAVEL",
+    "ROCK_MOSS",
+    "SKULL",
+    "DEAD_BRANCH"
+   ],
+   "landmarks": [
+    "GRAVE",
+    "RUIN",
+    "CAVE_ARCH"
+   ],
+   "cliffs": 3
+  },
+  "SNOW": {
+   "name": "설원",
+   "safe": false,
+   "palette": 3,
+   "decor": [
+    "PEBBLES",
+    "DEAD_BRANCH",
+    "ROCK_MOSS"
+   ],
+   "landmarks": [
+    "GRAVE",
+    "STONE_WALL",
+    "RUIN"
+   ],
+   "cliffs": 2
+  },
+  "VOLCANO": {
+   "name": "화산",
+   "safe": false,
+   "palette": 4,
+   "decor": [
+    "GRAVEL",
+    "SKULL",
+    "ROCK_MOSS"
+   ],
+   "landmarks": [
+    "RUIN",
+    "CAVE_ARCH",
+    "GATE"
+   ],
+   "cliffs": 3
+  },
+  "AUTUMN": {
+   "name": "단풍숲",
+   "safe": false,
+   "palette": 5,
+   "decor": [
+    "DEAD_BRANCH",
+    "PEBBLES",
+    "CRATE_BIG",
+    "ROCK_MOSS"
+   ],
+   "landmarks": [
+    "WELL",
+    "STUMP_TABLE",
+    "FENCE"
+   ],
+   "cliffs": 2
+  },
+  "DESERT": {
+   "name": "사막",
+   "safe": false,
+   "palette": 6,
+   "decor": [
+    "SKULL",
+    "GRAVEL",
+    "POT",
+    "PEBBLES"
+   ],
+   "landmarks": [
+    "RUIN",
+    "GRAVE",
+    "TEMPLE"
+   ],
+   "cliffs": 3
+  },
+  "SKY": {
+   "name": "구름 위",
+   "safe": false,
+   "palette": 7,
+   "decor": [
+    "PEBBLES",
+    "ROCK_MOSS"
+   ],
+   "landmarks": [
+    "TEMPLE",
+    "BANNER",
+    "STONE_WALL"
+   ]
+  }
+ }
+}

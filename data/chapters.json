@@ -1,0 +1,130 @@
+{
+ "CHAPTERS": [
+  {
+   "id": "c1",
+   "title": "1장",
+   "name": "웨스턴 마을",
+   "done": {
+    "$fn": "(s) => s.quests.done.includes(id)"
+   },
+   "maps": [
+    "VILLAGE",
+    "EAST_ROAD",
+    "DOJO"
+   ],
+   "blocked": "아직은 마을 근처를 벗어나지 말라고 했다. 몸부터 키우자."
+  },
+  {
+   "id": "c2",
+   "title": "2장",
+   "name": "나팔 소리",
+   "done": {
+    "$fn": "(s) => s.quests.done.includes(id)"
+   },
+   "maps": [
+    "LAKE",
+    "SOUTH_ROAD"
+   ],
+   "blocked": "그쪽은 아직 이르다. 마을 일이 먼저다."
+  },
+  {
+   "id": "c3",
+   "title": "3장",
+   "name": "골짜기의 옛 수호룡",
+   "done": {
+    "$fn": "s => !!s.bossesDefeated.MORGATH"
+   },
+   "maps": [
+    "HOLLOW",
+    "HOLLOW_DEEP",
+    "MORGATH_LAIR"
+   ],
+   "blocked": "거기까지 갈 일은 아직 없다."
+  },
+  {
+   "id": "c3b",
+   "title": "3장",
+   "name": "골짜기의 옛 수호룡",
+   "done": {
+    "$fn": "(s) => s.quests.done.includes(id)"
+   },
+   "maps": [
+    "FALLS"
+   ],
+   "locked": "폭포로 가는 길은 허옇게 얼어붙어 있다. 골짜기에서 밤마다 내려오는 냉기 때문이라고 한다.",
+   "blocked": "거기까지 갈 일은 아직 없다."
+  },
+  {
+   "id": "c4",
+   "title": "4장",
+   "name": "굶는 계절",
+   "done": {
+    "$fn": "(s) => s.quests.done.includes(id)"
+   },
+   "maps": [
+    "JUNGLE",
+    "JUNGLE_DEEP",
+    "ZALGORA_LAIR",
+    "ROOTVALE",
+    "CLOUDTOP",
+    "SKY_RUINS"
+   ],
+   "blocked": "거기까지 갈 일은 아직 없다."
+  },
+  {
+   "id": "c5",
+   "title": "5장",
+   "name": "맡긴 알",
+   "done": {
+    "$fn": "(s) => s.quests.done.includes(id)"
+   },
+   "maps": [
+    "SNOW_ROAD",
+    "SNOW_RIDGE",
+    "GLACIA_LAIR"
+   ],
+   "blocked": "거기까지 갈 일은 아직 없다."
+  },
+  {
+   "id": "c6",
+   "title": "6장",
+   "name": "전쟁",
+   "done": {
+    "$fn": "(s) => s.quests.done.includes(id)"
+   },
+   "maps": [],
+   "blocked": "지금 마을을 멀리 떠날 수는 없다."
+  },
+  {
+   "id": "c7",
+   "title": "7장",
+   "name": "사막 길",
+   "done": {
+    "$fn": "(s) => s.quests.done.includes(id)"
+   },
+   "maps": [
+    "DESERT",
+    "DESERT_BONES",
+    "BASIL_LAIR",
+    "STONEBACK",
+    "ASH_CITY",
+    "AUTUMN"
+   ],
+   "blocked": "화산 쪽은 아직 아무도 보내 주지 않는다."
+  },
+  {
+   "id": "c8",
+   "title": "8장",
+   "name": "잿마루",
+   "done": {
+    "$fn": "s => s.quests.done.includes('m6') || s.quests.done.includes('m7d')"
+   },
+   "maps": [
+    "VOLCANO",
+    "VOLCANO_PATH",
+    "IGNAR_LAIR"
+   ],
+   "blocked": ""
+  }
+ ]
+}

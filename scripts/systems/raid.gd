@@ -10,9 +10,26 @@ const SIDES := {
 const WAR_ROSTER := ["KNIGHT", "KNIGHT", "KNIGHT", "ARCHER", "ARCHER", "ARCHER", "MAGE", "MAGE", "HEAVY", "HEAVY", "CAPTAIN"]
 
 
-## 이야기가 습격을 기다리고 있나 (지금 대목이 "사냥꾼을 쓰러뜨려라"·"습격을 막아라"). 퀘스트를 옮기면 채운다
+## 이야기가 습격을 기다리고 있나 (지금 대목이 "사냥꾼을 쓰러뜨려라"·"습격을 막아라")
 static func wanted() -> bool:
+	for q in Quests.active_quests():
+		var st = Quests.cur_step(q)
+		var g = st.get("goal") if st else null
+		if g and (g.type == "raid" or (g.type == "kill" and g.get("target") == "HUNTER")): return true
 	return false
+
+
+## 오른쪽 기둥에 띄우는 한 줄: 습격 중이면 남은 사냥꾼, 아니면 다음 습격까지
+static func status_text() -> String:
+	var raid: Dictionary = GameState.raid
+	if GameState.dungeon: return ""   # 굴 속에서는 습격 시계가 멈춘다
+	if not raid.active and raid.count == 0: return ""   # 아직 습격을 겪기 전
+	if raid.active:
+		var ob = raid.get("objective")
+		return "습격 중! 남은 사냥꾼 %d" % GameState.entities.humans.size() + (" · %s를 지켜라" % Names.npc(ob.name) if ob and not ob.failed else "")
+	if GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): return ""   # 나팔은 다시 울리지 않는다
+	var t := maxi(0, ceili(GameState.raidTimer))
+	return "다음 습격 %d:%02d" % [t / 60, t % 60]
 
 
 static func _is_night() -> bool:

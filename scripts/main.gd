@@ -28,6 +28,7 @@ func _ready() -> void:
 	$Marks.camera = camera
 	# 시스템끼리 서로 불러들이지 않게 여기서 이어 준다
 	Quests.on_flag = Story.on_flag
+	Quests.on_change = hud.refresh_tracker
 	Training.install()
 	Chores.install()
 	# 새 게임 설정 화면(customizer)은 5단계에서. 지금은 세이브가 있으면 이어 하고, 없으면 기본 외형의 해츨링으로 시작한다
@@ -37,6 +38,7 @@ func _ready() -> void:
 	if save: Save.apply(save)
 	Travel.init_waystones()
 	GameState.gameActive = true
+	hud.show_game_ui(true)
 	var p = GameState.player
 	camera.cam_x = p.x - camera.w / 2
 	camera.cam_y = p.y - camera.h / 2
@@ -68,6 +70,7 @@ func _process(delta: float) -> void:
 	Feedback.update(real)
 	if GameInput.pressed("zoom"): hud.toast("시점: " + camera.cycle_zoom(), "🔍")
 	if GameInput.wheel: camera.step_zoom(GameInput.wheel)   # 휠은 조용히 (알림이 정신 사납다고 해서)
+	if GameInput.pressed("hideUi") and not GameState.isDialogueOpen: hud.toggle_ui()
 	# [Esc]: 하던 것부터 닫는다 (닫을 게 없으면 설정 창 — 설정은 5단계에서)
 	var card_skipped := false
 	if GameInput.pressed("cancel") and not NameInput.is_open():

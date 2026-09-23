@@ -19,6 +19,12 @@ const MAX_TOASTS := 4
 
 @onready var _raid: Label = $RaidWarning
 
+# 상태판 · 오른쪽 기둥 · 기술 칸 (5단계)
+@onready var status: HudStatus = $Status
+@onready var right: HudRight = $Right
+@onready var bottom: HudBottom = $Bottom
+var _refresh_t := 0.0
+
 var _banner_tween: Tween
 var _boss_ratio := 1.0
 var _raid_until := 0
@@ -38,6 +44,40 @@ static func pop(msg: String, icon := "✨") -> void:
 func _ready() -> void:
 	current = self
 	_banner.modulate.a = 0
+	status.collapse_pressed.connect(func(): collapse_status(true))
+	$ShowStatus.pressed.connect(func(): collapse_status(false))
+	right.collapse_pressed.connect(func(): collapse_right(true))
+	$ShowRight.pressed.connect(func(): collapse_right(false))
+
+
+## 게임이 시작되면 보인다 (시작 화면에서는 감춘다)
+func show_game_ui(on: bool) -> void:
+	for n in [status, right, bottom]: n.visible = on
+	if on: refresh_tracker()
+
+
+## 왼쪽 판(상태)을 접거나 편다
+func collapse_status(on: bool) -> void:
+	status.visible = not on
+	$ShowStatus.visible = on
+
+
+## 오른쪽 기둥(지도·길잡이·퀘스트)을 접거나 편다
+func collapse_right(on: bool) -> void:
+	right.visible = not on
+	$ShowRight.visible = on
+
+
+## [U]: 둘 다 켜져 있으면 둘 다 접고, 하나라도 접혀 있으면 둘 다 편다
+func toggle_ui() -> void:
+	var any_hidden := not status.visible or not right.visible
+	collapse_status(not any_hidden)
+	collapse_right(not any_hidden)
+
+
+## 퀘스트가 바뀌면 추적창을 다시 채운다 (Quests.on_change)
+func refresh_tracker() -> void:
+	right.quest.refresh()
 
 
 ## 지도를 옮기면 지역 이름을 위쪽에 잠깐 띄웠다 지운다 (2.8초).
@@ -229,6 +269,13 @@ func show_raid_warning(text: String) -> void:
 
 
 func _process(dt: float) -> void:
+	# 판의 숫자는 0.1초마다 (2D판 hudAccumulator)
+	_refresh_t -= dt
+	if _refresh_t <= 0 and GameState.player and status.get_parent():
+		_refresh_t = 0.1
+		if status.visible: status.refresh()
+		if right.visible: right.refresh()
+		if bottom.visible: bottom.refresh()
 	_flush_quest_banner()
 	_place_tip()
 	$QuestBanner.visible = not Cutscene.on

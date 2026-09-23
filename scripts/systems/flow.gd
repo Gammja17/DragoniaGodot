@@ -37,6 +37,10 @@ static func tier() -> int:
 
 
 ## 숨결·기술 피해에 곱해진다
+static func tier_name() -> String: return TIER_NAMES[tier()]
+static func tier_color() -> Color: return Color(TIER_COLORS[tier()])
+
+
 static func damage_mult() -> float:
 	return TIER_DMG[tier()] * (1.5 if F().edge > 0 else 1.0)
 

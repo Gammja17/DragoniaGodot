@@ -73,6 +73,13 @@ func _notification(what: int) -> void:
 		mouse_down = false
 
 
+## 버튼을 놓는 것은 판 위에서 놓아도 받는다 (세상에서 누르고 판 위에서 떼면 연사가 멈추지 않던 것)
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		mouse_down = false
+	if event is InputEventMouseMotion: mouse_pos = event.position
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		mouse_pos = event.position; mouse_inside = true

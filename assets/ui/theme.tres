@@ -1,0 +1,84 @@
+[gd_resource type="Theme" load_steps=10 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/frame_panel.png" id="2"]
+
+[sub_resource type="StyleBoxTexture" id="frame"]
+texture = ExtResource("2")
+texture_margin_left = 18.0
+texture_margin_top = 18.0
+texture_margin_right = 18.0
+texture_margin_bottom = 18.0
+content_margin_left = 20.0
+content_margin_top = 18.0
+content_margin_right = 20.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="btn"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 1, 1, 0.055)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.847, 0.698, 0.353, 0.38)
+
+[sub_resource type="StyleBoxFlat" id="btn_hover"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 1, 1, 0.11)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.847, 0.698, 0.353, 1)
+
+[sub_resource type="StyleBoxFlat" id="btn_disabled"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0.25)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.847, 0.698, 0.353, 0.18)
+
+[sub_resource type="StyleBoxEmpty" id="none"]
+
+[sub_resource type="StyleBoxFlat" id="scroll"]
+bg_color = Color(0.847, 0.698, 0.353, 0.38)
+content_margin_left = 4.0
+content_margin_right = 4.0
+
+[sub_resource type="StyleBoxFlat" id="scroll_track"]
+bg_color = Color(0, 0, 0, 0.35)
+content_margin_left = 4.0
+content_margin_right = 4.0
+
+[resource]
+default_font = ExtResource("1")
+default_font_size = 12
+Button/colors/font_color = Color(0.925, 0.89, 0.812, 1)
+Button/colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
+Button/colors/font_pressed_color = Color(1, 0.847, 0.29, 1)
+Button/colors/font_focus_color = Color(0.925, 0.89, 0.812, 1)
+Button/colors/font_disabled_color = Color(0.522, 0.494, 0.431, 1)
+Button/styles/normal = SubResource("btn")
+Button/styles/hover = SubResource("btn_hover")
+Button/styles/pressed = SubResource("btn_hover")
+Button/styles/disabled = SubResource("btn_disabled")
+Button/styles/focus = SubResource("none")
+Label/colors/font_color = Color(0.925, 0.89, 0.812, 1)
+Label/colors/font_shadow_color = Color(0, 0, 0, 0)
+PanelContainer/styles/panel = SubResource("frame")
+VScrollBar/styles/grabber = SubResource("scroll")
+VScrollBar/styles/grabber_highlight = SubResource("scroll")
+VScrollBar/styles/grabber_pressed = SubResource("scroll")
+VScrollBar/styles/scroll = SubResource("scroll_track")

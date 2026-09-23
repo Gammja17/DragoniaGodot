@@ -1,0 +1,203 @@
+{
+ "KINS": {
+  "fang": {
+   "name": "송곳니",
+   "bonus": "치명타 확률 +8%"
+  },
+  "scale": {
+   "name": "비늘",
+   "bonus": "받는 피해 -8%"
+  },
+  "wing": {
+   "name": "날개",
+   "bonus": "대시가 25% 빨리 돌아온다"
+  },
+  "flame": {
+   "name": "불꽃",
+   "bonus": "기세가 30% 빨리 찬다"
+  }
+ },
+ "RELICS": {
+  "MORGATH_HORN": {
+   "name": "모르가스의 뿔",
+   "desc": "냉기의 둔화가 2배 오래간다",
+   "boss": "MORGATH"
+  },
+  "ZALGORA_SCALE": {
+   "name": "잘고라의 비늘",
+   "desc": "번개가 한 번 더 튄다",
+   "boss": "ZALGORA"
+  },
+  "GLACIA_TEAR": {
+   "name": "글라시아의 눈물",
+   "desc": "스킬 재사용 대기 -25%",
+   "boss": "GLACIA"
+  },
+  "BASIL_FANG": {
+   "name": "바실의 독니",
+   "desc": "치명타 피해가 3배가 된다",
+   "boss": "BASIL",
+   "kin": "fang"
+  },
+  "IGNAR_HEART": {
+   "name": "이그나르의 심장",
+   "desc": "화상 피해가 2배가 된다",
+   "boss": "IGNAR",
+   "kin": "flame"
+  },
+  "CAPTAIN_HORN": {
+   "name": "베르단의 뿔피리",
+   "desc": "습격 때 마을 용들의 숨결이 +30% 세진다. 사냥꾼들이 이 소리를 무서워한다",
+   "gift": true
+  },
+  "VOW_RING": {
+   "name": "언약의 고리",
+   "desc": "평생을 약속한 짝이 곁에 있으면 체력이 천천히 돌아오고, 짝의 숨결이 +30% 세진다",
+   "gift": true
+  },
+  "GRON_PLATE": {
+   "name": "그론의 비늘갑",
+   "desc": "받는 피해 -15%. 이음매가 조금 삐뚤다",
+   "gift": true,
+   "kin": "scale"
+  },
+  "OLD_FANG": {
+   "name": "고대의 송곳니",
+   "desc": "브레스 피해 +15%",
+   "kin": "fang"
+  },
+  "HUNTER_CHARM": {
+   "name": "사냥꾼의 부적",
+   "desc": "치명타 확률 +10%",
+   "kin": "fang"
+  },
+  "LUCKY_COIN": {
+   "name": "행운의 동전",
+   "desc": "골드 획득 +30%"
+  },
+  "WIND_FEATHER": {
+   "name": "바람 깃털",
+   "desc": "이동 속도 +8%",
+   "kin": "wing"
+  },
+  "LIFE_STONE": {
+   "name": "생명석",
+   "desc": "체력이 천천히 회복된다",
+   "kin": "scale"
+  },
+  "NEST_CHARM": {
+   "name": "둥지의 부적",
+   "desc": "알이 50% 빨리 부화한다"
+  },
+  "IRON_STOMACH": {
+   "name": "먹보의 위장",
+   "desc": "허기가 절반 속도로 준다",
+   "kin": "scale"
+  },
+  "SPLIT_SCALE": {
+   "name": "갈라진 비늘",
+   "desc": "숨결이 맞은 자리에서 작은 조각 둘로 갈라져 나간다",
+   "kin": "fang"
+  },
+  "GLASS_FANG": {
+   "name": "유리 송곳니",
+   "desc": "주는 피해 +40%. 대신 받는 피해도 +30%",
+   "kin": "fang"
+  },
+  "RED_MOON_TOOTH": {
+   "name": "붉은 달의 이빨",
+   "desc": "체력이 45% 남은 적까지 물어뜯을 수 있고, 물어뜯어 되찾는 체력이 3배",
+   "kin": "fang"
+  },
+  "THORN_SHELL": {
+   "name": "가시 등껍질",
+   "desc": "맞으면 둘레의 적에게 되돌려 준다",
+   "kin": "scale"
+  },
+  "LAST_EMBER": {
+   "name": "마지막 불씨",
+   "desc": "하루 한 번, 쓰러질 일격을 체력 1로 버티고 둘레를 불태운다",
+   "kin": "scale"
+  },
+  "EMBER_TRAIL": {
+   "name": "불씨 발자국",
+   "desc": "대시가 지나간 자리에 불길이 남는다",
+   "kin": "wing"
+  },
+  "STORM_EYE": {
+   "name": "폭풍의 눈",
+   "desc": "간발로 피하면 둘레의 적에게 번개가 떨어진다",
+   "kin": "wing"
+  },
+  "FROZEN_CLOCK": {
+   "name": "얼어붙은 모래시계",
+   "desc": "간발 뒤에 세상이 느려지는 시간이 2배",
+   "kin": "wing"
+  },
+  "HUNGRY_FLAME": {
+   "name": "굶주린 불꽃",
+   "desc": "적을 쓰러뜨릴 때마다 3초 동안 숨결이 빨라진다 (세 번까지 겹친다)",
+   "kin": "flame"
+  },
+  "BOILING_BLOOD": {
+   "name": "끓는 피",
+   "desc": "맞아도 기세가 반이 아니라 오분의 일만 꺾인다",
+   "kin": "flame"
+  },
+  "GREEDY_MAW": {
+   "name": "탐식의 턱",
+   "desc": "고기를 먹으면 12초 동안 주는 피해 +25%",
+   "kin": "flame"
+  },
+  "ECHO_SHELL": {
+   "name": "메아리 소라",
+   "desc": "기술을 쓰면 넷에 한 번은 재사용 대기 없이 바로 돌아온다",
+   "kin": "flame"
+  },
+  "TAIL_TWIN": {
+   "name": "두 번 치는 꼬리",
+   "desc": "[꼬리 후려치기] 한 번 더 휘두른다 (두 번째는 60%)",
+   "skill": "TAIL_SWIPE",
+   "kin": "fang"
+  },
+  "METEOR_RAIN": {
+   "name": "별 부스러기",
+   "desc": "[운석 낙하] 둘레에 작은 운석 셋이 더 떨어진다",
+   "skill": "METEOR",
+   "kin": "flame"
+  },
+  "ROAR_FLAME": {
+   "name": "불타는 목청",
+   "desc": "[포효] 닿은 적이 4초 동안 불탄다",
+   "skill": "ROAR",
+   "kin": "flame"
+  },
+  "GUST_BLADE": {
+   "name": "칼바람 깃",
+   "desc": "[날개 돌풍] 피해가 3배가 되고 날려 보낸 적이 벽에 부딪히듯 기절한다",
+   "skill": "WING_GUST",
+   "kin": "wing"
+  },
+  "LONG_BREATH": {
+   "name": "긴 숨",
+   "desc": "[화염 방사] 3초 동안 이어지고 부채꼴이 넓어진다",
+   "skill": "FLAME_BREATH",
+   "kin": "flame"
+  },
+  "POUNCE_QUAKE": {
+   "name": "무거운 착지",
+   "desc": "[덮치기] 내려앉는 자리가 울려 둘레의 적이 기절한다",
+   "skill": "POUNCE",
+   "kin": "scale"
+  },
+  "RICOCHET": {
+   "name": "갈고리 숨결",
+   "desc": "숨결이 맞으면 가까운 다른 적에게 한 번 더 튄다",
+   "kin": "fang"
+  },
+  "TWIN_SOUL": {
+   "name": "쌍둥이 혼",
+   "desc": "곁에서 싸우는 짝과 동료의 숨결이 +50% 세진다"
+  }
+ }
+}

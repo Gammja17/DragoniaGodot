@@ -19,7 +19,7 @@ mkdirSync(out, { recursive: true });
 
 // 2D판 모듈 가운데 데이터로 쓰는 것들. src/data 전부 + 데이터 표가 들어 있는 몇 개
 const modules = readdirSync(join(src, 'data')).filter(f => f.endsWith('.js')).map(f => 'data/' + f);
-modules.push('world/biomes.js', 'core/config.js');
+modules.push('world/biomes.js', 'core/config.js', 'systems/relics.js');
 
 let fnCount = 0;
 // at: 모듈 안에서의 경로 (예 'CHAPTERS.0.done'). 같은 소스의 함수라도 클로저가 붙잡은 값이 다를 수 있어

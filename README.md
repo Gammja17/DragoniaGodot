@@ -36,6 +36,7 @@ node tools/export_data.mjs
 - `tools/dump_world.tscn` — 지도를 채운 결과(소품 종류별 수, 마을 용 자리). 2D판 `__dragonia.state.entities` 와 대조
 - `tools/test_travel.tscn` — 포탈로 지도 오가기, 이야기가 안 열어 준 길 막기
 - `tools/shot.tscn` — 원하는 지도에서 화면 찍기 (`--write-movie`)
+- `tools/test_combat.tscn` — 숲길에서 슬라임을 겨눠 쏘기, 잡기·경험치·떨어진 것, 맞기
 
 ```bash
 godot --headless --path . tools/test_move.tscn
@@ -45,7 +46,7 @@ godot --headless --path . tools/test_move.tscn
 
 1. **뼈대** — 데이터 변환, 입력, 카메라, 지형 생성, 충돌, 용 걷기 ✅
 2. **월드** — 소품·나무, 포탈과 지도 이동, 장(章)이 여는 길, 마을 용 배치(일과)·어슬렁거림·혼잣말, 이름표, 지역 배너·알림 ✅
-3. 전투 — 브레스, 스킬, 적 AI, 보스
+3. **전투** — 숨결·조준·치명타·속성 연계, 적 18종과 AI(예고→발동→숨 고르기), 정예 접사, 무리 출현, 기세·간발·물어뜯기, 떨어진 것, 타격감(멈춤·번쩍임·흔들림) ✅ / 스킬·보스·사냥꾼 습격·유물 얻기 ⏳
 4. 시스템 — 퀘스트, 스토리, 컷씬, 세이브, 둥지, 가족
 5. UI — HUD, 일지, 대화창, 설정, 터치 조작
 6. 연출 — 조명, 낮밤, 날씨, 포스트프로세싱, 소리

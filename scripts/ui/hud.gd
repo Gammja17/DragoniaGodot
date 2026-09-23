@@ -13,8 +13,16 @@ const MAX_TOASTS := 4
 
 var _banner_tween: Tween
 
+static var current: Hud
+
+
+## 어디서든 알림을 띄운다 (2D판 showToast)
+static func pop(msg: String, icon := "✨") -> void:
+	if current: current.toast(msg, icon)
+
 
 func _ready() -> void:
+	current = self
 	_banner.modulate.a = 0
 
 

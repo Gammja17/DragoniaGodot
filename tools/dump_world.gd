@@ -8,7 +8,7 @@ func _ready() -> void:
 	add_child(main)
 	await get_tree().process_frame
 	for id in OS.get_cmdline_user_args():
-		if id != "VILLAGE": World.travel_to(id, main.hud)
+		if id != "VILLAGE": World.travel_to(id)
 		World._travel_lock = 0
 		var E: Dictionary = GameState.entities
 		var npcs := []

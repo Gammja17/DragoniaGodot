@@ -24,6 +24,8 @@ static var _map_cache := {}           # id → GameMap
 static var _npc_cache := {}           # 이름 → Dragon (호감도 유지)
 static var _travel_lock := 0          # 이 시각(ms)까지는 포탈을 다시 밟지 않는다
 static var _nag := 0.0                # 막힌 길 안내를 너무 자주 띄우지 않게
+# 노드로 지도에 붙는 무리 (탄·효과·빛 알갱이는 FxLayer 가 그린다)
+const NODE_GROUPS := ["props", "npcs", "enemies", "humans", "bosses", "items", "nests", "babies"]
 
 
 static func maps() -> Dictionary: return Data.get_module("maps").MAPS
@@ -287,8 +289,48 @@ static func _swap_nodes(pools: Dictionary) -> void:
 		container.remove_child(c)
 		if c != GameState.player and not _npc_cache.values().has(c): c.queue_free()
 	container.add_child(GameState.player)
-	for group in ["props", "npcs"]:
+	for group in NODE_GROUPS:
 		for e in pools[group]: container.add_child(e)
+
+
+## 새로 생긴 개체 (적·떨어진 물건 …) 를 지금 지도에 더한다
+static func add_entity(group: String, e) -> void:
+	GameState.entities[group].append(e)
+	if e is Node: container.add_child(e)
+
+
+## 다 쓴 개체를 걷는다. 노드인 것은 지우되, 캐시해 둔 마을 용은 떼어만 둔다
+static func prune() -> void:
+	var E: Dictionary = GameState.entities
+	for key in ["bullets", "effects", "hazards", "bosses", "enemies", "humans", "items", "particles", "babies", "npcs"]:
+		var keep := []
+		for e in E[key]:
+			if not e.remove:
+				keep.append(e)
+			elif e is Node and e.is_inside_tree():
+				container.remove_child(e)
+				if not _npc_cache.values().has(e): e.queue_free()
+		E[key] = keep
+
+
+## 지금 지도에 어울리는 적 종류
+static func map_enemies() -> Array:
+	var spec = maps().get(GameState.map_id)
+	var table: Dictionary = Data.get_module("enemies").BIOME_ENEMIES
+	return table.get(spec.biome if spec else "FOREST", table.FOREST)
+
+
+## 이 지도에 보스가 살아 있나 (살아 있으면 야생 적을 뿌리지 않는다)
+static func map_has_boss() -> bool:
+	return GameState.entities.bosses.size() > 0
+
+
+## 쓰러졌을 때: 마을 광장에서 눈을 뜬다
+static func revive_in_village() -> void:
+	if GameState.dungeon: return                 # 굴에서는 그 자리에서 일어난다
+	var start: String = Data.get_module("maps").START_MAP
+	if GameState.map_id == start: return
+	travel_to(start)
 
 
 ## 판을 접을 때: 떼어 둔(지금 지도에 없는) 마을 용 노드를 치운다
@@ -321,7 +363,7 @@ static func init_world(config: Dictionary):
 
 
 ## 매 프레임: 포탈을 밟았으면 넘어간다
-static func update_portals(hud) -> void:
+static func update_portals() -> void:
 	if Time.get_ticks_msec() < _travel_lock or GameState.isDialogueOpen or GameState.activity or GameState.dungeon: return
 	var p = GameState.player
 	var gate = null
@@ -333,9 +375,9 @@ static func update_portals(hud) -> void:
 	var nag := func(text: String, icon: String) -> void:
 		if GameState.game_time - _nag > 4:
 			_nag = GameState.game_time
-			hud.toast(text, icon)
+			Hud.pop(text, icon)
 	if GameState.raid.active:
-		hud.toast("사냥꾼이 마을을 치고 있다. 지금 떠날 수는 없다.", "⚔️")
+		Hud.pop("사냥꾼이 마을을 치고 있다. 지금 떠날 수는 없다.", "⚔️")
 		return
 	# 세상은 이야기만큼만 열린다
 	if not Chapters.map_open(GameState, gate.portal.to):
@@ -352,13 +394,13 @@ static func update_portals(hud) -> void:
 		return
 	var spot = null
 	if gate.portal.get("spot"): spot = Vector2(gate.portal.spot.x, gate.portal.spot.y + 84)   # 굴에서 나올 때는 들어갔던 입구 앞에 선다
-	travel_to(gate.portal.to, hud, OPPOSITE[gate.portal.side] if gate.portal.get("side") else null, spot)
+	travel_to(gate.portal.to, OPPOSITE[gate.portal.side] if gate.portal.get("side") else null, spot)
 
 
 ## 포탈·이동 석비로 지도를 옮긴다. 화면을 까맣게 덮지 않는다 — 곧바로 옮기고, 지역 이름만 위쪽에 잠깐 띄웠다 지운다
-static func travel_to(id: String, hud, from = null, spot = null) -> void:
+static func travel_to(id: String, from = null, spot = null) -> void:
 	if Time.get_ticks_msec() < _travel_lock: return
 	enter_map(id, from, spot)
-	hud.show_region_banner(Names.map(id), BIOME_LABEL.get(maps()[id].biome, "") if maps().has(id) else "")
+	Hud.current.show_region_banner(Names.map(id), BIOME_LABEL.get(maps()[id].biome, "") if maps().has(id) else "")
 	# 도착하자마자 뒤돌아 다시 포탈을 밟는 일이 없게 아주 짧게만 잠근다
 	_travel_lock = Time.get_ticks_msec() + 350

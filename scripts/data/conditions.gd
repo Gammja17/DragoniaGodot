@@ -46,3 +46,22 @@ static func _build() -> void:
 		"routines:ROUTINES.Miru.variants.0.when": func(s): return _flag(s, "couple_egg") and not _flag(s, "couple_hatched"),
 		"routines:ROUTINES.Iseul.when": func(s): return _flag(s, "couple_hatched"),
 	}
+	# ---- growth.js: 성장 트리 노드 설명 (찍은 단수 r 을 받는다). 표가 두 벌이라(목록·id 별) 두 경로에 다 건다 ----
+	var descs := {
+		"FANG1": func(r): return "주는 피해 +%d%%" % roundi(r * 4),
+		"FANG2": func(r): return "브레스 피해 +%d%%" % roundi(r * 6),
+		"FANG3": func(r): return "스킬 피해 +%d%%" % roundi(r * 7),
+		"FANG4": func(_r = 0): return "체력이 35% 아래일 때 주는 피해 +45%",
+		"SCALE1": func(r): return "최대 체력 +%d" % (r * 25),
+		"SCALE2": func(r): return "받는 피해 -%d%%" % roundi(r * 3),
+		"SCALE3": func(r): return "허기 소모 -%d%%" % roundi(r * 8),
+		"SCALE4": func(_r = 0): return "하루 한 번, 쓰러질 공격을 체력 1로 버티고 3초간 무적",
+		"WING1": func(r): return "이동 속도 +%d%%" % roundi(r * 3),
+		"WING2": func(r): return "대시 재사용 대기 -%d%%" % roundi(r * 8),
+		"WING3": func(r): return "스킬 대기 시간 -%d%%" % roundi(r * 4),
+		"WING4": func(_r = 0): return "대시한 뒤 3초 동안 브레스 연사 속도 +35%",
+	}
+	var order := ["FANG1", "FANG2", "FANG3", "FANG4", "SCALE1", "SCALE2", "SCALE3", "SCALE4", "WING1", "WING2", "WING3", "WING4"]
+	for i in order.size():
+		_table["growth:GROWTH_NODES.%d.desc" % i] = descs[order[i]]
+		_table["growth:NODES_BY_ID.%s.desc" % order[i]] = descs[order[i]]

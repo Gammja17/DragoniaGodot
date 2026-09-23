@@ -1,10 +1,12 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/world/terrain.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/core/game_camera.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/render/overlay.gd" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/render/fx_layer.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/render/feedback.gd" id="7"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -12,11 +14,48 @@ script = ExtResource("1")
 [node name="Terrain" type="Node2D" parent="."]
 script = ExtResource("2")
 
+[node name="Tells" type="Node2D" parent="."]
+script = ExtResource("6")
+
 [node name="World" type="Node2D" parent="."]
 y_sort_enabled = true
 
+[node name="Bullets" type="Node2D" parent="."]
+texture_filter = 1
+script = ExtResource("6")
+mode = 1
+
+[node name="BulletsAdd" type="Node2D" parent="."]
+texture_filter = 1
+script = ExtResource("6")
+mode = 2
+
+[node name="Effects" type="Node2D" parent="."]
+texture_filter = 1
+script = ExtResource("6")
+mode = 3
+
+[node name="EffectsAdd" type="Node2D" parent="."]
+texture_filter = 1
+script = ExtResource("6")
+mode = 4
+
+[node name="Particles" type="Node2D" parent="."]
+script = ExtResource("6")
+mode = 5
+
+[node name="Crosshair" type="Node2D" parent="."]
+script = ExtResource("6")
+mode = 6
+
 [node name="Camera" type="Camera2D" parent="."]
 script = ExtResource("3")
+
+[node name="FeedbackLayer" type="CanvasLayer" parent="."]
+layer = 4
+
+[node name="Feedback" type="Node2D" parent="FeedbackLayer"]
+script = ExtResource("7")
 
 [node name="CrispLayer" type="CanvasLayer" parent="."]
 layer = 5

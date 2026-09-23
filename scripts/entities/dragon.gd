@@ -2,8 +2,9 @@ class_name Dragon
 extends Node2D
 ## 2D판 entities/Dragon.js. 플레이어와 NPC 공용.
 ##
-## 지금까지 옮긴 것: 걷기·달리기·대시, 마을 용의 어슬렁거림과 혼잣말, 그리기(이름표·말풍선·장신구).
-## 브레스·스킬·허기 단계·상호작용·마을 용의 전투와 따라다니기는 그 시스템을 옮기는 단계에서 같은 자리에 붙인다.
+## 지금까지 옮긴 것: 걷기·달리기·대시(간발·물어뜯기), 숨결 쏘기와 조준, 맞기·쓰러지기, 경험치·레벨,
+## 마을 용의 어슬렁거림과 혼잣말, 그리기(이름표·말풍선·장신구·머리 위 체력바).
+## 스킬·필살기·비행·상호작용·마을 용의 전투와 따라다니기는 그 시스템을 옮기는 단계에서 같은 자리에 붙인다.
 ##
 ## 좌표는 2D판처럼 x, y(발 위치)로 다룬다. 노드 위치가 곧 발 위치라 부모의 y 정렬이 앞뒤를 가른다.
 
@@ -12,6 +13,13 @@ const SPRINT_MULT := 1.5
 const DASH_TIME := 0.2
 const DASH_COOLDOWN := 1.0
 const DASH_MULT := 3.4
+const AIM_RANGE := 560       # 자동 조준(키보드): 이 거리 안, 바라보는 쪽 ±AIM_CONE 안의 가장 가까운 적을 겨눈다
+const AIM_CONE := 1.0
+const AIM_MAGNET := 95       # 마우스 조준: 커서가 적에게 이만큼 가까우면 그 적에게 살짝 붙여 준다
+# 허기 단계: 배가 고프면 느려지고 숨결이 굼떠진다. 예전처럼 공격을 막지는 않는다
+const HUNGER_PECKISH := 35
+const HUNGER_STARVING := 12
+const MOUTH_OFFSET := 40     # 화염구가 생성되는 위치(발 기준점에서 바라보는 방향으로)
 # 지금 보고 있는 축(가로/세로)을 조금 우대한다. 정확히 대각선으로 움직일 때
 # |dx| 와 |dy| 가 엎치락뒤치락하면서 매 프레임 방향이 갈리던 것을 막는다
 const FACE_BIAS := 1.2
@@ -30,6 +38,8 @@ var colors: Dictionary
 var look := 0
 
 var level := 1
+var xp := 0.0
+var max_xp := 240.0          # 성장은 느긋하게: 초반 레벨이 1.5배쯤 더 든다
 var hp := 80.0
 var max_hp := 80.0
 var hunger := 100.0
@@ -47,6 +57,26 @@ var invuln := 0.0         # 대시 중 무적 시간
 var dive_height := 0.0
 var down_timer := 0.0
 var hurt_flash := 0.0
+var gold := 0
+var inventory := { meat = 0 }
+# 성장/브레스 (플레이어용)
+var elements := ["FIRE"]
+var element := "FIRE"
+var skills := []             # 배운 스킬 id
+var slots := { Q = null, F = null, R = null }
+var cooldowns := {}
+var ult := 0.0               # 필살기 게이지 0~100 (숨결이 셋 모이면 찬다)
+var fire_timer := 0.0        # 다음 브레스까지
+var slow_timer := 0.0        # 빙판·얼음·그물에 느려진 시간
+var gale := 0.0              # 성장 트리 '질풍': 대시 뒤 연사가 빨라지는 남은 시간
+var fury := 0.0              # 포효 뒤 분노 시간
+var guard := 0.0             # 강철 비늘 남은 시간
+var feast := 0.0
+var dash_edge := false       # 이번 대시에서 간발을 이미 냈나
+var invisible := false
+var status := {}             # 대련 상대가 되면 상태 이상도 받는다
+var status_immune := false
+var def := {}
 
 # NPC 전용
 var home_x := 0.0
@@ -158,22 +188,204 @@ func _update_player(dt: float) -> void:
 		moving = false   # 떨어지던 밤엔 아직 내 몸이 아니다
 		return
 	var ax := GameInput.axis()
-	dash_cd -= dt; invuln -= dt
-	# 성장 트리·유물·허기 단계의 배율은 그 시스템을 옮길 때 여기에 곱한다
-	var base_speed: float = WALK_SPEED * stage.speed * (1 + 0.04 * GameState.upgrades.get("spd", 0))
+	feast -= dt
+	dash_cd -= dt; invuln -= dt; fury -= dt; guard -= dt; slow_timer -= dt; gale -= dt
+	var hunger_slow: float = [1.0, 0.86, 0.7][hunger_level]
+	var base_speed: float = WALK_SPEED * stage.speed * (1 + 0.04 * GameState.upgrades.get("spd", 0)) * (1 + Growth.stat("speed")) \
+		* (1.08 if Relics.has("WIND_FEATHER") else 1.0) * (0.55 if slow_timer > 0 else 1.0) * hunger_slow
 	# Shift 를 탁 누르면 대시(잠깐 무적), 계속 누르고 있으면 달리기
 	if GameInput.pressed("sprint") and ax != Vector2.ZERO and dash_cd <= 0:
 		dash_dir = ax.normalized()
-		dash_time = DASH_TIME; dash_cd = DASH_COOLDOWN; invuln = DASH_TIME + 0.12
+		dash_time = DASH_TIME; dash_cd = DASH_COOLDOWN * (1 - minf(0.6, Growth.stat("dash"))); invuln = DASH_TIME + 0.12
+		dash_edge = false
+		if Relics.resonates("wing"): dash_cd *= 0.75
+		if Growth.has_perk("GALE"): gale = 3.0   # 성장 트리 '질풍'
+		Sfx.play("dash")
+		Vfx.spawn_effect("PUFF", x, y - 6)
 	if dash_time > 0:
+		if dash_time > DASH_TIME - 0.16: Flow.try_perfect_dodge(self)   # 대시 첫머리에 스친 것만 간발로 친다
 		dash_time -= dt
 		move_by(dash_dir.x, dash_dir.y, base_speed * DASH_MULT, dt)
+		Flow.try_bite(self)
+		# 유물 '불씨 발자국'(대시 자리에 남는 불길)은 장판을 옮길 때
+		Particles.burst(x, y - 30 * stage.scale, colors.get("body", "#ffffff"), 0.35)
 	elif ax != Vector2.ZERO:
 		move_by(ax.x, ax.y, base_speed * (SPRINT_MULT if GameInput.down("sprint") else 1.0) * (1.45 if flying else 1.0), dt)
-		hunger -= 0.35 * dt * (3 if flying else 1)   # 나는 건 배가 빨리 꺼진다
+		hunger -= 0.35 * dt * hunger_mult * (3 if flying else 1)   # 나는 건 배가 빨리 꺼진다
 	else:
-		hunger -= 0.08 * dt * (3 if flying else 1)
+		hunger -= 0.08 * dt * hunger_mult * (3 if flying else 1)
+	if Relics.has("LIFE_STONE"): hp = minf(max_hp, hp + 1.5 * dt)
 	hunger = maxf(0, hunger)
+
+	# 숨결 바꾸기 (1~6)
+	var all_els: Array = Data.get_module("elements").ELEMENTS.keys()
+	for i in all_els.size():
+		if GameInput.pressed("num%d" % (i + 1)) and elements.has(all_els[i]): element = all_els[i]
+	fire_timer -= dt
+	# 마우스 왼쪽 버튼을 꾹 누르고 있으면 연사 (터치의 [불] 버튼은 터치 조작을 옮길 때)
+	var firing := GameInput.down("attack") or GameInput.mouse_down
+	if firing and fire_timer <= 0: attack()
+
+	# 보는 방향은 프레임 끝에 딱 한 번, 아래 순서대로 정한다.
+	#   1) 쏘는 중이면 겨눈 쪽   — 숨결이 엉뚱한 쪽에서 나가지 않게
+	#   2) 걷는 중이면 가는 쪽   — 방향키로도 자연스럽게 몸을 튼다
+	#   3) 가만히 서 있으면 커서 쪽
+	var look = null
+	if firing: look = aim_angle().angle
+	elif ax != Vector2.ZERO: look = atan2(ax.y, ax.x)
+	elif GameInput.mouse_inside: look = aim_angle().angle
+	if look != null: facing = facing_from_vector(cos(look), sin(look), facing)
+
+
+## 0 배부름 · 1 출출함(조금 느려짐) · 2 굶주림(많이 느려짐)
+var hunger_level: int:
+	get: return 2 if hunger < HUNGER_STARVING else 1 if hunger < HUNGER_PECKISH else 0
+
+## 허기가 주는 속도. 유물 '무쇠 위장'과 성장 트리 '무쇠 위장'이 함께 줄여 준다
+var hunger_mult: float:
+	get: return (0.5 if Relics.has("IRON_STOMACH") else 1.0) * (1 - minf(0.6, Growth.stat("hunger")))
+
+var damage_mult: float:
+	get:
+		var scorn := 1.45 if Growth.has_perk("SCORN") and hp <= max_hp * 0.35 else 1.0   # 성장 트리 '역린'
+		var m: float = stage.damage * (1 + 0.08 * GameState.upgrades.get("dmg", 0)) * (1 + Growth.stat("dmg")) * scorn \
+			* (1.15 if Relics.has("OLD_FANG") else 1.0) * (1.3 if fury > 0 else 1.0)
+		if is_player: m *= Flow.damage_mult() * (1.4 if Relics.has("GLASS_FANG") else 1.0) * (1.25 if feast > 0 else 1.0)
+		return m
+
+
+# ---------- 경험치 · 맞기 ----------
+func gain_xp(amount: float) -> void:
+	if is_player and GameState.blessingDay == GameState.day: amount *= 1.25   # 엘더의 축복
+	xp += amount
+	if xp < max_xp: return
+	var levels := 0
+	while xp >= max_xp:   # 퀘스트 보상처럼 한 번에 여러 레벨이 오를 수 있다
+		level += 1
+		levels += 1
+		xp -= max_xp
+		max_xp = floorf(max_xp * 1.38)
+		max_hp += 12
+	hp = max_hp
+	if not is_player: return
+	Growth.grant_points(levels * Growth.POINTS_PER_LEVEL, "레벨 %d 달성" % level)
+	Hud.pop("LEVEL UP! LV.%d" % level, "🔥")
+	Sfx.play("level")
+	Particles.burst(x, y, "#f1c40f", 1.2, 25)
+	Vfx.spawn_effect("STAR", x, y - 50, { size = 1.6 })
+	# 승급 시험 안내(스승 카이론)는 이야기를 옮길 때
+
+
+func take_damage(dmg: float, _silent := false, _from = null) -> void:
+	# 대련 중 기력 깎기는 대련을 옮길 때
+	if not is_player and down_timer > 0: return
+	if is_player and invuln > 0: return
+	if is_player:
+		if guard > 0: dmg *= 0.3   # 강철 비늘
+		dmg *= 1 - minf(0.6, Growth.stat("armor"))   # 성장 트리 '단단한 등'
+		if Relics.has("GRON_PLATE"): dmg *= 0.85
+		dmg *= 1 - minf(0.2, 0.04 * GameState.upgrades.get("def", 0))   # 대장간 '비늘돌 박기'
+		if Relics.has("GLASS_FANG"): dmg *= 1.3
+		if Relics.resonates("scale"): dmg *= 0.92
+		if dmg >= 3:
+			Flow.on_player_hurt()   # 기세가 꺾인다
+			# 유물 '가시 껍질'(되돌려 주기)은 유물을 옮길 때
+	var was_safe := is_player and hp > max_hp * 0.2
+	hp -= dmg
+	# 위기를 몇 번 넘겼는지는 '허물 벗기'를 스스로 깨우치는 조건이 된다
+	if was_safe and hp > 0 and hp <= max_hp * 0.2: GameState.stats.brinks = GameState.stats.get("brinks", 0) + 1
+	Particles.burst(x, y - 40, "#e74c3c", 0.8, 5)
+	if is_player and dmg >= 3:
+		Sfx.play("hurt")
+		GameCamera.current.shake(minf(14, 4 + dmg * 0.45))
+		Feedback.hit_stop(0.07)                              # 맞은 순간 세상이 잠깐 멈춘다
+		Feedback.flash(minf(0.85, 0.3 + dmg / 40))           # 화면이 붉게 번쩍
+		hurt_flash = 0.35
+		Vfx.spawn_effect("SPARK", x, y - 44 * stage.scale, { size = 1.2, color = "#ff6b5e" })
+		Vfx.spawn_text(x, y - 90 * stage.scale, "-%d" % roundi(dmg), "#ff6b5e", 18)
+	animator.play("hit")
+	if hp <= 0 and not is_player:           # 마을 용은 죽지 않고 잠시 쓰러진다
+		hp = 0
+		down_timer = 25
+		var talk = Data.get_module("npcTalk").NPC_TALK.get(config.get("name"))
+		say(talk.down if talk and talk.get("down") else "으윽…")
+		if config.get("fixed"): Hud.pop("%s(이)가 쓰러졌습니다! 잠시 후 일어납니다." % Names.npc(config.name), "💫")
+	if hp <= 0 and is_player:
+		# 유물 '마지막 불씨'는 장판을 옮길 때. 성장 트리 '불사의 심장': 하루 한 번은 쓰러지지 않고 버틴다
+		if Growth.has_perk("UNDYING") and GameState.revivedDay != GameState.day:
+			GameState.revivedDay = GameState.day
+			hp = 1; invuln = 3
+			Vfx.spawn_effect("AURA", x, y - 40, { size = 2.4, color = "#ffd84a" })
+			Hud.pop("불사의 심장이 뛴다! 체력 1로 버텼습니다 (하루 한 번)", "💛")
+			Sfx.play("evolve")
+			return
+		Hud.pop("쓰러졌습니다... 마을에서 눈을 뜹니다.", "💀")
+		hp = max_hp
+		hunger = maxf(hunger, 40)
+		World.revive_in_village()
+
+
+# ---------- 숨결 ----------
+## 브레스·스킬이 날아갈 방향.
+##  마우스를 쓰는 중이면 커서 쪽이 기준이고, 커서가 적 위에 얹히면 그 적에게 살짝 붙는다.
+##  키보드만 쓸 때는 바라보는 쪽 원뿔 안의 가장 가까운 적을 자동으로 겨눈다. (터치 조준은 터치 조작을 옮길 때)
+func aim_angle() -> Dictionary:
+	var E: Dictionary = GameState.entities
+	var foes: Array = E.enemies + E.humans + E.bosses
+	var sc: float = stage.scale
+	var ox := x
+	var oy := y - 40 * sc
+	if GameInput.mouse_inside:
+		var c: Vector2 = GameCamera.current.screen_to_world(GameInput.mouse_pos)
+		var near = null
+		var near_d := float(AIM_MAGNET)
+		for e in foes:
+			if e.get("awake") == false: continue
+			var d := Vector2(e.x - c.x, e.y - 20 - c.y).length()
+			if d < near_d:
+				near = e; near_d = d
+		if near: return { angle = atan2(near.y - 20 - oy, near.x - ox), target = near }
+		return { angle = atan2(c.y - oy, c.x - ox), target = null }
+	var best = null
+	var best_d := float(AIM_RANGE)
+	for e in foes:
+		if e.get("awake") == false: continue
+		var d := Util.dist(self, e)
+		if d >= best_d: continue
+		var da := atan2(e.y - y, e.x - x) - angle
+		da = atan2(sin(da), cos(da))
+		if absf(da) < AIM_CONE or d < 120:
+			best = e; best_d = d
+	if best: return { angle = atan2(best.y - 20 - oy, best.x - ox), target = best }
+	return { angle = angle, target = null }
+
+
+func attack() -> void:
+	var el: Dictionary = Data.get_module("elements").ELEMENTS[element]
+	var st := stage_index
+	var slug: float = [1.0, 1.25, 1.5][hunger_level]   # 배가 고프면 숨결이 굼떠진다
+	fire_timer = (el.rateByStage[st] if el.get("rateByStage") else el.rate) * (0.75 if fury > 0 else 1.0) * slug * (0.65 if gale > 0 else 1.0) * Flow.rate_mult()
+	animator.play("attack")
+	var a: float = aim_angle().angle
+	var pellets: int = el.pelletsByStage[st] if el.get("pelletsByStage") else el.pellets
+	for i in pellets: breathe(a + (i - (pellets - 1) / 2.0) * el.spread)
+	var sc: float = stage.scale
+	Vfx.spawn_effect("MUZZLE", x + cos(a) * 50 * sc, y - 40 * sc + sin(a) * 50 * sc, { angle = a + PI / 2, size = 0.7 + sc * 0.4, color = el.color })
+	GameCamera.current.kick(a, 3.5 if el.pellets > 1 else 2.0)   # 쏘는 반대쪽으로 화면이 살짝 밀린다
+	Sfx.play(el.sound)
+
+
+## 현재 속성의 브레스 한 발
+func breathe(a: float, mult := 1.0) -> void:
+	var sc: float = stage.scale
+	var mx := x + cos(a) * MOUTH_OFFSET * sc
+	var my := y - 40 * sc + sin(a) * MOUTH_OFFSET * sc
+	var breath_bonus := 1 + Growth.stat("breath") if is_player else 1.0   # 성장 트리 '타오르는 목'
+	var el: Dictionary = Data.get_module("elements").ELEMENTS[element]
+	# 날씨가 숨결을 거드는 배율은 날씨를 옮길 때 곱한다
+	var damage: float = el.damage * damage_mult * breath_bonus * mult
+	Projectile.add(Projectile.new(mx, my, a, { faction = "ALLY", element = element, damage = damage, scale = 0.7 + sc * 0.3,
+		pierce = el.get("pierce", false) and stage_index >= el.get("pierceFromStage", 0), fromPlayer = true }))
 
 
 # ---------- NPC ----------
@@ -288,6 +500,24 @@ func _draw() -> void:
 	SpriteSheet.draw_frame(self, sheet, f, 0, body_y - dive_height, sc, motion, _outline)
 	_draw_accessory(sc, hover_y - dive_height)
 	if not is_player: _draw_hp_bar(hp / max_hp, -12, 60)
+	else: _draw_player_bar()
+
+
+## 내 용 머리 위의 체력바. 구석의 막대만으로는 싸우는 중에 눈이 가지 않아 언제 맞았는지도 모른 채 쓰러진다.
+## 다쳤을 때만 머리 위에 띄운다. 줌과 무관하게 화면 픽셀 크기로
+func _draw_player_bar() -> void:
+	var r := hp / max_hp
+	if r >= 1: return
+	var k := 1.0 / GameCamera.current.zoom.x
+	var W := 74.0
+	var H := 8.0
+	draw_set_transform(Vector2(roundf(x) - x, roundf(y - head_top(sheet) - 2 + hover_y) - y), 0, Vector2(k, k))
+	draw_rect(Rect2(-W / 2 - 2, -H - 2, W + 4, H + 4), Color(8 / 255.0, 7 / 255.0, 14 / 255.0, 0.82))
+	draw_rect(Rect2(-W / 2, -H, W * r, H), Color("#7ddc5a") if r > 0.5 else Color("#ffc93c") if r > 0.25 else Color("#ff5a4d"))
+	# 위험하면 테두리가 맥박친다
+	if r <= 0.3:
+		draw_rect(Rect2(-W / 2 - 2, -H - 2, W + 4, H + 4), Color(1, 90 / 255.0, 77 / 255.0, 0.5 + sin(GameState.game_time * 8) * 0.4), false, 2)
+	draw_set_transform(Vector2.ZERO)
 
 
 func _draw_shadow(r: float, alpha: float) -> void:

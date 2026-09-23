@@ -29,6 +29,9 @@ const KEYMAP := {
 	"zoom": [KEY_V],
 	"debug": [KEY_F3],         # 밸런스 오버레이
 	"cancel": [KEY_ESCAPE],
+	# 키가 없고 터치 버튼만 누르는 동작 (터치 조작을 옮길 때 이어 붙인다)
+	"attack": [],
+	"nextElement": [],
 }
 
 ## 터치 스틱이 주는 이동 벡터 (ui/touch 가 넣는다)
@@ -37,6 +40,13 @@ var virtual_axis := Vector2.ZERO
 var _virtual := {}
 ## 휠: 위로 굴리면 +1 (당겨 보기)
 var wheel := 0
+## 마우스: 화면 좌표, 창 안에 있는가(진짜 마우스를 쓰는 중인가), 왼쪽 버튼을 누르고 있는가(브레스 연사),
+## 이번 프레임에 눌렀는가, 이번 프레임에 오른쪽 버튼을 눌렀는가
+var mouse_pos := Vector2.ZERO
+var mouse_inside := false
+var mouse_down := false
+var mouse_clicked := false
+var mouse_right := false
 
 
 func _ready() -> void:
@@ -53,12 +63,27 @@ func _ready() -> void:
 
 func _process(_dt: float) -> void:
 	wheel = 0
+	mouse_clicked = false
+	mouse_right = false
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_MOUSE_EXIT: mouse_inside = false
+	elif what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		mouse_down = false
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP: wheel += 1
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN: wheel -= 1
+	if event is InputEventMouseMotion:
+		mouse_pos = event.position; mouse_inside = true
+	elif event is InputEventMouseButton:
+		mouse_pos = event.position; mouse_inside = true
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			mouse_down = event.pressed
+			if event.pressed: mouse_clicked = true
+		elif event.pressed and event.button_index == MOUSE_BUTTON_RIGHT: mouse_right = true
+		elif event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_UP: wheel += 1
+		elif event.pressed and event.button_index == MOUSE_BUTTON_WHEEL_DOWN: wheel -= 1
 
 
 func down(action: String) -> bool:

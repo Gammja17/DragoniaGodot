@@ -8,4 +8,4 @@ func _ready() -> void:
 	add_child(main)
 	await get_tree().process_frame
 	var args := OS.get_cmdline_user_args()
-	if args.size() > 0 and args[0] != "VILLAGE": World.travel_to(args[0], main.hud)
+	if args.size() > 0 and args[0] != "VILLAGE": World.travel_to(args[0])

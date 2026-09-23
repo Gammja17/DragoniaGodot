@@ -55,6 +55,9 @@ var pendingBond = null
 var kids := []
 var entities := {}            # 지금 지도의 개체들 (systems/world 가 채운다)
 var bannerUntil := 0.0
+var flow := {}                # 싸움의 흐름 (systems/flow)
+var packTurn := 0.0           # 포위하는 무리가 덤빌 차례
+var emberDay := 0
 
 
 func _ready() -> void:
@@ -116,3 +119,6 @@ func reset() -> void:
 	pendingBond = null
 	kids = []
 	entities = empty_pools()
+	flow = {}
+	packTurn = 0.0
+	emberDay = 0

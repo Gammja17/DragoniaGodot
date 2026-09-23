@@ -8,6 +8,8 @@ const ZOOMS := [2.0 / 3.0, 1.0, 4.0 / 3.0, 5.0 / 3.0]
 const ZOOM_NAMES := ["멀리", "보통", "가까이", "아주 가까이"]
 const SETTINGS := "user://settings.cfg"
 
+static var current: GameCamera     # 흔들림·반동을 어디서든 부를 수 있게
+
 var cam_x := 0.0
 var cam_y := 0.0
 var w := 0.0              # 월드 기준 화면 크기 (줌을 당기면 작아진다)
@@ -20,6 +22,7 @@ var _boost := 1.0         # 컷씬은 시점을 잠깐 더 당긴다. 줌 단계
 
 
 func _ready() -> void:
+	current = self
 	anchor_mode = Camera2D.ANCHOR_MODE_FIXED_TOP_LEFT
 	var screen := get_viewport_rect().size
 	# 저장된 값이 없으면: 작은 화면(휴대폰)은 '멀리', 아니면 '보통'
@@ -80,6 +83,11 @@ func shake(power: float) -> void:
 func kick(a: float, px := 3.0) -> void:
 	cam_x -= cos(a) * px
 	cam_y -= sin(a) * px
+
+
+## 화면 px → 월드 좌표 (마우스가 가리키는 곳)
+func screen_to_world(p: Vector2) -> Vector2:
+	return p / zoom.x + position
 
 
 ## 컷씬 연출은 cutscene 을 옮길 때 이어 붙인다

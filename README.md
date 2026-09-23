@@ -6,6 +6,9 @@
 - 엔진: Godot 4.7 (Steam판), 렌더러는 웹·모바일에서 다 도는 Compatibility
 - 기준 원본: Dragonia `154b06d` (이식이 끝날 때까지 2D판은 동결)
 - 내보내기: 웹(GitHub Pages) + 안드로이드 APK + PC
+- **웹에서 하기: https://gammja17.github.io/DragoniaGodot/** — main 에 올릴 때마다 `.github/workflows/pages.yml` 이
+  GitHub 서버에서 Godot 와 웹 내보내기 틀을 받아 내보내고 Pages 에 올린다 (틀은 이 PC 에 받지 않는다).
+  스레드 없는 웹판(`export_presets.cfg` 의 "Web")이라 Pages 에 특별한 헤더가 없어도 돈다. 받는 크기는 약 100MB (게임 59MB 중 배경음이 51MB)
 
 ## 폴더
 

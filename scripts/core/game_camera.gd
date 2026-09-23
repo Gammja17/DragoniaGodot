@@ -96,15 +96,18 @@ func follow(target, smooth := 0.1) -> void:
 		smooth = 1.0 if Cutscene.snap or Cutscene.exact else 0.055   # 카메라 박자는 제 속도로 옮겨 간다
 		Cutscene.snap = false
 	if absf(_boost - Cutscene.boost) > 0.0015: _apply_boost(Cutscene.boost)
-	cam_x += (tx - w / 2 - cam_x) * smooth
-	cam_y += (ty - h / 2 - cam_y) * smooth
+	# smooth 는 60fps 한 프레임에 남은 거리의 몇 할인가. 144Hz 화면에서 2.4배 빨리 붙고 흔들림이 빨리 식던 것 — 흐른 시간으로 바꾼다
+	var frames := clampf(get_process_delta_time(), 0.0, 0.1) * 60.0
+	var k := 1.0 if smooth >= 1.0 else 1.0 - pow(1.0 - smooth, frames)
+	cam_x += (tx - w / 2 - cam_x) * k
+	cam_y += (ty - h / 2 - cam_y) * k
 	# 지도가 화면보다 작으면 가운데에 둔다. 컷씬일 때는 경계를 조금 넘어가도 둔다 —
 	# 인물을 대화창 위로 올려야 하는데 작은 지도에서는 경계에 걸려 화면 아래쪽에 박혀 버린다 (어차피 띠가 가린다)
 	var b := Terrain.current_map_bounds()
 	var slack := h * 0.34 if shot != null else 0.0
 	cam_x = (b.x - w) / 2 if b.x <= w else clampf(cam_x, -slack, b.x - w + slack)
 	cam_y = (b.y - h) / 2 if b.y <= h and shot == null else clampf(cam_y, -slack, maxf(-slack, b.y - h + slack))
-	_shake_power *= 0.86
+	_shake_power *= pow(0.86, frames)
 	shake_x = (randf() - 0.5) * _shake_power * 2
 	shake_y = (randf() - 0.5) * _shake_power * 2
 	# 정수 좌표: 픽셀아트가 떨리지 않게

@@ -3,7 +3,7 @@ extends GamePanel
 ## 2D판 ui/kidsPanel.js. 가족 창 [P]. 아이마다 단계 · 애정(♥) · [이름] · [따라오는 중 / 둥지 지키는 중]
 
 const ROW := preload("res://scenes/ui/kid_row.tscn")
-const STAGE_NAMES := { "BABY": "아기", "TEEN": "청소년 (전투 가능)", "ADULT": "성체 (둥지 수호)" }
+const STAGE_NAMES := { "BABY": "아기", "TEEN": "어린 용 (전투 가능)", "ADULT": "성체 (둥지 수호)" }
 
 
 func _ready() -> void:

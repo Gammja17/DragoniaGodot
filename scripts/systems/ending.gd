@@ -85,8 +85,10 @@ static func _next() -> void:
 		_next()
 
 
-## 까맣게 덮고, 덮인 동안 때와 자리를 옮긴다 (지역 이름 배너 없이)
+## 까맣게 덮고, 덮인 동안 때와 자리를 옮긴다 (지역 이름 배너 없이).
+## 다음이 장면이면 덮인 동안 걸어 두어서, 막이 걷히면 이미 띠가 내려와 있다 (장면 사이에 HUD 가 번쩍 보이던 것)
 static func _fade(s: Dictionary) -> void:
+	var handoff: bool = not _steps.is_empty() and (_steps[0].has("scene") or _steps[0].has("morning") or _steps[0].has("quest"))
 	Hud.fade_screen(str(s.fade), func():
 		if s.get("nextDay", false): GameState.day += 1
 		if s.has("time"): GameState.dayTime = float(s.time)
@@ -101,7 +103,8 @@ static func _fade(s: Dictionary) -> void:
 		p.flying = false
 		if GameCamera.current:
 			GameCamera.current.cam_x = p.x - GameCamera.current.w / 2
-			GameCamera.current.cam_y = p.y - GameCamera.current.h / 2, _next)
+			GameCamera.current.cam_y = p.y - GameCamera.current.h / 2
+		if handoff: _next.call_deferred(), func(): if not handoff: _next(), handoff)
 
 
 ## 퀘스트를 닫는 말과 장면을 그 자리에서 (어둠의 길: 엘더에게 하는 보고)
@@ -143,6 +146,7 @@ static func _finish() -> void:
 	if not GameState.story.has("flags"): GameState.story.flags = {}
 	GameState.story.flags.ending = true
 	GameState.raidTimer = maxf(GameState.raidTimer, 300)
-	Hud.pop("이야기는 여기서 끝나지만, 마을의 하루는 내일도 이어진다.", "🌅")
+	GameState.bannerUntil = GameState.play_time + 25   # 끝난 뒤 한동안은 사건 장면을 띄우지 않는다 (숨 돌릴 틈)
+	Hud.pop("결말을 보았다. 여기서부터는 마음 가는 대로 — 마을의 하루는 계속된다.", "🌅")   # 마지막 장의 끝줄을 되풀이하지 않는다
 	Quests.changed()
 	Save.save_game()

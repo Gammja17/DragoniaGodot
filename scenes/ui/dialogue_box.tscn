@@ -119,3 +119,14 @@ autowrap_mode = 3
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_constants/separation = 4
+
+[node name="Next" type="Label" parent="."]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+mouse_filter = 2
+text = "▼"
+label_settings = SubResource("name_text")
+horizontal_alignment = 2
+vertical_alignment = 2

@@ -159,7 +159,7 @@ static func _own_menu(npc, nm: String):
 ## 잡담·선물 묶음
 static func _talk_menu(npc) -> void:
 	var p = GameState.player
-	var sub := [{ label = "요즘 어때?", on_select = func(): _chat(npc) }]
+	var sub := [{ label = "💬 안부를 묻는다", on_select = func(): _chat(npc) }]
 	if p.inventory.meat > 0 and npc.last_gift_day != GameState.day:
 		sub.append({ label = "🎁 고기를 선물한다 (고기 -1)", on_select = func(): _give_gift(npc) })
 	if relation_tier(npc.relation) >= 2 and npc.last_present_day != GameState.day:
@@ -224,7 +224,7 @@ static func _hear_quest(npc, q: Dictionary) -> void:
 		{ label = "📜 맡는다: %s" % q.title, on_select = func():
 			close()
 			Quests.accept(q) },
-		{ label = "지금은 어렵겠어", on_select = close },
+		{ label = "지금은 사양한다", on_select = close },
 		{ label = "다른 얘기를 한다", on_select = func(): open_hub(npc, true) },
 	])
 
@@ -265,7 +265,7 @@ static func _bring_to_quest(npc, q: Dictionary) -> void:
 			Quests.complete_step(q, true)
 			if st.get("scene"): Chronicle.play_scene(q.title, st.scene, func(): _after_step(npc))
 			else: _after_step(npc) },
-		{ label = "아직 안 줄래", on_select = close },
+		{ label = "아직 건네지 않는다", on_select = close },
 	])
 
 
@@ -310,7 +310,16 @@ static func _greeting(npc, talk: Dictionary, tier: int) -> String:
 	if not fits.is_empty() and randf() < 0.55:
 		var l = fits.pick_random().lines[nm]
 		return l.pick_random() if l is Array else l
-	return talk.greet[tier]
+	return _retold(npc, talk.greet[tier])
+
+
+## 이야기가 흘러간 뒤 맞지 않게 된 줄은 바꿔 말한다. NPC_TALK[이름] 의 { 원래 줄: 그 뒤에 할 말 }:
+## afterGron — 그론이 떠난 뒤 (그가 살아 있는 듯한 말) · afterDark — 어둠의 길 끝에 (교화의 길 기준인 말)
+static func _retold(npc, line: String) -> String:
+	var t: Dictionary = _talk().NPC_TALK[npc.config.name]
+	if GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): line = t.get("afterDark", {}).get(line, line)
+	if Routine.is_dead("Gron"): line = t.get("afterGron", {}).get(line, line)
+	return line
 
 
 static func _chat(npc) -> void:
@@ -323,7 +332,7 @@ static func _chat(npc) -> void:
 	if npc.last_talk_day != GameState.day:   # 하루 첫 대화는 호감이 조금 오른다
 		npc.last_talk_day = GameState.day
 		add_relation(npc, 3)
-	show(npc, pool.pick_random(), [{ label = "그렇구나.", on_select = func(): open_hub(npc) }])
+	show(npc, _retold(npc, pool.pick_random()), [{ label = "그렇구나.", on_select = func(): open_hub(npc) }])
 
 
 static func _give_gift(npc) -> void:
@@ -332,7 +341,8 @@ static func _give_gift(npc) -> void:
 	add_relation(npc, 8)
 	Particles.burst(npc.x, npc.y - 60, "#ff7aa8", 1, 10)
 	Hud.pop("%s에게 고기를 선물했습니다. (호감 ↑)" % Names.npc(npc.config.name), "🎁")
-	show(npc, "이걸 나한테? 고마워. 잘 먹을게.", [{ label = "별말씀을.", on_select = func(): open_hub(npc) }])
+	var said = _talk().NPC_TALK.get(npc.config.name, {}).get("gift")   # 받는 말은 용마다 (data/npcTalk.json 의 gift)
+	show(npc, _retold(npc, said.pick_random()) if said else "이걸 나한테? 고마워. 잘 먹을게.", [{ label = "(고개를 끄덕인다)", on_select = func(): open_hub(npc) }])
 
 
 static func _receive_present(npc) -> void:
@@ -341,7 +351,8 @@ static func _receive_present(npc) -> void:
 	GameState.player.gold += gold
 	GameState.player.inventory.meat += 1
 	Hud.pop("%s의 선물: %dG, 고기 1개" % [Names.npc(npc.config.name), gold], "🎁")
-	show(npc, "오다가 주웠는데 너 주려고 가져왔어. 별건 아니야.", [{ label = "고마워!", on_select = func(): open_hub(npc) }])
+	var said = _talk().NPC_TALK.get(npc.config.name, {}).get("present")   # 건네는 말도 용마다 (present)
+	show(npc, _retold(npc, said.pick_random()) if said else "오다가 주웠는데 너 주려고 가져왔어. 별건 아니야.", [{ label = "고맙다고 한다", on_select = func(): open_hub(npc) }])
 
 
 ## 아이와 놀아 준다. 아이의 호감이 오르고, 그 부모도 조금 좋아한다

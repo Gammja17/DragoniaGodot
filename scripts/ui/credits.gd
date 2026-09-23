@@ -38,6 +38,8 @@ func roll(rows: Array, end_text: String, done: Callable) -> void:
 	_end.text = end_text
 	_end.visible = false
 	_end.modulate.a = 0
+	if not _hint.has_meta("text"): _hint.set_meta("text", _hint.text)   # 패드·터치면 그 기기의 단추 이름으로
+	_hint.text = GameInput.words(_hint.get_meta("text"))
 	_hint.visible = true
 	visible = true
 	modulate.a = 0

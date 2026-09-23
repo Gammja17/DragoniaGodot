@@ -192,7 +192,8 @@ static func fading() -> bool:
 	return current != null and current.get_node("FadeScreen").visible
 
 ## 화면을 어둡게 했다가(가운데 글자) 다시 밝힌다. mid: 완전히 어두워졌을 때, done: 다시 밝아진 뒤
-static func fade_screen(text: String, mid: Callable, done: Callable) -> void:
+## keep_paused: 걷힐 때 세상을 풀지 않는다 — 덮인 동안(mid) 다음 장면을 걸어 두면, 막이 걷히며 그 장면이 드러난다
+static func fade_screen(text: String, mid: Callable, done: Callable, keep_paused := false) -> void:
 	var f: ColorRect = current.get_node("FadeScreen")
 	f.get_node("Text").text = text
 	f.visible = true
@@ -202,7 +203,7 @@ static func fade_screen(text: String, mid: Callable, done: Callable) -> void:
 	t.tween_interval(0.1)
 	t.tween_callback(mid)
 	t.tween_interval(1.3)
-	t.tween_callback(func(): GameState.isDialogueOpen = false)
+	if not keep_paused: t.tween_callback(func(): GameState.isDialogueOpen = false)
 	t.tween_property(f, "modulate:a", 0.0, 0.9)
 	t.tween_callback(func():
 		f.visible = false
@@ -276,6 +277,7 @@ func set_boss_bar(name_text, ratio := 0.0) -> void:
 ## 눈앞에서 할 수 있는 일 (말 걸기 · 줍기 · 석비 …). 그 대상 머리 위에 붙는다. target 이 null 이면 감춘다
 static var _tip_target = null
 func set_interact(target, text := "") -> void:
+	text = GameInput.words(text)
 	_tip_target = target
 	var tip: Label = $InteractTip
 	tip.visible = target != null and not DialogueBox.is_open() and not Cutscene.on
@@ -355,11 +357,11 @@ func _cinema_fade() -> void:
 
 ## 알림은 화면 위쪽 가운데에 차곡차곡 쌓인다. 한 번에 최대 4개, 3.4초
 func toast(msg: String, icon := "✨") -> void:
-	if Cutscene.on and not GameState.prologue:
+	if (Cutscene.on or Cutscene.bars >= 0.05) and not GameState.prologue:   # 띠가 다 걷힌 뒤에 (걷히는 동안엔 판이 투명하다)
 		if _held_toasts.size() < MAX_TOASTS: _held_toasts.append([msg, icon])
 		return
 	var t: Control = TOAST_SCENE.instantiate()
-	t.get_node("Label").text = "%s %s" % [icon, msg]
+	t.get_node("Label").text = "%s %s" % [icon, GameInput.words(msg)]   # 패드·터치면 그 기기의 단추 이름으로
 	_toasts.add_child(t)
 	while _toasts.get_child_count() > MAX_TOASTS:
 		var old := _toasts.get_child(0)

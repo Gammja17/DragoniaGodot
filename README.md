@@ -2,6 +2,7 @@
 
 브라우저판 [Dragonia](https://github.com/Gammja17/Dragonia)를 Godot 4 로 옮기는 저장소.
 게임 내용(이야기·수치·지도·그림)은 그대로 두고 엔진만 바꾼다.
+이식을 마친 뒤로는 이야기·연출·수치를 이 저장소에서 고쳐 나간다 (무엇을 왜 고쳤는지는 `docs/improve-report.md`).
 
 - 엔진: Godot 4.7 (Steam판), 렌더러는 웹·모바일에서 다 도는 Compatibility
 - 기준 원본: Dragonia `154b06d` (이식이 끝날 때까지 2D판은 동결)
@@ -16,7 +17,7 @@
 |---|---|
 | `scenes/` | 씬. UI 도 코드로 만들지 않고 씬으로 만든다 |
 | `scripts/` | GDScript. 2D판 `src/` 와 같은 갈래(core·world·render·entities…)로 나눈다 |
-| `data/` | 2D판 `src/data` 를 JSON 으로 옮긴 것 (손으로 고치지 않는다). 데이터 속 함수는 `scripts/data/conditions.gd` 에 GDScript 로 옮기고 경로("모듈:경로")로 이어 붙인다 |
+| `data/` | 2D판 `src/data` 를 JSON 으로 옮긴 것에서 출발했고, 이제는 여기가 원본이다 (손으로 고친다. `tools/export_data.mjs` 를 다시 돌리면 고친 것이 덮인다). 결말 흐름은 `ending.json`. 데이터 속 함수는 `scripts/data/conditions.gd` 에 GDScript 로 옮기고 경로("모듈:경로")로 이어 붙인다 |
 | `assets/` | 2D판 에셋 복사본 (출처는 `CREDITS.md`) |
 | `tools/` | 변환·검증 도구 |
 | `_ref2d/` | 2D판 원본 사본. git 에 넣지 않는다 (아래 참고) |
@@ -53,6 +54,8 @@ node tools/export_data.mjs
 - `tools/test_audio.tscn` — 합성음 36개 만들기 · 효과음 전부 틀어 보기 · 배경음이 처음 화면 → 마을 → 굴 → 붉은 달로 바뀌고 앞 곡이 물러나 멈추는지 · 음량 · 음소거
 - `tools/shot_ui.tscn -- title` — 처음 화면·새 용·설정·도움말 찍기 (`title` · `create` · `settings` · `help`)
 - `tools/shot_talk.tscn -- hub` — 말 걸기·안내·굴 화면 찍기 (`hub` · `tip` · `den` · `cave`)
+- `tools/test_ending.tscn -- guardian` — 결말 세 갈래(`guardian` · `redeem` · `dark`)를 끝까지: 대면 → 싸움 → 무릎 → 고르기 → 저녁 → 마지막 장 → 에필로그 → 크레딧 → 자유롭게. 둘째 인자로 폴더를 주면(창을 띄워) 장면마다 사진
+- `tools/shot_scene.tscn -- demo C:/tmp/shots` — 컷씬을 장면째로 찍기 (`demo` · `event:<사건 id>` · `prologue`. 창을 띄워야 그림이 나온다)
 
 ```bash
 godot --headless --path . tools/test_move.tscn
@@ -73,6 +76,8 @@ godot --headless --path . tools/test_move.tscn
    시험은 모두 `--headless` 로 돌린다. 창을 띄우는 화면 찍기(shot_*)는 따로 부탁받았을 때만)
 6. **연출** — 조명(빛 지도 · 광원 · 스스로 빛나는 것 · 반딧불이 · 구름 그림자), 낮밤, 날씨 그림(비 · 눈 · 불티 · 재 · 번갯불), 후처리(번짐 · 색 어긋남 · 피격 일렁임 · 가장자리 어둠 · 색 보정), 화면 효과 판,
    소리(효과음: 코드로 만든 합성음 36 + Kenney 녹음 19 · 배경음: 장면별 15곡을 1.6초에 걸쳐 겹쳐 갈아 끼움, `Audio` autoload) ✅
+7. **다듬기** — 막히던 퀘스트, 한 번에 흐르는 결말과 크레딧, 컷씬 연출 박자(`scripts/systems/cutscene.gd` 머리말), 보스 등장과 최후, 대사 손질, 적의 위협·보스 예고·성장 곡선, 게임패드와 기기별 안내 글
+   (브랜치 `improve/story-cutscene-fun`. 자세한 것은 `docs/improve-report.md`)
 
 ## 화면 효과 판 쓰는 법
 

@@ -86,7 +86,7 @@ static func turn_in_npc(q: Dictionary) -> String: return q.turnIn if q.get("turn
 
 static func _hint_or_goal(q: Dictionary) -> String:
 	var st = cur_step(q)
-	return st.hint if st and st.get("hint") else step_goal_text(q)
+	return GameInput.words(st.hint) if st and st.get("hint") else step_goal_text(q)
 
 
 # ---------- 목표를 한 줄로 ----------
@@ -97,7 +97,7 @@ static func goal_text(g: Dictionary) -> String:
 	match g.type:
 		"kill":
 			var nm: String = "인간 사냥꾼" if g.target == "HUNTER" else Data.get_module("enemies").ENEMIES.get(g.target, {}).get("name", g.target)
-			return "%s %d마리 처치" % [nm, n]
+			return "%s %d%s 처치" % [nm, n, "명" if g.target == "HUNTER" else "마리"]   # 사람은 '명' (습격 알림과 같게)
 		"killAny": return "아무 적이나 %d마리 처치" % n
 		"elite": return "정예 몬스터 %d마리 처치" % n
 		"boss": return "%s 처치" % Data.get_module("enemies").BOSSES[g.id].name
@@ -463,12 +463,12 @@ static func quest_log() -> Array:
 			var st: Dictionary = qs[i]
 			var sdone: bool = done or i < si
 			var snow: bool = active and i == si
-			if sdone or snow: st_rows.append({ hint = st.hint if st.get("hint") else goal_text(st.goal), scene = st.get("scene"), done = sdone, now = snow })
+			if sdone or snow: st_rows.append({ hint = GameInput.words(st.hint) if st.get("hint") else goal_text(st.goal), scene = st.get("scene"), done = sdone, now = snow })
 		var cs = cur_step(q) if active else null
 		by_act[q.act].rows.append({
 			id = q.id, title = q.title, giver = giver_line(q.giver),
 			summary = q.get("summary", ""),
-			hint = "%s에게 돌아가 보고한다." % Names.npc(turn_in_npc(q)) if complete else ((cs.hint if cs and cs.get("hint") else step_goal_text(q)) if active else ""),
+			hint = "%s에게 돌아가 보고한다." % Names.npc(turn_in_npc(q)) if complete else ((GameInput.words(cs.hint) if cs and cs.get("hint") else step_goal_text(q)) if active else ""),
 			goal = step_goal_text(q) if active and not complete else "-",
 			reward = reward_text(q),
 			progress = "완료" if done else "보고 대기" if complete else "%d / %d" % [progress(q), step_total(q)],

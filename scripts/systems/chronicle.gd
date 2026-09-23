@@ -197,6 +197,7 @@ static func _find(who):
 ## 여러 줄짜리 장면을 차례로 보여 준다. 아침 장면(Story)도 이걸 쓴다.
 ## line = { who: NPC 이름 | '나' | '???', text, look?, label?, do?, zoom?, auto? } — do·zoom·auto 는 Cutscene 의 연출 박자
 static func play_scene(title, lines: Array, then = null, cinematic := true, place = null) -> void:
+	lines = _split_directions(lines)
 	# 장면이 벌어질 곳이 따로 있으면 먼저 그리로 간다
 	if place and place != GameState.map_id and not GameState.dungeon: World.travel_to(place)
 	# 말할 이들은 처음부터 무대에 올린다 — 제 차례에 불쑥 튀어나오지 않게
@@ -233,6 +234,42 @@ static func play_scene(title, lines: Array, then = null, cinematic := true, plac
 		st.i = lines.size()
 		step.call(step)
 	step.call(step)
+
+
+## "(티아맷이 날개로 어깨를 쳤다.) 축하해." 처럼 대사에 섞인 긴 무대 지시는 해설 줄로 떼어 낸다 —
+## 말하는 이의 말풍선 안에 그 이를 가리키는 묘사가 섞이지 않게. "(웃는다.)" 같은 짧은 몸짓은 그대로 둔다.
+## 연출 박자(do)·가리키기(look)는 첫 조각에, 당겨 찍기(zoom)·저절로 넘기기(auto)는 조각마다
+static var _direction: RegEx
+static func _split_directions(lines: Array) -> Array:
+	if _direction == null:
+		_direction = RegEx.new()
+		_direction.compile("\\([^()]{10,}[.!?…]\\)")
+	var out := []
+	for l in lines:
+		var text: String = str(l.get("text", ""))
+		var found := _direction.search_all(text)
+		if found.is_empty() or (found.size() == 1 and found[0].get_start() == 0 and found[0].get_end() == text.length()):
+			out.append(l)
+			continue
+		var pieces := []
+		var at := 0
+		for m in found:
+			pieces.append(text.substr(at, m.get_start() - at).strip_edges())
+			pieces.append(m.get_string())
+			at = m.get_end()
+		pieces.append(text.substr(at).strip_edges())
+		var first := true
+		for p in pieces:
+			if p == "": continue
+			var nl: Dictionary = l.duplicate()
+			if not first:
+				nl = { who = l.who } if l.has("who") else {}
+				for k in ["zoom", "auto"]:
+					if l.has(k): nl[k] = l[k]
+			nl.text = p
+			out.append(nl)
+			first = false
+	return out
 
 
 ## 한 줄을 대화창에 띄운다. 대사가 없는 줄(연출만 하는 줄)은 곧바로 다음으로

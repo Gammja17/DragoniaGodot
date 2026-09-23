@@ -26,6 +26,7 @@ static var step := 2
 @onready var _rel_fill: Control = $Pad/Body/Header/Who/Rel/Fill
 @onready var _text: Label = $Pad/Body/Text
 @onready var _options: VBoxContainer = $Pad/Body/Options
+@onready var _next: Label = $Next          # 컷씬의 '다음' 표시 (넘길 것이 하나뿐이면 단추 대신 모서리의 ▼)
 
 var _selected := 0
 var _typed := 0.0
@@ -34,6 +35,7 @@ var _auto := 0.0           # 다 찍히고 이만큼 뒤 저절로 넘어간다 
 var _auto_t := 0.0
 var _list := []
 var _cinematic := false
+var _compact := false
 var _body_color: Color
 var _style_normal: StyleBoxFlat
 var _style_selected: StyleBoxFlat
@@ -49,6 +51,8 @@ func _ready() -> void:
 	_style_selected.border_color = Color("#d8b25a")
 	get_viewport().size_changed.connect(_layout)
 	_layout()
+	gui_input.connect(func(ev):
+		if _compact and ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT: _choose(0))
 
 
 static func is_open() -> bool:
@@ -84,7 +88,7 @@ func show_dialogue(opts: Dictionary) -> void:
 	_header.visible = not narration
 	_text.label_settings.font_color = NARRATION_COLOR if narration else _body_color
 	if rel != null: _rel_fill.size.x = (_rel.size.x - 2) * minf(100, rel) / 100.0
-	_text.text = fill_name(opts.get("text", ""))
+	_text.text = GameInput.words(fill_name(opts.get("text", "")))
 	_text.visible_characters = 0
 	_typed = 0.0
 	_pause = 0.0
@@ -102,6 +106,12 @@ func show_dialogue(opts: Dictionary) -> void:
 		# 마우스를 '움직여' 얹으면 그 줄이 골라진다 (창이 열리는 순간 커서 밑에 깔린 줄이 멋대로 골라지지 않게)
 		b.gui_input.connect(func(ev): if ev is InputEventMouseMotion and _selected != i: _select(i))
 		_options.add_child(b)
+	# 컷씬에서 '다음' 하나뿐이면 단추 줄을 감추고 모서리에 ▼ 만 둔다 (대화창이 반쯤 줄어 인물이 가려지지 않게).
+	# 단추는 그대로 두어 [Space]·클릭이 그대로 먹는다
+	var compact := _cinematic and _list.size() == 1
+	_options.visible = not compact
+	_next.visible = false
+	_compact = compact
 	_text.label_settings.font_size = 12 * step
 	_select(0)
 	visible = true
@@ -168,6 +178,9 @@ func _process(dt: float) -> void:
 		if _auto_t >= _auto:
 			_auto = 0.0
 			_choose(0)
+	# ▼ 는 다 찍힌 뒤에 천천히 깜박인다
+	_next.visible = _compact and not typing()
+	if _next.visible: _next.modulate.a = 0.55 + sin(Time.get_ticks_msec() / 260.0) * 0.45
 
 
 ## 아직 글자를 찍는 중인가
@@ -207,6 +220,9 @@ func _choose(i: int) -> void:
 func handle_keys() -> void:
 	var n := _options.get_child_count()
 	if n == 0: return
+	if _compact and GameInput.mouse_clicked:   # 컷씬: 화면 아무 데나 눌러도 넘어간다
+		_choose(0)
+		return
 	if GameInput.pressed("down") or GameInput.pressed("right"):
 		_select((_selected + 1) % n); Sfx.play("ui")
 	if GameInput.pressed("up") or GameInput.pressed("left"):

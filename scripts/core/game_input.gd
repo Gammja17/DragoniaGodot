@@ -191,3 +191,46 @@ func axis() -> Vector2:
 func aim_stick() -> Vector2:
 	var v := Vector2(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X), Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y))
 	return v if v.length() > AIM_DEADZONE else Vector2.ZERO
+
+
+# ---------- 안내 글을 기기에 맞추기 ----------
+## 안내 글(알림 · 퀘스트 힌트 · 대사 · 머리 위 안내)은 키보드·마우스 기준으로 쓰여 있다.
+## 게임패드나 터치로 하고 있으면 그 기기의 이름으로 바꿔 보여 준다. 조준하는 말은 통째로, 키 이름은 [ ] 안의 것을
+const AIM_WORDS := {
+	pad = [["마우스로 겨누고 클릭하면", "오른쪽 스틱으로 겨누면"], ["마우스로 겨누고 클릭해서", "오른쪽 스틱으로 겨눠서"],
+		["마우스로 겨누고 클릭", "오른쪽 스틱으로 겨누기"], ["꾹 누르면 계속", "밀고 있으면 계속"], ["[WASD]로", "왼쪽 스틱으로"], ["[WASD]", "왼쪽 스틱"]],
+	touch = [["마우스로 겨누고 클릭하면", "[불]을 누르면"], ["마우스로 겨누고 클릭해서", "[불]을 눌러서"],
+		["마우스로 겨누고 클릭", "[불] 단추로 쏘기"], ["[Shift]로 대시", "[대시]로 피하기"], ["[Shift] 대시로", "[대시]로"], ["[Z]로", "[비행]으로"],
+		["[WASD]로", "왼쪽 아래 스틱으로"], ["[WASD]", "왼쪽 아래 스틱"]],
+}
+## 키 → 그 기기에서 같은 일을 하는 단추 (PADMAP · 터치 단추 이름). 없는 것은 그대로 둔다.
+## 글에는 키 이름에 맞춘 조사(로·를)가 붙어 있어서, 받침 없이 끝나는 이름을 고른다 (받침이 있는 [비행]은 위에서 통째로)
+const KEY_WORDS := {
+	pad = { Space = "A", Shift = "LB", Esc = "B", E = "X", T = "십자 ↑", C = "십자 ↓", J = "Back", K = "Back", B = "Back", G = "Back",
+		Z = "L3", X = "R3", Q = "RB", F = "LT", R = "Y" },
+	touch = { Space = "말", Shift = "대시", E = "말", C = "먹기", J = "일지", K = "일지", B = "일지", G = "일지", Z = "비행" },
+}
+var _key_re := RegEx.create_from_string("\\[([A-Za-z]+)\\]")
+var _lead_re := RegEx.create_from_string("^((?:Space|E)(?: · (?:Space|E))*) ")   # 머리 위 안내 "Space 대화" · "E · Space 줍는다"
+
+
+func words(text: String) -> String:
+	var dev := "pad" if pad else "touch" if touch and not mouse_inside else ""
+	if dev == "" or text == "": return text
+	for w in AIM_WORDS[dev]: text = text.replace(w[0], w[1])
+	var keys: Dictionary = KEY_WORDS[dev]
+	var out := ""
+	var at := 0
+	for m in _key_re.search_all(text):
+		out += text.substr(at, m.get_start() - at)
+		out += "[%s]" % keys[m.get_string(1)] if keys.has(m.get_string(1)) else m.get_string()
+		at = m.get_end()
+	text = out + text.substr(at)
+	var lead := _lead_re.search(text)
+	if lead:
+		var names := []
+		for k in lead.get_string(1).split(" · "):
+			var n := "[%s]" % keys.get(k, k)
+			if not names.has(n): names.append(n)
+		text = " · ".join(names) + text.substr(lead.get_end() - 1)
+	return text

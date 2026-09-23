@@ -47,7 +47,7 @@ const TONES := {
 	"none": { sat = 1.0, vig = 1.0, bri = 1.0, con = 1.0 },
 	"memory": { sat = 0.25, vig = 2.2, bri = 0.97, con = 0.9 },   # 회상: 바랜 색
 	"grief": { sat = 0.45, vig = 1.9, bri = 0.9, con = 1.0 },     # 슬픔: 색이 빠진다
-	"dread": { sat = 0.7, vig = 2.2, bri = 0.86, con = 1.18 },    # 불길함: 짙고 어둡다
+	"dread": { sat = 0.72, vig = 2.0, bri = 0.93, con = 1.14 },   # 불길함: 짙고 어둡다
 	"warm": { sat = 1.15, vig = 1.3, bri = 1.05, con = 1.0 },     # 따뜻한 끝
 }
 
@@ -325,7 +325,7 @@ static func update(dt: float) -> void:
 	_walk_leaving(dt)
 	if _beat != null or not _beats.is_empty(): _tick_beats(dt)
 	if _shot: _shot.t += dt
-	var want := 1.0 if on else 0.0
+	var want := 1.0 if on or Ending.playing else 0.0   # 결말의 장면과 장면 사이(암전)에도 띠를 내리지 않는다 — HUD 가 번쩍이지 않게
 	var k := 1.0 - exp(-BAR_RATE * dt)
 	bars += (want - bars) * k
 	dim += (want - dim) * k

@@ -5,11 +5,17 @@ extends Node
 
 var _route := "guardian"
 var _log := []
+var _shots := ""       # 두 번째 인자로 폴더를 주면 (창을 띄워 돌릴 때) 장면마다 사진을 남긴다
+var _n := 0
+var _last_shot := 0
+var _last_text := ""
 
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	_route = args[0] if args.size() > 0 else "guardian"
+	_shots = args[1] if args.size() > 1 else ""
+	if _shots != "": DirAccess.make_dir_recursive_absolute(_shots)
 	Save.slot = 9
 	Save.delete()
 	var main: Node = load("res://scenes/main.tscn").instantiate()
@@ -119,6 +125,7 @@ var _last := 0
 var _last_title := ""
 ## 장면을 넘긴다. 고를 것이 있으면 길에 맞는 줄을
 func _advance() -> void:
+	_maybe_shoot()
 	if Hud.chapter_card_on(): Hud.skip_chapter_card()
 	if Time.get_ticks_msec() - _last < 200: return
 	_last = Time.get_ticks_msec()
@@ -130,6 +137,7 @@ func _advance() -> void:
 		return
 	if not DialogueBox.is_open(): return
 	var box := DialogueBox.current
+	if _shots != "" and box.typing(): return   # 사진을 찍을 때는 글이 다 찍히길 기다린다
 	box._text.visible_characters = -1
 	var want := 0
 	var labels: Array = box._list.map(func(o): return o.label)
@@ -144,3 +152,19 @@ func _advance() -> void:
 func _wait(sec: float) -> void:
 	var t := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - t < sec * 1000: await get_tree().process_frame
+
+
+func _maybe_shoot() -> void:
+	if _shots == "": return
+	var now := Time.get_ticks_msec()
+	var text: String = DialogueBox.current._text.text if DialogueBox.is_open() and not DialogueBox.current.typing() else ""
+	if (text != "" and text != _last_text) or now - _last_shot > 900:
+		_last_text = text if text != "" else _last_text
+		_last_shot = now
+		_shoot()
+
+
+func _shoot() -> void:
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png("%s/%03d.png" % [_shots, _n])
+	_n += 1

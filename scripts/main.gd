@@ -89,6 +89,7 @@ func _process(delta: float) -> void:
 	if GameInput.wheel: camera.step_zoom(GameInput.wheel)   # 휠은 조용히 (알림이 정신 사납다고 해서)
 	if GameInput.pressed("hideUi") and not GameState.isDialogueOpen: hud.toggle_ui()
 	if GameInput.pressed("help") and not GameState.isDialogueOpen: hud.help.toggle()
+	if GameInput.pressed("kids") and not GameState.isDialogueOpen: hud.kids.toggle()
 	if not GameState.isDialogueOpen:   # 일지의 탭으로 바로 간다
 		for k in [["journal", ""], ["skillbook", "skills"], ["growthTab", "growth"], ["worldmap", "map"], ["inventory", "bag"]]:
 			if GameInput.pressed(k[0]): hud.journal.toggle_tab(k[1])
@@ -112,7 +113,6 @@ func _process(delta: float) -> void:
 		elif GameInput.pressed("cancel") and not card_skipped:
 			# 장면이면 끝까지 건너뛴다 (대화창만 닫으면 장면의 끝이 영영 안 불려 사건 시계가 굳는다)
 			if not Chronicle.skip_scene():
-				DenPanel.close()
 				Dialogue.close()
 		else: DialogueBox.current.handle_keys()   # 방향키 + Space 로 선택
 	else:

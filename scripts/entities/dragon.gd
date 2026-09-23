@@ -24,6 +24,9 @@ const MOUTH_OFFSET := 40     # 화염구가 생성되는 위치(발 기준점에
 const FACE_BIAS := 1.2
 const INTERACT_RANGE := 120   # 이만큼 가까운 용에게 [Space] 로 말을 건다
 const TALK_RANGE := 260       # 마우스로 가리킨 용은 이만큼 떨어져 있어도 된다
+const TOUCH_AIM_RANGE := 700.0   # 터치: 이 안이면 등 뒤에 있어도 겨눈다
+const TOUCH_LOCK_TIME := 1.1     # 터치: 한 번 붙잡은 적은 이만큼 놓지 않는다 (겨냥이 프레임마다 튀지 않게)
+const TOUCH_HOMING := 5.5        # 터치: 숨결이 1초에 꺾을 수 있는 각도(rad). 겨눈 적을 따라간다
 
 var x: float:
 	get: return position.x
@@ -116,6 +119,8 @@ var last_meditate_day = null
 # 플레이어
 var carrying = null          # 'EGG'
 var fishing = null           # { x, y, wait, bite } 낚시 중일 때
+var aim_lock = null          # 터치 자동 조준이 붙잡은 적
+var aim_lock_timer := 0.0
 # 컷씬 무대로 걸어 들어오는 중이면 흐릿하다 (Cutscene)
 var stage_alpha := 1.0:
 	set(v):
@@ -269,7 +274,8 @@ func _update_player(dt: float) -> void:
 	for i in all_els.size():
 		if GameInput.pressed("num%d" % (i + 1)) and elements.has(all_els[i]): element = all_els[i]
 	fire_timer -= dt
-	# 마우스 왼쪽 버튼을 꾹 누르고 있으면 연사 (터치의 [불] 버튼은 터치 조작을 옮길 때)
+	aim_lock_timer -= dt   # 터치 자동 조준이 붙잡은 적
+	# 마우스 왼쪽 버튼(모바일은 [불] 단추)을 꾹 누르고 있으면 연사
 	var firing := GameInput.down("attack") or GameInput.mouse_down
 	if firing and fire_timer <= 0: attack()
 	for slot in Data.get_module("skills").SKILL_SLOTS:
@@ -532,10 +538,12 @@ func take_damage(dmg: float, _silent := false, _from = null) -> void:
 # ---------- 숨결 ----------
 ## 브레스·스킬이 날아갈 방향.
 ##  마우스를 쓰는 중이면 커서 쪽이 기준이고, 커서가 적 위에 얹히면 그 적에게 살짝 붙는다.
-##  키보드만 쓸 때는 바라보는 쪽 원뿔 안의 가장 가까운 적을 자동으로 겨눈다. (터치 조준은 터치 조작을 옮길 때)
+##  터치로 할 때는 둘레의 적 하나를 붙잡아 겨누고(_lock_target), 키보드만 쓸 때는 바라보는 쪽 원뿔 안의 가장 가까운 적.
 func aim_angle() -> Dictionary:
 	var E: Dictionary = GameState.entities
 	var foes: Array = E.enemies + E.humans + E.bosses
+	var act = GameState.activity
+	if act and (act.type == "SPAR" or act.type == "DUEL"): foes.append(act.npc)
 	var sc: float = stage.scale
 	var ox := x
 	var oy := y - 40 * sc
@@ -550,6 +558,9 @@ func aim_angle() -> Dictionary:
 				near = e; near_d = d
 		if near: return { angle = atan2(near.y - 20 - oy, near.x - ox), target = near }
 		return { angle = atan2(c.y - oy, c.x - ox), target = null }
+	if GameInput.touch and is_player:
+		var locked = _lock_target(foes)
+		return { angle = atan2(locked.y - 20 - oy, locked.x - ox), target = locked } if locked else { angle = angle, target = null }
 	var best = null
 	var best_d := float(AIM_RANGE)
 	for e in foes:
@@ -633,8 +644,10 @@ func _update_talk() -> bool:
 		tip = "E 굴 꾸미기"
 	Hud.current.set_interact(tip_at, tip)
 
-	# 말 걸기는 [Space]. T 도 그대로 쓸 수 있다. (탭으로 말 걸기는 터치 조작을 옮길 때)
-	var want_talk: bool = not flying and (GameInput.pressed("confirm") or GameInput.pressed("talk"))
+	# 말 걸기는 [Space]. T 도 그대로 쓸 수 있다. 왼쪽 버튼은 브레스라, 탭으로 말 걸기는 터치에서만 (mouse_inside 가 false)
+	var tapped: bool = GameInput.mouse_clicked and not GameInput.mouse_inside
+	var want_talk: bool = not flying and (GameInput.pressed("confirm") or GameInput.pressed("talk") or (tapped and pointed != null and pointed == target))
+	if tapped and pointed and pointed != target: Hud.pop("너무 멀어요. 가까이 가서 말을 거세요.", "💬")
 	# [T] 는 물건이 앞에 있어도 곁의 용에게 말을 건다 (따라오는 짝에게 말을 걸 길)
 	if GameInput.pressed("talk") and not target and not GameState.activity and not flying:
 		var n = near.call(E0.npcs, INTERACT_RANGE)
@@ -833,15 +846,40 @@ func eat() -> void:
 	Sfx.play("eat")
 
 
+## 터치 자동 조준: 붙잡을 적 하나. 둘레를 다 보되 앞쪽을 조금 더 친다.
+## 엄지가 이동과 겨냥을 다 맡아야 해서, 옆으로 피하며 쏘면 숨결이 늘 허공으로 나가던 것
+func _lock_target(foes: Array):
+	var alive := func(e) -> bool: return e != null and is_instance_valid(e) and not e.remove and e.get("awake") != false and e.hp > 0
+	if alive.call(aim_lock) and aim_lock_timer > 0 and Util.dist(self, aim_lock) < TOUCH_AIM_RANGE: return aim_lock
+	var best = null
+	var best_score := INF
+	for e in foes:
+		if not alive.call(e): continue
+		var d := Util.dist(self, e)
+		if d > TOUCH_AIM_RANGE: continue
+		var da := atan2(e.y - y, e.x - x) - angle
+		da = atan2(sin(da), cos(da))
+		var score := d * (1 + 0.45 * absf(da) / PI)   # 앞쪽이 조금 유리할 뿐, 뒤도 겨눈다
+		if score < best_score:
+			best = e
+			best_score = score
+	aim_lock = best
+	aim_lock_timer = TOUCH_LOCK_TIME
+	return best
+
+
 func attack() -> void:
 	var el: Dictionary = Data.get_module("elements").ELEMENTS[element]
 	var st := stage_index
 	var slug: float = [1.0, 1.25, 1.5][hunger_level]   # 배가 고프면 숨결이 굼떠진다
 	fire_timer = (el.rateByStage[st] if el.get("rateByStage") else el.rate) * (0.75 if fury > 0 else 1.0) * slug * (0.65 if gale > 0 else 1.0) * Flow.rate_mult()
 	animator.play("attack")
-	var a: float = aim_angle().angle
+	var aim := aim_angle()
+	var a: float = aim.angle
 	var pellets: int = el.pelletsByStage[st] if el.get("pelletsByStage") else el.pellets
-	for i in pellets: breathe(a + (i - (pellets - 1) / 2.0) * el.spread)
+	# 모바일에서만 유도탄. 엄지로 겨눌 수 없으니 숨결이 붙잡은 적 쪽으로 휘어 간다 (마우스를 쓰는 중이면 겨냥은 손끝에)
+	var seek = aim.target if GameInput.touch and is_player and not GameInput.mouse_inside else null
+	for i in pellets: breathe(a + (i - (pellets - 1) / 2.0) * el.spread, 1.0, seek)
 	var sc: float = stage.scale
 	Vfx.spawn_effect("MUZZLE", x + cos(a) * 50 * sc, y - 40 * sc + sin(a) * 50 * sc, { angle = a + PI / 2, size = 0.7 + sc * 0.4, color = el.color })
 	GameCamera.current.kick(a, 3.5 if el.pellets > 1 else 2.0)   # 쏘는 반대쪽으로 화면이 살짝 밀린다
@@ -849,7 +887,7 @@ func attack() -> void:
 
 
 ## 현재 속성의 브레스 한 발
-func breathe(a: float, mult := 1.0) -> void:
+func breathe(a: float, mult := 1.0, seek = null) -> void:
 	var sc: float = stage.scale
 	var mx := x + cos(a) * MOUTH_OFFSET * sc
 	var my := y - 40 * sc + sin(a) * MOUTH_OFFSET * sc
@@ -857,7 +895,8 @@ func breathe(a: float, mult := 1.0) -> void:
 	var el: Dictionary = Data.get_module("elements").ELEMENTS[element]
 	var damage: float = el.damage * damage_mult * breath_bonus * Weather.damage_mult(element) * mult
 	Projectile.add(Projectile.new(mx, my, a, { faction = "ALLY", element = element, damage = damage, scale = 0.7 + sc * 0.3,
-		pierce = el.get("pierce", false) and stage_index >= el.get("pierceFromStage", 0), fromPlayer = true }))
+		pierce = el.get("pierce", false) and stage_index >= el.get("pierceFromStage", 0), fromPlayer = true,
+		homing = TOUCH_HOMING if seek else 0.0, homingTarget = seek }))
 
 
 # ---------- NPC ----------

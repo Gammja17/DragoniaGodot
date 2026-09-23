@@ -1,0 +1,85 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/game_panel.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/den_panel.gd" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="tab"]
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(1, 1, 1, 0.055)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.847, 0.698, 0.353, 0.38)
+
+[sub_resource type="StyleBoxFlat" id="tab_on"]
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.847, 0.698, 0.353, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.847, 0.29, 1)
+
+[node name="DenPanel" instance=ExtResource("1")]
+script = ExtResource("2")
+title = "굴 꾸미기"
+panel_size = Vector2(720, 620)
+close_label = "닫기"
+tab_style = SubResource("tab")
+tab_on_style = SubResource("tab_on")
+
+[node name="Meta" type="HBoxContainer" parent="Frame/Lines/Body" index="0"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Cozy" type="Label" parent="Frame/Lines/Body/Meta"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+
+[node name="Note" type="Label" parent="Frame/Lines/Body/Meta"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+autowrap_mode = 3
+
+[node name="Tabs" type="HBoxContainer" parent="Frame/Lines/Body" index="1"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="have" type="Button" parent="Frame/Lines/Body/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "가진 것"
+
+[node name="craft" type="Button" parent="Frame/Lines/Body/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "엮는다"
+
+[node name="placed" type="Button" parent="Frame/Lines/Body/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "놓아 둔 것"
+
+[node name="Scroll" type="ScrollContainer" parent="Frame/Lines/Body" index="2"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="List" type="VBoxContainer" parent="Frame/Lines/Body/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Empty" type="Label" parent="Frame/Lines/Body" index="3"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+horizontal_alignment = 1
+autowrap_mode = 3

@@ -48,7 +48,8 @@ func _draw() -> void:
 func _draw_crosshair() -> void:
 	var p = GameState.player
 	if not p or GameState.isDialogueOpen: return
-	if not GameInput.mouse_inside: return   # 터치 조준 표시는 터치 조작을 옮길 때
+	# 터치에는 커서가 없다. 대신 자동 조준이 붙잡은 적을 괄호로 감싸 "여기로 나간다"를 보여 준다
+	if not GameInput.mouse_inside and not GameInput.touch: return
 	var color := Color(Data.get_module("elements").ELEMENTS[p.element].color)
 	var aim: Dictionary = p.aim_angle()
 	var target = aim.target
@@ -61,7 +62,7 @@ func _draw_crosshair() -> void:
 		for s in [[-1, -1], [1, -1], [-1, 1], [1, 1]]:
 			draw_polyline(PackedVector2Array([Vector2(cx + s[0] * r, cy + s[1] * r - s[1] * arm), Vector2(cx + s[0] * r, cy + s[1] * r),
 				Vector2(cx + s[0] * r - s[0] * arm, cy + s[1] * r)]), c, 2)
-	else:
+	elif GameInput.mouse_inside:
 		var w: Vector2 = GameCamera.current.screen_to_world(GameInput.mouse_pos)
 		var cx := roundf(w.x)
 		var cy := roundf(w.y)

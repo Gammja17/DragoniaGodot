@@ -26,6 +26,8 @@ const MAX_TOASTS := 4
 @onready var settings: SettingsPanel = $Settings
 @onready var help: GamePanel = $Help
 @onready var journal: JournalPanel = $Journal
+@onready var kids: KidsPanel = $Kids
+@onready var touch: TouchLayer = $Touch
 
 ## 설정의 [저장하고 처음 화면으로] (main 이 받는다)
 signal to_title_requested
@@ -56,6 +58,10 @@ func _ready() -> void:
 	$ShowRight.pressed.connect(func(): collapse_right(false))
 	settings.help_pressed.connect(help.open)
 	status.growth_pressed.connect(func(): journal.toggle_tab("growth"))
+	status.family_pressed.connect(kids.toggle)
+	touch.settings_pressed.connect(settings.toggle)
+	get_viewport().size_changed.connect(_fit_screen)
+	_fit_screen()
 	settings.to_title_pressed.connect(func(): to_title_requested.emit())
 	$HelpChip.visible = false
 
@@ -64,6 +70,16 @@ func _ready() -> void:
 func show_game_ui(on: bool) -> void:
 	for n in [status, right, bottom, $HelpChip]: n.visible = on
 	if on: refresh_tracker()
+
+
+## 작은 화면(폰 가로·태블릿)에서는 좌우 판을 줄인다 (2D판 @media max-width 900 · max-height 540)
+func _fit_screen() -> void:
+	var s := get_viewport().get_visible_rect().size
+	var small := s.x <= 900 or s.y <= 540
+	status.scale = Vector2.ONE * (0.72 if small else 1.0)
+	status.position = Vector2(6, 6) if small else Vector2(18, 18)
+	right.scale = Vector2.ONE * (0.7 if small else 1.0)
+	right.pivot_offset = Vector2(right.size.x, 0)
 
 
 ## 왼쪽 판(상태)을 접거나 편다
@@ -289,7 +305,10 @@ func _process(dt: float) -> void:
 		if bottom.visible: bottom.refresh()
 	_flush_quest_banner()
 	_place_tip()
-	if bottom.visible: $HelpChip.visible = not help.visible   # 도움말이 떠 있는 동안엔 안내 칩을 감춘다
+	# 터치에서는 Q·F·R·X 가 단추로 있으니 기술 칸 줄과 도움말 칩은 치운다
+	if bottom.visible:
+		$HelpChip.visible = not help.visible and not GameInput.touch   # 도움말이 떠 있는 동안엔 안내 칩을 감춘다
+		bottom.set_touch(GameInput.touch)
 	$QuestBanner.visible = not Cutscene.on
 	if _raid.visible:
 		if Time.get_ticks_msec() > _raid_until: _raid.visible = false

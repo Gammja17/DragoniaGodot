@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3]
+[gd_scene load_steps=38 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1"]
 [ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="2"]
@@ -11,6 +11,9 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/ui/help_panel.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://scenes/ui/journal_panel.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://scenes/ui/kids_panel.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://scenes/ui/den_panel.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://scenes/ui/touch_layer.tscn" id="14"]
 
 [sub_resource type="Gradient" id="rule_grad"]
 offsets = PackedFloat32Array(0, 0.5, 1)
@@ -222,6 +225,8 @@ theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
 theme_override_styles/normal = SubResource("help_chip")
 text = "H 도움말"
 
+[node name="Touch" parent="." instance=ExtResource("14")]
+
 [node name="ShowStatus" type="Button" parent="."]
 visible = false
 offset_left = 18.0
@@ -414,8 +419,6 @@ theme_override_styles/normal = SubResource("tip_box")
 
 [node name="DialogueBox" parent="." instance=ExtResource("4")]
 
-[node name="NameInput" parent="." instance=ExtResource("5")]
-
 [node name="SceneTitle" type="Label" parent="."]
 modulate = Color(1, 1, 1, 0)
 anchors_preset = 10
@@ -459,9 +462,15 @@ vertical_alignment = 1
 
 [node name="Journal" parent="." instance=ExtResource("11")]
 
+[node name="Kids" parent="." instance=ExtResource("12")]
+
+[node name="Den" parent="." instance=ExtResource("13")]
+
 [node name="Settings" parent="." instance=ExtResource("9")]
 
 [node name="Help" parent="." instance=ExtResource("10")]
+
+[node name="NameInput" parent="." instance=ExtResource("5")]
 
 [node name="FadeScreen" type="ColorRect" parent="."]
 visible = false

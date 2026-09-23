@@ -295,7 +295,7 @@ static func open_nest_menu() -> void:
 		if not GameState.den.built: opts.append({ label = "둥지를 짓는다 (나뭇가지 %d/8, 30G)" % GameState.den.twigs, on_select = _build_nest })
 		if Den.in_my_den(): opts.append({ label = "🪑 굴을 꾸민다", on_select = func():
 			_close()
-			DenPanel.open() })
+			DenPanel.show_panel() })
 		opts.append({ label = "아직 안 졸려", on_select = _close })
 	DialogueBox.current.show_dialogue({ name = "둥지", on_close = _close, options = opts,
 		text = "지금은 잠들 수 없다. 주변이 너무 소란스럽다." if busy else "%d일째. 자고 일어나면 다음 날 아침이 된다.\n(굴: %s. %s)" % [GameState.day, rest.tier.name, rest.tier.note] })

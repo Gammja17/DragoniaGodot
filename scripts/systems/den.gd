@@ -203,7 +203,7 @@ static func try_interact() -> bool:
 		if not nests.is_empty() and Util.dist(nests[0], GameState.player) < 110:
 			Story.open_nest_menu()
 			return true
-		DenPanel.open()
+		DenPanel.show_panel()
 		return true
 	# 2) 굴 입구
 	var mouth = World.nearby_den_mouth()
@@ -272,7 +272,7 @@ static func update_place() -> void:
 		DenPanel.hint("%s: 왼쪽 클릭으로 놓는다 (오른쪽 클릭: 그만)" % f.name if _last_valid \
 			else "%s: %s" % [f.name, "벽에 거는 것은 맨 윗줄에만 걸 수 있다" if f.get("wall") else "여기에는 놓을 수 없다"])
 		if GameInput.mouse_right:
-			cancel_placing(); Sfx.play("ui"); DenPanel.open()
+			cancel_placing(); Sfx.play("ui"); DenPanel.show_panel()
 			return
 		if GameInput.mouse_clicked and _last_valid:
 			place(GameState.holding, t.x, t.y)

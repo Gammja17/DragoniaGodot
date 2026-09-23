@@ -1,4 +1,10 @@
-; Godot 프로젝트 설정. 에디터가 고쳐 쓰는 파일이라 손으로 고칠 땐 형식을 지킨다.
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -18,8 +24,11 @@ GameState="*res://scripts/core/game_state.gd"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
-window/stretch/mode="disabled"
 window/handheld/orientation=4
+
+[gui]
+
+theme/custom="res://assets/ui/theme.tres"
 
 [rendering]
 
@@ -27,7 +36,3 @@ textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.0196, 0.0196, 0.0196, 1)
-
-[gui]
-
-theme/custom="res://assets/ui/theme.tres"

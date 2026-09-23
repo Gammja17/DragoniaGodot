@@ -74,7 +74,7 @@ func _ready() -> void:
 	await _wait(0.5)
 	print("[굴] 지도=%s 둥지=%d 살림살이=%d 방=%s" % [GameState.map_id, GameState.entities.nests.size(),
 		GameState.entities.props.filter(func(x): return x.type == "FURNITURE").size(), Terrain.active is RoomMap])
-	DenPanel.open()
+	DenPanel.show_panel()
 	print("[꾸미기] ", _say())
 	Dialogue.close()
 	GameState.den.twigs = 8

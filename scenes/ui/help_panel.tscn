@@ -1,0 +1,552 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/game_panel.tscn" id="1"]
+[ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="2"]
+
+[sub_resource type="LabelSettings" id="key"]
+font = ExtResource("2")
+font_size = 12
+font_color = Color(1, 0.847, 0.29, 1)
+
+[sub_resource type="LabelSettings" id="sep"]
+font = ExtResource("2")
+font_size = 12
+font_color = Color(0.847, 0.698, 0.353, 1)
+
+[node name="HelpPanel" instance=ExtResource("1")]
+title = "조작법"
+panel_size = Vector2(1000, 640)
+close_label = "닫기 (H)"
+
+[node name="Columns" type="HBoxContainer" parent="Frame/Lines/Body" index="0"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 34
+
+[node name="Col1" type="VBoxContainer" parent="Frame/Lines/Body/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 7
+
+[node name="Row0" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row0"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "WASD"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row0"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "이동"
+autowrap_mode = 3
+
+[node name="Row1" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row1"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "Shift"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row1"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "탁 누르면 대시(무적) · 꾹 누르면 달리기"
+autowrap_mode = 3
+
+[node name="Row2" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row2"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "마우스"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row2"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "커서 쪽으로 조준"
+autowrap_mode = 3
+
+[node name="Row3" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row3"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "왼클릭"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row3"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "브레스. 꾹 누르면 연사"
+autowrap_mode = 3
+
+[node name="Row4" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row4"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "기세"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row4"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "맞지 않고 계속 맞히면 차오르고 숨결이 세진다. 아슬아슬하게 대시로 피하면(간발) 크게 차고 세상이 잠깐 느려진다. 빈사의 적은 대시로 뚫으면 끝난다"
+autowrap_mode = 3
+
+[node name="Row5" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row5"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "1 ~ 6"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row5"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "숨결 속성 바꾸기"
+autowrap_mode = 3
+
+[node name="Row6" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row6"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "Q F R"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row6"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "장착한 스킬 (대기 시간만 쓴다)"
+autowrap_mode = 3
+
+[node name="Row7" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row7"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "K"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row7"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "스킬 나무 (장착·강화) · G 성장 나무 · X 필살기"
+autowrap_mode = 3
+
+[node name="Row8" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row8"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "Space"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row8"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "말 걸기. 상대가 없으면 눈앞의 것(상자 · 열매 · 석비 · 굴)을 쓴다. 따라오는 짝보다 눈앞의 물건이 먼저다"
+autowrap_mode = 3
+
+[node name="Row9" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row9"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "E"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row9"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "말은 걸지 않고 눈앞의 것만 쓴다. 상자 · 열매 · 줍기 · 낚시 · 석비 · 굴 · 게시판"
+autowrap_mode = 3
+
+[node name="Row10" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row10"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "T"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row10"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "곁의 용에게 말 걸기 (물건이 앞에 있어도)"
+autowrap_mode = 3
+
+[node name="Row11" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row11"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "길잡이"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col1/Row11"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "오른쪽 추적창을 누르면 목표까지 알아서 걸어간다. 금빛 화살표가 목표를 가리킨다"
+autowrap_mode = 3
+
+[node name="Col2" type="VBoxContainer" parent="Frame/Lines/Body/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 7
+
+[node name="Row0" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row0"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "C"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row0"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "고기 먹기 (상호작용과 섞이지 않게 따로 뺐다)"
+autowrap_mode = 3
+
+[node name="Row1" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row1"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "방향키"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row1"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "대화 선택지 고르기 (Space 로 결정). 마음을 전하는 것도 대화 안에 있다"
+autowrap_mode = 3
+
+[node name="Row2" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row2"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "J"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row2"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "일지 (퀘스트 · 지도 · 소지품 · 마을 용들 · 기록 · 유물 · 도감)"
+autowrap_mode = 3
+
+[node name="Row3" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row3"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "M · I"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row3"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "세계 지도 · 소지품 (일지의 탭으로 바로 간다)"
+autowrap_mode = 3
+
+[node name="Row4" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row4"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "휠"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row4"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "시점 확대·축소 (V 로도 넘어간다)"
+autowrap_mode = 3
+
+[node name="Row5" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row5"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "Z"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row5"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "날아오르기 · 내려앉기 (성체부터). 하늘에선 벽도 물도 없지만 배가 빨리 꺼진다"
+autowrap_mode = 3
+
+[node name="Row6" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row6"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "P"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row6"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "가족 · O 소리 끄기 · U 좌우 UI 접기 · Esc 설정 · 창 닫기"
+autowrap_mode = 3
+
+[node name="Sep" type="Label" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+text = "알아 두면 좋은 것"
+label_settings = SubResource("sep")
+
+[node name="Row8" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row8"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "허기"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row8"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "마나가 아니다. 배가 고프면 느려지기만 한다"
+autowrap_mode = 3
+
+[node name="Row9" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row9"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "지도"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row9"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "가장자리 문을 밟으면 옆 지도로 넘어간다. 물은 못 건넌다"
+autowrap_mode = 3
+
+[node name="Row10" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row10"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "일과"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row10"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "용마다 시간대별로 있는 곳이 다르다. 일지에서 확인한다"
+autowrap_mode = 3
+
+[node name="Row11" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row11"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "굴"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row11"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "내 굴은 [E]로 꾸민다. 아늑할수록 잘 쉰다. 남의 굴도 찾아갈 수 있다"
+autowrap_mode = 3
+
+[node name="Row12" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row12"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "유물"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row12"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "끼운 것만 힘이 된다. 칸은 자랄수록 늘어난다"
+autowrap_mode = 3
+
+[node name="Row13" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row13"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "강화"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row13"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "골드가 아니라 소재로 그론의 모루에서 두드린다"
+autowrap_mode = 3
+
+[node name="Row14" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row14"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "성장 포인트"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row14"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "레벨업마다 2, 승급 시험마다 3. 성장 나무와 스킬 강화에 쓴다"
+autowrap_mode = 3
+
+[node name="Row15" type="HBoxContainer" parent="Frame/Lines/Body/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row15"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "스킬"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Columns/Col2/Row15"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "수련·보스 말고도 혼자 깨우치거나, 둘을 익히면 열리는 것이 있다"
+autowrap_mode = 3

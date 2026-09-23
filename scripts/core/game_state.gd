@@ -113,6 +113,8 @@ func reset() -> void:
 	tutorial = { moved = false, journal = false, ate = false, toured = false, finished = false }
 	tour = null
 	nav = null
+	fadeTargets = []
+	talkTarget = null
 	prologue = null
 	player = null
 	partner = null

@@ -1,22 +1,59 @@
 class_name Save
-## 2D판 systems/save.js. 세이브 한 칸 (user://). 월드(지형·소품)는 시드 고정이라 저장하지 않는다.
+## 2D판 systems/save.js. 세이브 칸 세 개 (user://dragonia-slot-1..3.json). 월드(지형·소품)는 시드 고정이라 저장하지 않는다.
 ## 떠돌이 NPC·적·아이템도 저장 안 함. 모양은 2D판 localStorage 세이브와 같다 (v: 1).
+## 지금 쓰는 칸은 slot. 처음 화면(Title)에서 고른다.
 
-const PATH := "user://dragonia-save-v1.json"
+const SLOTS := 3
+const LEGACY := "user://dragonia-save-v1.json"   # 칸이 하나뿐이던 때의 세이브. 1번 칸으로 옮긴다
+
+static var slot := 1
 
 
-static func has_save() -> bool: return read() != null
+static func path(n: int) -> String: return "user://dragonia-slot-%d.json" % n
 
 
-static func read():
-	if not FileAccess.file_exists(PATH): return null
-	var data = JSON.parse_string(FileAccess.get_file_as_string(PATH))
+static func has_save(n := -1) -> bool: return read(n) != null
+
+
+## n 번 칸을 읽는다 (없거나 깨졌으면 null). n 을 안 주면 지금 칸
+static func read(n := -1):
+	if n < 0: n = slot
+	_migrate_legacy()
+	var p := path(n)
+	if not FileAccess.file_exists(p): return null
+	var data = JSON.parse_string(FileAccess.get_file_as_string(p))
 	if not data is Dictionary or data.get("v") != 1.0: return null
 	return _intify(data)
 
 
-static func delete() -> void:
-	if FileAccess.file_exists(PATH): DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))
+static func delete(n := -1) -> void:
+	if n < 0: n = slot
+	var p := path(n)
+	if FileAccess.file_exists(p): DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
+
+
+## 처음 화면에 띄울 한 줄 요약. 빈 칸이면 null
+static func summary(n: int):
+	var d = read(n)
+	if not d: return null
+	var stages: Array = Data.get_module("elements").STAGES
+	var st: int = clampi(d.player.get("stageIndex", 0), 0, stages.size() - 1)
+	return {
+		name = d.player.config.get("name", "용"), level = d.player.level, stage = stages[st].name,
+		map = Names.map(d.get("mapId", "VILLAGE")), day = d.get("day", 1),
+		chapter = d.get("story", {}).get("chapterTitle", ""),
+		saved = Time.get_datetime_string_from_unix_time(int(d.get("savedAt", 0) / 1000.0) + _tz_offset(), true),
+	}
+
+
+static func _tz_offset() -> int:
+	return int(Time.get_time_zone_from_system().get("bias", 0)) * 60
+
+
+## 칸이 하나뿐이던 때의 세이브를 1번 칸으로 옮긴다 (한 번만)
+static func _migrate_legacy() -> void:
+	if not FileAccess.file_exists(LEGACY) or FileAccess.file_exists(path(1)): return
+	DirAccess.rename_absolute(ProjectSettings.globalize_path(LEGACY), ProjectSettings.globalize_path(path(1)))
 
 
 ## JSON 은 숫자를 모두 실수로 돌려준다. 딱 떨어지는 수는 정수로 되돌린다
@@ -76,7 +113,7 @@ static func save_game() -> void:
 			element = k.entity.element, growth = k.entity.growth, genes = k.entity.genes, x = k.entity.x, y = k.entity.y,
 		}),
 	}
-	var f := FileAccess.open(PATH, FileAccess.WRITE)
+	var f := FileAccess.open(path(slot), FileAccess.WRITE)
 	if f == null: return   # 저장할 수 없으면 조용히 포기
 	f.store_string(JSON.stringify(data))
 

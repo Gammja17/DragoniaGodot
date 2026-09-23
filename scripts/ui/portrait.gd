@@ -3,12 +3,14 @@ extends Control
 ## 칸 바탕은 rgba(0,0,0,.35), 테두리는 금빛 흐린 선.
 
 var sheet = null   # SpriteSheet
+@export var frame := true   # 바탕과 흐린 금테를 깐다 (외형 고르기 칸은 칸 스스로 테를 두른다)
 
 
 func _draw() -> void:
 	var r := Rect2(Vector2.ZERO, size)
-	draw_rect(r, Color(0, 0, 0, 0.35))
-	draw_rect(r, Color(216 / 255.0, 178 / 255.0, 90 / 255.0, 0.38), false, 1)
+	if frame:
+		draw_rect(r, Color(0, 0, 0, 0.35))
+		draw_rect(r, Color(216 / 255.0, 178 / 255.0, 90 / 255.0, 0.38), false, 1)
 	if sheet == null: return
 	var idle: Dictionary = sheet.frames.idle
 	var f: Dictionary = (idle.down if idle.has("down") else idle.left)[0]

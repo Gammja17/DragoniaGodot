@@ -31,14 +31,24 @@ func _ready() -> void:
 	Quests.on_change = hud.refresh_tracker
 	Training.install()
 	Chores.install()
-	# 새 게임 설정 화면(customizer)은 5단계에서. 지금은 세이브가 있으면 이어 하고, 없으면 기본 외형의 해츨링으로 시작한다
-	var save = Save.read() if load_save and not OS.get_cmdline_user_args().has("--new-game") else null
-	var cfg: Dictionary = save.player.config if save else { name = "용", species = "LOOK", look = 0 }
+	Launch.reset_run()
+	# 처음 화면(Title)에서 왔으면 거기서 고른 칸과 새 용 설정을 쓴다.
+	# main 을 곧바로 띄웠으면(편집기 F6 · 시험 장면) 1번 칸을 이어 하거나 기본 외형의 해츨링으로 시작한다
+	var save = null
+	var cfg: Dictionary = { name = "용", species = "LOOK", look = 0 }
+	if Launch.ready:
+		Save.slot = Launch.slot
+		if Launch.config: cfg = Launch.config
+		else: save = Save.read()
+	elif load_save and not OS.get_cmdline_user_args().has("--new-game"):
+		save = Save.read()
+	if save: cfg = save.player.config
 	var elder = World.init_world(cfg)
 	if save: Save.apply(save)
 	Travel.init_waystones()
 	GameState.gameActive = true
 	hud.show_game_ui(true)
+	hud.to_title_requested.connect(_to_title)
 	var p = GameState.player
 	camera.cam_x = p.x - camera.w / 2
 	camera.cam_y = p.y - camera.h / 2
@@ -52,6 +62,13 @@ func _ready() -> void:
 		Quests.changed()
 		# 떨어지던 밤 → 까만 화면에 "제 1 장 · 웨스턴 마을" → 눈을 뜨고 촌장과 첫 대화
 		Skills.later(500, func(): Prologue.start(func(): Hud.show_chapter_card("제 1 장", "웨스턴 마을", func(): Dialogue.start(elder, "TALK"))))
+
+
+## 저장하고 처음 화면으로 (다른 기록을 불러오거나 새 용을 만들러)
+func _to_title() -> void:
+	if not GameState.prologue: Save.save_game()
+	GameState.gameActive = false
+	get_tree().change_scene_to_file("res://scenes/title.tscn")
 
 
 func _exit_tree() -> void:
@@ -71,7 +88,12 @@ func _process(delta: float) -> void:
 	if GameInput.pressed("zoom"): hud.toast("시점: " + camera.cycle_zoom(), "🔍")
 	if GameInput.wheel: camera.step_zoom(GameInput.wheel)   # 휠은 조용히 (알림이 정신 사납다고 해서)
 	if GameInput.pressed("hideUi") and not GameState.isDialogueOpen: hud.toggle_ui()
-	# [Esc]: 하던 것부터 닫는다 (닫을 게 없으면 설정 창 — 설정은 5단계에서)
+	if GameInput.pressed("help") and not GameState.isDialogueOpen: hud.help.toggle()
+	if GameInput.pressed("mute"):
+		var muted: bool = not Prefs.get_value("sound", "muted", false)
+		Prefs.set_value("sound", "muted", muted)
+		hud.toast("소리 끔" if muted else "소리 켬", "🔊")
+	# [Esc]: 하던 것부터 닫는다. 닫을 게 없으면 설정 창
 	var card_skipped := false
 	if GameInput.pressed("cancel") and not NameInput.is_open():
 		if Hud.chapter_card_on():
@@ -79,6 +101,8 @@ func _process(delta: float) -> void:
 			card_skipped = true   # 건너뛴 그 Esc 가 바로 열린 대화까지 닫지 않게
 		elif GameState.prologue: Prologue.skip()
 		elif Den.is_placing(): Den.cancel_placing()
+		elif GamePanel.close_top(): pass   # 창 하나 닫음
+		elif not GameState.isDialogueOpen and not Cutscene.on: hud.settings.toggle()
 	if GameState.isDialogueOpen:
 		if GameState.nav: GameState.nav = null   # 대화·장면이 열리면 자동 이동은 거기서 끝난다
 		if NameInput.is_open(): pass   # 이름을 적는 중에는 글자 칸이 키를 받는다

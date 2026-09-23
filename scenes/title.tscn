@@ -1,0 +1,344 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/title.gd" id="1"]
+[ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="2"]
+[ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/save_slot_row.tscn" id="4"]
+
+[sub_resource type="Gradient" id="sky"]
+offsets = PackedFloat32Array(0, 0.55, 1)
+colors = PackedColorArray(0.0902, 0.0745, 0.145, 1, 0.0627, 0.051, 0.102, 1, 0.0392, 0.0314, 0.0627, 1)
+
+[sub_resource type="GradientTexture2D" id="sky_tex"]
+gradient = SubResource("sky")
+width = 4
+height = 256
+fill_to = Vector2(0, 1)
+
+[sub_resource type="Gradient" id="glow"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(0.847, 0.698, 0.353, 0.13, 0.847, 0.698, 0.353, 0)
+
+[sub_resource type="GradientTexture2D" id="glow_tex"]
+gradient = SubResource("glow")
+width = 256
+height = 256
+fill = 1
+fill_from = Vector2(0.5, 0)
+fill_to = Vector2(0.5, 0.62)
+
+[sub_resource type="FontVariation" id="logo_font"]
+base_font = ExtResource("3")
+variation_embolden = 0.6
+spacing_glyph = 9
+
+[sub_resource type="LabelSettings" id="logo"]
+font = SubResource("logo_font")
+font_size = 36
+font_color = Color(1, 0.847, 0.29, 1)
+shadow_size = 0
+shadow_color = Color(0.427, 0.31, 0.098, 1)
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="FontVariation" id="sub_font"]
+base_font = ExtResource("3")
+spacing_glyph = 5
+
+[sub_resource type="LabelSettings" id="sub"]
+font = SubResource("sub_font")
+font_size = 12
+font_color = Color(0.714, 0.682, 0.604, 1)
+
+[sub_resource type="StyleBoxFlat" id="start"]
+content_margin_left = 13.0
+content_margin_top = 11.0
+content_margin_right = 13.0
+content_margin_bottom = 11.0
+bg_color = Color(0.843, 0.678, 0.333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.949, 0.863, 0.604, 1)
+
+[sub_resource type="StyleBoxFlat" id="start_hover"]
+content_margin_left = 13.0
+content_margin_top = 11.0
+content_margin_right = 13.0
+content_margin_bottom = 11.0
+bg_color = Color(0.93, 0.76, 0.4, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.94, 0.75, 1)
+
+[sub_resource type="StyleBoxFlat" id="name_field"]
+content_margin_left = 11.0
+content_margin_top = 11.0
+content_margin_right = 11.0
+content_margin_bottom = 11.0
+bg_color = Color(0, 0, 0, 0.35)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.847, 0.698, 0.353, 0.38)
+
+[sub_resource type="StyleBoxFlat" id="name_focus"]
+content_margin_left = 11.0
+content_margin_top = 11.0
+content_margin_right = 11.0
+content_margin_bottom = 11.0
+bg_color = Color(0, 0, 0, 0.35)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.847, 0.29, 1)
+
+[node name="Title" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Sky" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("sky_tex")
+expand_mode = 1
+
+[node name="Glow" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("glow_tex")
+expand_mode = 1
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Column" type="VBoxContainer" parent="Center"]
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Logo" type="Label" parent="Center/Column"]
+layout_mode = 2
+text = "드래고니아"
+label_settings = SubResource("logo")
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/Column"]
+layout_mode = 2
+text = "·   하늘에서 떨어진 용   ·"
+label_settings = SubResource("sub")
+horizontal_alignment = 1
+
+[node name="Gap" type="Control" parent="Center/Column"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+
+[node name="Slots" type="PanelContainer" parent="Center/Column"]
+layout_mode = 2
+
+[node name="Lines" type="VBoxContainer" parent="Center/Column/Slots"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Head" type="Label" parent="Center/Column/Slots/Lines"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.847, 0.698, 0.353, 1)
+text = "기록"
+
+[node name="Slot1" parent="Center/Column/Slots/Lines" instance=ExtResource("4")]
+layout_mode = 2
+
+[node name="Slot2" parent="Center/Column/Slots/Lines" instance=ExtResource("4")]
+layout_mode = 2
+
+[node name="Slot3" parent="Center/Column/Slots/Lines" instance=ExtResource("4")]
+layout_mode = 2
+
+[node name="Note" type="Label" parent="Center/Column/Slots/Lines"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+text = "게임은 저절로 저장된다. 게임 안에서 [Esc] 설정 → 처음 화면으로 나오면 다른 칸을 불러올 수 있다."
+autowrap_mode = 3
+
+[node name="Create" type="PanelContainer" parent="Center/Column"]
+visible = false
+layout_mode = 2
+
+[node name="Lines" type="VBoxContainer" parent="Center/Column/Create"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Name" type="LineEdit" parent="Center/Column/Create/Lines"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.925, 0.89, 0.812, 1)
+theme_override_colors/caret_color = Color(1, 0.847, 0.29, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("name_field")
+theme_override_styles/focus = SubResource("name_focus")
+text = "바하무트"
+alignment = 1
+max_length = 12
+
+[node name="LookTitle" type="HBoxContainer" parent="Center/Column/Create/Lines"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Center/Column/Create/Lines/LookTitle"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "나의 용:"
+
+[node name="LookName" type="Label" parent="Center/Column/Create/Lines/LookTitle"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+
+[node name="Gallery" type="ScrollContainer" parent="Center/Column/Create/Lines"]
+custom_minimum_size = Vector2(0, 236)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Grid" type="GridContainer" parent="Center/Column/Create/Lines/Gallery"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+columns = 7
+
+[node name="Accessory" type="HBoxContainer" parent="Center/Column/Create/Lines"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Center/Column/Create/Lines/Accessory"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "장신구"
+
+[node name="Pick" type="OptionButton" parent="Center/Column/Create/Lines/Accessory"]
+layout_mode = 2
+focus_mode = 0
+selected = 0
+item_count = 7
+popup/item_0/text = "없음"
+popup/item_0/id = 0
+popup/item_1/text = "붉은 깃털"
+popup/item_1/id = 1
+popup/item_2/text = "꽃"
+popup/item_2/id = 2
+popup/item_3/text = "나뭇잎"
+popup/item_3/id = 3
+popup/item_4/text = "투구"
+popup/item_4/id = 4
+popup/item_5/text = "삿갓"
+popup/item_5/id = 5
+popup/item_6/text = "왕관"
+popup/item_6/id = 6
+
+[node name="Colors" type="VBoxContainer" parent="Center/Column/Create/Lines"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Body" type="HBoxContainer" parent="Center/Column/Create/Lines/Colors"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Center/Column/Create/Lines/Colors/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "몸 색"
+
+[node name="Pick" type="ColorPickerButton" parent="Center/Column/Create/Lines/Colors/Body"]
+custom_minimum_size = Vector2(44, 28)
+layout_mode = 2
+focus_mode = 0
+color = Color(0.753, 0.224, 0.169, 1)
+edit_alpha = false
+
+[node name="Wing" type="HBoxContainer" parent="Center/Column/Create/Lines/Colors"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Center/Column/Create/Lines/Colors/Wing"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "날개 · 배 색"
+
+[node name="Pick" type="ColorPickerButton" parent="Center/Column/Create/Lines/Colors/Wing"]
+custom_minimum_size = Vector2(44, 28)
+layout_mode = 2
+focus_mode = 0
+color = Color(0.878, 0.627, 0.125, 1)
+edit_alpha = false
+
+[node name="Start" type="Button" parent="Center/Column/Create/Lines"]
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.165, 0.114, 0.0235, 1)
+theme_override_colors/font_hover_color = Color(0.165, 0.114, 0.0235, 1)
+theme_override_colors/font_pressed_color = Color(0.165, 0.114, 0.0235, 1)
+theme_override_fonts/font = ExtResource("2")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("start")
+theme_override_styles/hover = SubResource("start_hover")
+theme_override_styles/pressed = SubResource("start_hover")
+text = "눈을 뜬다"
+
+[node name="Back" type="Button" parent="Center/Column/Create/Lines"]
+layout_mode = 2
+focus_mode = 0
+text = "돌아간다"
+
+[node name="Confirm" type="PanelContainer" parent="Center/Column"]
+visible = false
+layout_mode = 2
+
+[node name="Lines" type="VBoxContainer" parent="Center/Column/Confirm"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Text" type="Label" parent="Center/Column/Confirm/Lines"]
+layout_mode = 2
+text = "정말로?"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Column/Confirm/Lines"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Yes" type="Button" parent="Center/Column/Confirm/Lines/Buttons"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 0.541, 0.478, 1)
+text = "그래도 한다"
+
+[node name="No" type="Button" parent="Center/Column/Confirm/Lines/Buttons"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+focus_mode = 0
+text = "그만둔다"

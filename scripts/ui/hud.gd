@@ -23,6 +23,11 @@ const MAX_TOASTS := 4
 @onready var status: HudStatus = $Status
 @onready var right: HudRight = $Right
 @onready var bottom: HudBottom = $Bottom
+@onready var settings: SettingsPanel = $Settings
+@onready var help: GamePanel = $Help
+
+## 설정의 [저장하고 처음 화면으로] (main 이 받는다)
+signal to_title_requested
 var _refresh_t := 0.0
 
 var _banner_tween: Tween
@@ -48,11 +53,14 @@ func _ready() -> void:
 	$ShowStatus.pressed.connect(func(): collapse_status(false))
 	right.collapse_pressed.connect(func(): collapse_right(true))
 	$ShowRight.pressed.connect(func(): collapse_right(false))
+	settings.help_pressed.connect(help.open)
+	settings.to_title_pressed.connect(func(): to_title_requested.emit())
+	$HelpChip.visible = false
 
 
 ## 게임이 시작되면 보인다 (시작 화면에서는 감춘다)
 func show_game_ui(on: bool) -> void:
-	for n in [status, right, bottom]: n.visible = on
+	for n in [status, right, bottom, $HelpChip]: n.visible = on
 	if on: refresh_tracker()
 
 
@@ -278,6 +286,7 @@ func _process(dt: float) -> void:
 		if bottom.visible: bottom.refresh()
 	_flush_quest_banner()
 	_place_tip()
+	if bottom.visible: $HelpChip.visible = not help.visible   # 도움말이 떠 있는 동안엔 안내 칩을 감춘다
 	$QuestBanner.visible = not Cutscene.on
 	if _raid.visible:
 		if Time.get_ticks_msec() > _raid_until: _raid.visible = false

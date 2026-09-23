@@ -31,6 +31,7 @@ var _style_selected: StyleBoxFlat
 
 func _ready() -> void:
 	current = self
+	step = clampi(int(Prefs.get_value("dialogue", "step", 2)), 1, 4)   # 설정의 대사 글자 크기
 	_style_normal = OPTION.instantiate().get_theme_stylebox("normal").duplicate()
 	_style_selected = _style_normal.duplicate()
 	_style_selected.bg_color = SEL_STYLE_BG

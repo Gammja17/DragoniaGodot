@@ -1,0 +1,265 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/game_panel.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/settings_panel.gd" id="2"]
+[ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="3"]
+
+[sub_resource type="StyleBoxFlat" id="track"]
+content_margin_top = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(1, 1, 1, 0.055)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.847, 0.698, 0.353, 0.38)
+
+[sub_resource type="StyleBoxFlat" id="track_fill"]
+content_margin_top = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.847, 0.698, 0.353, 0.5)
+
+[sub_resource type="Gradient" id="knob_g"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(0.847, 0.698, 0.353, 1, 0.847, 0.698, 0.353, 1)
+
+[sub_resource type="GradientTexture2D" id="knob"]
+gradient = SubResource("knob_g")
+width = 9
+height = 15
+
+[sub_resource type="LabelSettings" id="section"]
+font = ExtResource("3")
+font_size = 12
+font_color = Color(1, 0.847, 0.29, 1)
+
+[sub_resource type="LabelSettings" id="note"]
+font_size = 12
+font_color = Color(0.522, 0.494, 0.431, 1)
+
+[node name="SettingsPanel" instance=ExtResource("1")]
+script = ExtResource("2")
+title = "설정"
+panel_size = Vector2(620, 700)
+close_label = "닫기 (Esc)"
+slider_track = SubResource("track")
+slider_fill = SubResource("track_fill")
+slider_knob = SubResource("knob")
+
+[node name="Scroll" type="ScrollContainer" parent="Frame/Lines/Body" index="0"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Rows" type="VBoxContainer" parent="Frame/Lines/Body/Scroll" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="SoundHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="0"]
+layout_mode = 2
+text = "소리"
+label_settings = SubResource("section")
+
+[node name="Music" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="1"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Music" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "배경음"
+
+[node name="Slider" type="HSlider" parent="Frame/Lines/Body/Scroll/Rows/Music" index="1"]
+custom_minimum_size = Vector2(200, 16)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+
+[node name="Num" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Music" index="2"]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+horizontal_alignment = 2
+
+[node name="Sfx" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Sfx" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "효과음"
+
+[node name="Slider" type="HSlider" parent="Frame/Lines/Body/Scroll/Rows/Sfx" index="1"]
+custom_minimum_size = Vector2(200, 16)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+
+[node name="Num" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Sfx" index="2"]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+horizontal_alignment = 2
+
+[node name="Mute" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="3"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Mute" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "전체 (O)"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Mute" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "켜짐 · 끄기"
+
+[node name="ScreenHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="4"]
+layout_mode = 2
+text = "화면"
+label_settings = SubResource("section")
+
+[node name="Zoom" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="5"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Zoom" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "시점 (V · 휠)"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Zoom" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "보통"
+
+[node name="Ui" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="6"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Ui" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "좌우 정보 창 (U)"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Ui" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "접기 · 펴기"
+
+[node name="Dlg" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="7"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Dlg" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "대사 글자 크기"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Dlg" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "보통"
+
+[node name="GuideHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="8"]
+layout_mode = 2
+text = "길잡이"
+label_settings = SubResource("section")
+
+[node name="Guide" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="9"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Guide" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "목표 화살표 · 자동 이동"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Guide" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "본 이야기만"
+
+[node name="GuideNote" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="10"]
+layout_mode = 2
+text = "\"본 이야기만\" 이면 본 줄기의 할 일만 화살표가 가리키고, 마을 용들의 부탁과 \"그 자리에 가 있기\" 대목은 스스로 찾는다. 헤매기 싫으면 \"맡은 일 전부\", 다 찾아내고 싶으면 \"끔\"."
+label_settings = SubResource("note")
+autowrap_mode = 3
+
+[node name="TestHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="11"]
+layout_mode = 2
+text = "테스트 (진행을 건너뛴다)"
+label_settings = SubResource("section")
+
+[node name="Level" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="12"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Level" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "레벨 1 → 16"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Level" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "올린다"
+
+[node name="Elements" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="13"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Elements" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "숨결 1 / 3"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Elements" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "전부 준다"
+
+[node name="Lessons" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="14"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Lessons" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "수련 0 / 8 · 보스 0"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Lessons" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "채운다"
+
+[node name="MoreHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="15"]
+layout_mode = 2
+text = "그 밖에"
+label_settings = SubResource("section")
+
+[node name="Help" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="16"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Help" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "조작법 (H)"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Help" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "보기"
+
+[node name="ToTitle" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="17"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/ToTitle" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "다른 기록 불러오기 · 새 용"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/ToTitle" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "저장하고 처음 화면으로"
+
+[node name="Note" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="18"]
+layout_mode = 2
+text = "게임은 자동으로 저장된다. 기록 칸은 셋이고, 처음 화면에서 고른다.
+[테스트] 줄은 승급 시험 조건을 채워 주는 것뿐이다. 시험 자체는 카이론에게 청해야 한다."
+label_settings = SubResource("note")
+autowrap_mode = 3

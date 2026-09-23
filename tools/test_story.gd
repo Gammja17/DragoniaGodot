@@ -8,6 +8,7 @@ var _box: DialogueBox
 
 
 func _ready() -> void:
+	Save.slot = 9   # 시험은 9번 칸을 쓴다 (사람이 쓰는 1~3번 칸을 건드리지 않게)
 	Save.delete()
 	var main: Node = load("res://scenes/main.tscn").instantiate()
 	add_child(main)

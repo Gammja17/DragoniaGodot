@@ -14,13 +14,17 @@ const GATHER_SPOTS := {
 
 
 ## 오늘이 모임 날인가
+## 스무 해 동안 끊겼던 모임은 첫 모임(m5g)에서 다시 선다. 그 전에는 여드레째 밤이 와도 아무도 폭포에 가지 않는다
+## (폭포 길이 얼어 있는데 마을이 통째로 비어 보고할 이를 못 찾던 것)
 static func is_gather_day(day := -1) -> bool:
 	if day < 0: day = GameState.day
-	return _first_gathering() or (day > 0 and day % GATHER_EVERY == 0)
+	return _first_gathering() or (invited_up() and day > 0 and day % GATHER_EVERY == 0)
 
 
-## 스무 해 만에 다시 서는 첫 모임. 주인공이 와서 볼 때까지 밤마다 불을 피운다 (퀘스트 m5g)
+## 스무 해 만에 다시 서는 첫 모임. 주인공이 와서 볼 때까지 밤마다 불을 피운다 (퀘스트 m5g).
+## 장면이 끝났다고 모두가 곧장 흩어지면 모임이 아니다 — 그 밤은 끝까지 선다
 static func _first_gathering() -> bool:
+	if GameState.story.get("eventDay", {}).get("ev_gathering", -1) == GameState.day: return true
 	return GameState.quests.active.has("m5g") and not GameState.story.events.has("ev_gathering")
 
 

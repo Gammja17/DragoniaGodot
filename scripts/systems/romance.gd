@@ -192,7 +192,7 @@ static func _jealous_rival(npc, rival: String, ui: Dictionary) -> void:
 static func _sulk(npc, ui: Dictionary, line) -> void:
 	_set_mood(npc.config.name, "SULK")
 	npc.state = "WANDER"
-	Hud.pop("%s(이)가 토라져서 굴을 나갔습니다. 고기 3개를 들고 찾아가 사과하세요." % Names.npc(npc.config.name), "💔")
+	Hud.pop("%s 토라져서 굴을 나갔습니다. 고기 3개를 들고 찾아가 사과하세요." % Util.josa(Names.npc(npc.config.name), "이", "가"), "💔")
 	Sfx.play("hurt")
 	Save.save_game()
 	if line: ui.show.call(npc, line, [{ label = "……", on_select = ui.close }])
@@ -212,7 +212,7 @@ static func apologize(npc, ui: Dictionary) -> void:
 		npc.state = "PARTNER_FOLLOW"
 		npc.relation = minf(100, npc.relation + 8)
 		Vfx.spawn_effect("HEART", npc.x, npc.y - 80, { color = "#ff7aa8", size = 1.4 })
-		Hud.pop("%s와(과) 화해했습니다. 다시 함께 다닙니다." % Names.npc(npc.config.name), "💞")
+		Hud.pop("%s하고 화해했습니다. 다시 함께 다닙니다." % Names.npc(npc.config.name), "💞")
 		Save.save_game())
 
 
@@ -235,7 +235,7 @@ static func _end_it(npc) -> void:
 static func _they_leave(npc, ui: Dictionary) -> void:
 	ui.play_lines.call(npc, _lines(npc).leave, func():
 		_end_it(npc)
-		Hud.pop("%s(이)가 떠났습니다." % Names.npc(npc.config.name), "💔"))
+		Hud.pop("%s 떠났습니다." % Util.josa(Names.npc(npc.config.name), "이", "가"), "💔"))
 
 
 ## 내가 그만하자고 한다 (마음 메뉴)
@@ -243,7 +243,7 @@ static func break_up(npc, ui: Dictionary) -> void:
 	ui.show.call(npc, "(정말로 그만하자고 말할까? 한 번 꺼낸 말은 주워 담을 수 없다.)", [
 		{ label = "…우리 그만하자.", on_select = func(): ui.play_lines.call(npc, _lines(npc).left, func():
 			_end_it(npc)
-			Hud.pop("%s와(과) 헤어졌습니다." % Names.npc(npc.config.name), "💔")) },
+			Hud.pop("%s하고 헤어졌습니다." % Names.npc(npc.config.name), "💔")) },
 		{ label = "아니야, 아무것도.", on_select = func(): ui.hub.call(npc) },
 	])
 
@@ -282,6 +282,6 @@ static func make_vow(npc, ui: Dictionary) -> void:
 		for i in 10: Vfx.spawn_effect("HEART", npc.x + (randf() - 0.5) * 160, npc.y - 40 - randf() * 90, { color = "#ff7aa8", size = 1.2 })
 		Vfx.spawn_effect("RING", npc.x, npc.y - 40, { size = 2.2, color = "#ffd0e0" })
 		if not Relics.owns("VOW_RING"): Relics.grant("VOW_RING", GameState.player.x, GameState.player.y)
-		Hud.pop("%s와(과) 평생을 약속했습니다." % Names.npc(npc.config.name), "💍")
+		Hud.pop("%s하고 평생을 약속했습니다." % Names.npc(npc.config.name), "💍")
 		Sfx.play("evolve")
 		Save.save_game())

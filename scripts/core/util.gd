@@ -13,6 +13,17 @@ static func dist(a, b) -> float:
 	return Vector2(a.x - b.x, a.y - b.y).length()
 
 
+## 받침에 맞춰 조사를 붙인다: josa("바실", "을", "를") → "바실을" · josa("엘더", "이", "가") → "엘더가".
+## "으로/로" 는 ㄹ 받침이면 "로" 다. 화면에 "(이)가" · "와(과)" 가 그대로 뜨지 않게
+static func josa(word: String, with_final: String, without_final: String) -> String:
+	if word == "": return without_final
+	var c := word.unicode_at(word.length() - 1)
+	if c < 0xAC00 or c > 0xD7A3: return word + without_final
+	var jong := (c - 0xAC00) % 28
+	if with_final == "으로" and jong == 8: return word + "로"
+	return word + (with_final if jong != 0 else without_final)
+
+
 ## JS 의 Math.imul. 32비트 곱의 아래 32비트를 부호 없는 수로 돌려준다
 static func imul(a: int, b: int) -> int:
 	a &= U32; b &= U32

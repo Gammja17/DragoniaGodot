@@ -64,7 +64,7 @@ static func next_trial():
 	if t == null: return null
 	var st: Dictionary = _stages()[int(t.stage)]
 	t.blocked = null
-	if p.level < st.minLevel: t.blocked = "아직 이르다. 레벨 %d은 되어야 몸이 버틴다. (지금 %d)" % [st.minLevel, p.level]
+	if p.level < st.minLevel: t.blocked = "아직 이르다. 레벨 %d까지는 올라야 몸이 버틴다. (지금 %d)" % [st.minLevel, p.level]
 	elif st.get("needsAllElements") and p.elements.size() < 3: t.blocked = "세 숨결을 모두 제 것으로 만든 뒤의 이야기다."
 	elif t.get("needs") and not t.needs.call(GameState): t.blocked = t.why
 	return t
@@ -78,7 +78,7 @@ static func master_options(npc) -> Array:
 		return [{ label = "[수련] 가르침을 청한다", on_select = func(): _say(npc, "엘더 영감한테 아직 얘기를 못 들었나 보군. 오늘은 마을을 둘러보고, 둥지에서 하룻밤 자고 오너라.") }]
 	var trial = next_trial()
 	if trial and not trial.blocked:
-		opts.append({ label = "[승급 시험] %s(으)로 자란다" % _stages()[int(trial.stage)].name, on_select = func(): start_drill(npc, { type = "DUEL", hp = trial.hp }, { trial = trial }) })
+		opts.append({ label = "[승급 시험] %s 단계에 도전한다" % _stages()[int(trial.stage)].name, on_select = func(): start_drill(npc, { type = "DUEL", hp = trial.hp }, { trial = trial }) })
 	elif trial:
 		opts.append({ label = "[승급 시험] %s (아직 이르다)" % _stages()[int(trial.stage)].name, on_select = func(): _say(npc, trial.blocked) })
 	opts.append({ label = "연습 대련을 청한다 (보상 없음)", on_select = func(): start_drill(npc, { type = "DUEL", hp = 220 + p.level * 12 }, { practice = true }) })
@@ -86,7 +86,7 @@ static func master_options(npc) -> Array:
 	var lesson = next_lesson()
 	if lesson and p.level < lesson.level:
 		opts.append({ label = "(다음 기본기: %s → %s. 레벨 %d 필요)" % [lesson.title, Data.get_module("skills").SKILLS[lesson.skill].name, lesson.level],
-			on_select = func(): _say(npc, "아직 이르다. 레벨 %d은 돼서 와라. 숲에서 몸을 더 굴리고." % lesson.level) })
+			on_select = func(): _say(npc, "아직 이르다. 레벨 %d까지 올리고 와라. 숲에서 몸을 더 굴리고." % lesson.level) })
 	return opts
 
 
@@ -115,10 +115,11 @@ static func try_awaken() -> bool:
 		Hud.pop("둥지 안이 따뜻하다. 무언가 모자란다: %s" % " · ".join(lacks), "🪹"); return true
 	Chronicle.play_scene("빈 둥지", [
 		{ who = "나", text = "(둥지 안에 손을 대자 돌이 따뜻했다. 삼백 년 전에도, 얼마 전에도 누가 여기서 태어났다.)" },
-		{ who = "나", text = "(품고 있던 숨결들이 한꺼번에 뜨거워진다. 불과 얼음과 번개가 서로 밀어내지 않고 하나로 엮인다.)" },
+		{ who = "나", text = "(품고 있던 숨결들이 한꺼번에 뜨거워진다. 서로 밀어내지 않고 하나로 엮인다.)" },
 		{ who = "나", text = "(등이 갈라지는 것 같더니 날개가 한 뼘 더 자랐다. 이건 누가 시험을 내서 얻은 게 아니라, 원래 내 것이었던 것 같다.)" },
 	], func():
 		p.evolve(3)
+		if not GameState.story.rites.has(3): GameState.story.rites.append(3)   # 목 아래 무늬가 한층 또렷해진다
 		Vfx.spawn_effect("BLOOM", p.x, p.y - 40, { size = 1.8, color = "#fff2b0" })
 		Vfx.spawn_effect("RUNE", p.x, p.y, { size = 2.6, color = "#ffe9a0" })
 		for i in 14: Skills.later(i * 90, func(): Vfx.spawn_effect("SPARKLE", p.x + Util.rand_range(-90, 90), p.y - Util.rand_range(0, 80), { size = 1.2, color = "#fff2b0" }))
@@ -171,7 +172,7 @@ static func _end_drill(win: bool) -> void:
 		Hud.pop("수련 실패… 다시 도전할 수 있습니다.", "💫")
 		return
 	if a.get("practice"):
-		a.npc.say("좋은 몸놀림이다.")
+		a.npc.say("…나쁘지 않군.")
 		p.gain_xp(20 + p.level * 4)
 		return
 	if a.get("trial"):
@@ -180,7 +181,7 @@ static func _end_drill(win: bool) -> void:
 	else:
 		GameState.story.lessons.append(a.lesson.id)
 		GameState.story.lessonDay = GameState.day
-		a.npc.say("잘했다. 오늘은 여기까지.")
+		a.npc.say("…봐줄 만은 하군. 오늘은 여기까지.")
 		# 같이 구르는 또래가 곁에 있으면 한마디 거든다
 		for n in GameState.entities.npcs:
 			if n.config.get("name") == "Nara" and Util.dist(n, p) < 900: n.say(Data.get_module("npcTalk").NPC_TALK.Nara.trainingLines.pick_random())
@@ -376,8 +377,13 @@ static func on_flag(flag: String) -> void:
 	GameState.story.flags[flag] = true
 	match flag:
 		"gron_dead": _kill_npc("Gron")
-		"ignar_slain": GameState.story.route = "guardian"
-		"ignar_spared": GameState.story.route = "redeem"
+		# 이그나르 앞에서 고르는 순간 결말이 흐른다 (걸어서 돌아가 보고하고 잠들 필요 없이)
+		"ignar_slain":
+			GameState.story.route = "guardian"
+			Ending.start("guardian")
+		"ignar_spared":
+			GameState.story.route = "redeem"
+			Ending.start("redeem")
 		"route_dark":                       # 본 이야기(m6)를 내려놓고 그의 편에 선다
 			GameState.story.route = "dark"
 			GameState.quests.active.erase("m6")
@@ -410,7 +416,7 @@ static func _dark_duel() -> void:
 			if win:
 				Chronicle.play_scene("무너진 문", dark.win, func():
 					Quests.notify("event", "dark_win")
-					Save.save_game())
+					Ending.start("dark"))
 				return
 			# 졌다. 스승이 데리고 돌아온다 — 교화. 본 이야기로 되돌아간다
 			Chronicle.play_scene("집에 가자", dark.lose, func():
@@ -420,7 +426,10 @@ static func _dark_duel() -> void:
 				var m6 = Quests.by_id("m6")
 				if m6 and not GameState.quests.done.has("m6"):
 					Quests.accept(m6)
-					if GameState.quests.active.has("m6"): GameState.quests.active.m6.step = maxi(GameState.quests.active.m6.step, 2)
+					if GameState.quests.active.has("m6"):
+						GameState.quests.active.m6.step = maxi(GameState.quests.active.m6.step, 2)
+						Quests._catch_up(m6)   # 이미 고룡이면 '자라기' 대목은 건너뛴다 (못 넘기고 굳던 것)
+					Quests.changed()
 				Save.save_game()),
 	})
 
@@ -439,7 +448,7 @@ static func _kill_npc(nm: String) -> void:
 	for q in Quests.all():
 		if not GameState.quests.active.has(q.id) or q.act == "main" or Quests.turn_in_npc(q) != nm: continue
 		GameState.quests.active.erase(q.id)
-		Hud.pop("%s의 부탁 [%s]은 끝내 전하지 못했다." % [Names.npc(nm), q.title], "🕯️")
+		Hud.pop("%s에게 받은 부탁 [%s], 끝내 전하지 못했다." % [Names.npc(nm), q.title], "🕯️")
 	Quests.changed()
 	Save.save_game()
 
@@ -447,8 +456,8 @@ static func _kill_npc(nm: String) -> void:
 # ---------- 장 ----------
 ## 매 프레임. 장이 넘어가면 까만 화면에 "제 N 장 · 이름" 을 띄운다
 static func update_chapter() -> void:
-	if GameState.isDialogueOpen or GameState.prologue or GameState.activity or GameState.raid.active or GameState.tour or GameState.nav: return
-	if GameState.bannerUntil and GameState.game_time < GameState.bannerUntil: return   # 지역 이름·퀘스트 배너가 떠 있는 동안은 기다린다
+	if GameState.isDialogueOpen or GameState.prologue or Ending.playing or GameState.activity or GameState.raid.active or GameState.tour or GameState.nav: return
+	if GameState.bannerUntil and GameState.play_time < GameState.bannerUntil: return   # 지역 이름·퀘스트 배너가 떠 있는 동안은 기다린다
 	var ch := Chapters.current(GameState)
 	if GameState.story.get("chapter") == ch.id: return
 	var turned: bool = GameState.story.get("chapterTitle") != ch.title   # 한 장이 앞뒤로 나뉜 경우엔 이름을 다시 띄우지 않는다
@@ -462,7 +471,7 @@ static func update_chapter() -> void:
 static func update_bedtime() -> void:
 	var p = GameState.player
 	var t := GameState.dayTime
-	if p.stage_index >= _adult() or GameState.isDialogueOpen or GameState.prologue: return
+	if p.stage_index >= _adult() or GameState.isDialogueOpen or GameState.prologue or Ending.playing: return
 	if t >= YAWN and t < BEDTIME and not GameState.story.today.get("yawned"):
 		GameState.story.today.yawned = true
 		Hud.pop("하품이 난다. 곧 잘 시간이다.", "🥱")
@@ -470,7 +479,7 @@ static func update_bedtime() -> void:
 	if Gathering.is_gather_now(): return   # 달맞이 모임은 밤에 선다
 	# 습격을 막아 낸 직후에는 3분쯤 숨을 돌린다
 	var ended = GameState.story.today.get("raidEndedAt")
-	if ended != null and GameState.game_time - ended < RAID_GRACE:
+	if ended != null and GameState.play_time - ended < RAID_GRACE:
 		if not GameState.story.today.get("graceToast"):
 			GameState.story.today.graceToast = true
 			Hud.pop("습격이 끝났다. 잠들기 전에 마을을 한 바퀴 돌아보자.", "🌙")
@@ -497,9 +506,9 @@ static func _deliver_egg() -> bool:
 	GameState.eggSitting = null
 	var p = GameState.player
 	Chronicle.play_scene("알이 깨어났다", [
-		{ who = "Elder", text = "왔다. 문 앞에서 기다리고 있었다." },
-		{ who = "Elder", text = "사흘을 품었더니 밤새 발길질을 하더구나. 성질이 급한 아이다." },
-		{ who = "Elder", text = "자, 네 아이다. 이제부터는 네가 품어라." },
+		{ who = "Elder", text = "왔구나. 문 앞에서 기다리고 있었단다." },
+		{ who = "Elder", text = "사흘을 품었더니 밤새 발길질을 하더구나… 성질 급한 게 누굴 닮았는지." },
+		{ who = "Elder", text = "자, 네 아이란다. 이제부터는 네가 보듬어 주려무나." },
 	], func():
 		var baby := BabyDragon.make(p.x + Util.rand_range(-40, 40), p.y + Util.rand_range(20, 50), egg.genes)
 		World.add_entity("babies", baby)

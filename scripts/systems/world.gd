@@ -420,7 +420,7 @@ static func map_enemies() -> Array:
 
 ## 이 지도에 보스가 살아 있나 (살아 있으면 야생 적을 뿌리지 않는다)
 static func map_has_boss() -> bool:
-	return GameState.entities.bosses.size() > 0
+	return GameState.entities.bosses.any(func(b): return not b.remove and b.dying <= 0 and not b.lingering and b.vanishing <= 0)
 
 
 ## 쓰러졌을 때: 마을 광장에서 눈을 뜬다
@@ -551,6 +551,7 @@ static func _block_at_border() -> void:
 ## 포탈·이동 석비로 지도를 옮긴다. 화면을 까맣게 덮지 않는다 — 곧바로 옮기고, 지역 이름만 위쪽에 잠깐 띄웠다 지운다
 static func travel_to(id: String, from = null, spot = null) -> void:
 	if Time.get_ticks_msec() < _travel_lock: return
+	Sfx.play("dash")
 	enter_map(id, from, spot)
 	Hud.current.show_region_banner(Names.map(id), BIOME_LABEL.get(maps()[id].biome, "") if maps().has(id) else "")
 	# 도착하자마자 뒤돌아 다시 포탈을 밟는 일이 없게 아주 짧게만 잠근다

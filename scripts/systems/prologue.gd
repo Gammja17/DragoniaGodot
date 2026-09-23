@@ -105,6 +105,7 @@ static func _talk(who: String, lines: Array, then: Callable) -> void:
 
 ## 「사흘 뒤」 로 넘기고 첫 대화에 잇는다
 static func _finish(s: Dictionary) -> void:
+	s.step = "fading"   # 이제부터는 건너뛸 게 없다 (Esc 가 끝을 두 번 부르던 것)
 	Hud.fade_screen("사흘 뒤", func():
 		GameState.dayTime = s.dayTime
 		GameState.player.down_timer = 0.0
@@ -118,7 +119,8 @@ static func _finish(s: Dictionary) -> void:
 ## Esc: 어느 대목이든 건너뛰고 첫 대화로
 static func skip() -> void:
 	var s = GameState.prologue
-	if not s: return
+	if not s or s.step == "fading": return
+	Chronicle._current = null   # 끊긴 포코·엘더의 말이 다음 Esc 에 되살아나지 않게
 	var p = GameState.player
 	DialogueBox.current.hide_dialogue()
 	GameState.isDialogueOpen = false

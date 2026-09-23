@@ -27,7 +27,9 @@ static func add_relation(npc, amount: float) -> void:
 	var after := relation_tier(npc.relation)
 	var nm: String = npc.config.name
 	var bonds: Dictionary = _talk().BOND_SCENES
-	if after <= before or not bonds.has(nm) or bonds[nm].size() <= after or not bonds[nm][after]: return
+	var scenes = bonds.get(nm)
+	# 장면 표는 단계("1"~"3")를 열쇠로 쓴다 (배열로 읽어서 서른 장면이 하나도 안 나오던 것)
+	if after <= before or not scenes or not scenes.get(str(after)): return
 	var key := "%s:%d" % [nm, after]
 	if not GameState.story.get("bonds"): GameState.story.bonds = []
 	if GameState.story.bonds.has(key): return
@@ -117,7 +119,7 @@ static func _own_menu(npc, nm: String):
 	var back := func(): open_hub(npc)
 	var sub := []
 	if nm == "Elder": return { label = "✨ 축복을 청한다", on_select = func(): _blessing(npc) }
-	if nm == "Kairon": return { label = "🎓 가르침을 청한다", on_select = func(): show(npc, "무엇을 배우러 왔느냐.", Story.master_options(npc) + [{ label = "돌아간다", on_select = back }]) }
+	if nm == "Kairon": return { label = "🎓 가르침을 청한다", on_select = func(): show(npc, "뭘 배우러 왔냐.", Story.master_options(npc) + [{ label = "돌아간다", on_select = back }]) }
 	if nm == "Tiamat": sub.append({ label = "⚔️ 대련을 신청한다", on_select = func(): _start_spar(npc) })
 	if nm == "Poco": sub.append({ label = "🎾 술래잡기 하자!", on_select = func(): _start_tag(npc) })
 	# 마을 아이들: 성체가 돼야 놀아 줄 수 있다. 놀아 주면 부모의 호감도 같이 오른다
@@ -151,7 +153,7 @@ static func _own_menu(npc, nm: String):
 		sub.append({ label = "🤝 같이 모험을 떠나자", on_select = func(): _set_companion(npc, true) })
 	if sub.is_empty(): return null
 	if sub.size() == 1: return sub[0]
-	return { label = "🤝 함께 하자고 한다", on_select = func(): show(npc, "뭘 같이 할까?", sub + [{ label = "돌아간다", on_select = back }]) }
+	return { label = "🤝 함께 하자고 한다", on_select = func(): show(npc, "(무엇을 함께 할까.)", sub + [{ label = "돌아간다", on_select = back }]) }
 
 
 ## 잡담·선물 묶음
@@ -166,7 +168,7 @@ static func _talk_menu(npc) -> void:
 	if sub.size() == 2:   # 잡담밖에 없으면 바로 잡담
 		_chat(npc)
 		return
-	show(npc, "무슨 얘기를 할까?", sub)
+	show(npc, "(무슨 얘기를 꺼낼까.)", sub)
 
 
 ## 데이트를 청할 수 있는 호감도. 스승·촌장·그론은 좀 더 높다
@@ -267,18 +269,32 @@ static func _bring_to_quest(npc, q: Dictionary) -> void:
 	])
 
 
-## 끝낸 일을 보고한다. 마무리에 고를 것이 있으면 그것부터 묻는다
+## 끝낸 일을 보고한다. 마무리에 고를 것이 있으면 그것부터 묻는다.
+## 마무리 장면(고른 것에 딸린 장면 → 퀘스트를 닫는 장면)이 먼저 흐르고, 다음 부탁은 그 뒤에 꺼낸다
+## (다음 부탁을 먼저 듣고 나서 앞 이야기의 결말이 나오던 것). 이야기의 끝(결말)은 Ending 이 받는다
 static func _report_quest(npc, q: Dictionary) -> void:
 	var finish := func(choice_id):
 		close()
 		Quests.turn_in(q, npc, choice_id)
-		var nxt = Quests.offer_for(npc)
-		if nxt: _hear_quest(npc, nxt)
+		if Ending.takes_over(q): return
+		_play_queued(func():
+			Save.save_game()
+			var nxt = Quests.offer_for(npc)
+			if nxt and is_instance_valid(npc): _hear_quest(npc, nxt))
 	if not q.get("choice"):
 		show(npc, q.done, [{ label = "보상을 받는다 (%s)" % q.title, on_select = func(): finish.call(null) }])
 		return
 	# 마무리는 한 화면에서. 보고를 받은 말 아래에 고를 것을 바로 붙인다
 	show(npc, "%s\n\n%s" % [q.done, q.choice.prompt], q.choice.options.map(func(o): return { label = o.label, on_select = func(): finish.call(o.id) }))
+
+
+## 대기줄에 쌓인 장면을 이 자리에서 차례로 튼다. 다 틀면 then
+static func _play_queued(then: Callable) -> void:
+	var qs = Quests.take_scene()
+	if qs == null:
+		then.call()
+		return
+	Chronicle.play_scene(qs.title, qs.lines, func(): _play_queued(then), true, qs.get("place"))
 
 
 ## 인사말: 가끔은 지금 상황(날씨, 밤, 습격, 가족…)에 맞는 한마디
@@ -337,7 +353,7 @@ static func _kid_play(npc, kp: Dictionary, kind: String) -> void:
 			var par = World.any_npc(pn)
 			if par: add_relation(par, 3)
 		for i in 3: Vfx.spawn_effect("HEART", npc.x + Util.rand_range(-30, 30), npc.y - 50 - Util.rand_range(0, 30), { color = "#ffd07a", size = 1 })
-		Hud.pop("%s와(과) 놀아 줬다. %s의 호감도 조금 올랐다." % [Names.npc(npc.config.name), "·".join(kp.parents.map(Names.npc))], "🐉")
+		Hud.pop("%s하고 놀아 줬다. %s의 호감도 조금 올랐다." % [Names.npc(npc.config.name), "·".join(kp.parents.map(Names.npc))], "🐉")
 		Sfx.play("quest"))
 
 
@@ -365,7 +381,7 @@ static func _go_on_date(npc) -> void:
 		add_relation(npc, 12)
 		Romance.on_date(npc)   # 다른 용이 봤을 수도 있다
 		Vfx.spawn_effect("HEART", npc.x, npc.y - 80, { color = "#ff7aa8", size = 1.4 })
-		Hud.pop("%s와(과) 데이트했습니다. (%d/3, 호감 ↑)" % [Names.npc(npc.config.name), npc.dates], "💕")))
+		Hud.pop("%s하고 데이트했습니다. (%d/3, 호감 ↑)" % [Names.npc(npc.config.name), npc.dates], "💕")))
 
 
 static func _confess(npc) -> void:
@@ -375,7 +391,7 @@ static func _confess(npc) -> void:
 		return
 	# 지금 짝과의 일을 먼저 매듭지어야 한다
 	if GameState.partner and GameState.partner != npc:
-		show(npc, "(지금은 %s(이)가 짝이다. 이 말을 꺼내려면 그쪽과의 일을 먼저 매듭지어야 한다.)" % Names.npc(GameState.partner.config.name), [{ label = "…그래.", on_select = hub }])
+		show(npc, "(지금은 %s 짝이다. 이 말을 꺼내려면 그쪽과의 일을 먼저 매듭지어야 한다.)" % Util.josa(Names.npc(GameState.partner.config.name), "이", "가"), [{ label = "…그래.", on_select = hub }])
 		return
 	play_lines(npc, _talk().CONFESSION[npc.config.name], func():
 		if GameState.partner: GameState.partner.state = "WANDER"
@@ -384,7 +400,7 @@ static func _confess(npc) -> void:
 		npc.state = "PARTNER_FOLLOW"
 		Romance.on_partnered(npc)
 		for i in 6: Vfx.spawn_effect("HEART", npc.x + Util.rand_range(-60, 60), npc.y - 60 - Util.rand_range(0, 60), { color = "#ff7aa8", size = 1.2 })
-		Hud.pop("%s(이)가 짝이 되었습니다! 이제 아지트에서 함께 삽니다." % Names.npc(npc.config.name), "💞"))
+		Hud.pop("%s 짝이 되었습니다! 이제 내 굴에서 함께 삽니다." % Util.josa(Names.npc(npc.config.name), "이", "가"), "💞"))
 
 
 static func _family_talk(npc) -> void:
@@ -392,7 +408,7 @@ static func _family_talk(npc) -> void:
 	var nest = nests[0] if not nests.is_empty() else null
 	var back := [{ label = "그래.", on_select = func(): open_hub(npc) }]
 	if not GameState.den.get("built"):
-		show(npc, "아직 둥지가 없잖아. 아지트에 둥지부터 짓자. (둥지에서 [T]. 나뭇가지 8, 30G)", back)
+		show(npc, "아직 둥지가 없잖아. 굴에 둥지부터 짓자. (둥지에서 [T]. 나뭇가지 8, 30G)", back)
 		return
 	# 둥지는 내 굴 안에만 있다 (밖에서는 GameState.denNest 에 상태만 들고 다닌다)
 	if not nest:
@@ -411,7 +427,7 @@ static func _family_talk(npc) -> void:
 		npc.last_egg_day = GameState.day
 		nest.lay_egg(GameState.player, npc)
 		Vfx.spawn_effect("RING", nest.x, nest.y, { size = 1.4 })
-		Hud.pop("%s(이)가 둥지에 알을 낳았습니다! 곁에서 품어 주세요." % Names.npc(npc.config.name), "🥚"))
+		Hud.pop("%s 둥지에 알을 낳았습니다! 곁에서 품어 주세요." % Util.josa(Names.npc(npc.config.name), "이", "가"), "🥚"))
 
 
 ## 주워 온 알을 촌장에게 맡긴다. 사흘 뒤 아침에 촌장이 아기를 데려온다 (Story)
@@ -421,14 +437,14 @@ static func _entrust_egg(npc) -> void:
 		show(npc, "이미 하나 품고 있잖느냐. 저 아이가 깨어난 뒤에 오거라.", back)
 		return
 	if GameState.kids.size() >= Data.get_module("core_config").MAX_KIDS:
-		show(npc, "네 집이 이미 북적북적하다. 그 아이들부터 잘 키우고 오거라.", back)
+		show(npc, "네 집이 이미 북적북적하구나. 그 아이들부터 잘 키우고 오거라.", back)
 		return
 	GameState.player.carrying = null
 	GameState.eggSitting = { day = GameState.day, genes = Kids.mix_genes(GameState.player, GameState.partner) }
 	play_lines(npc, [
 		"알이구나. 어디서 주워 왔느냐.",
-		"네 몸으로는 아직 못 품는다. 알은 품는 이의 체온을 따라가거든.",
-		"내가 맡으마. 사흘이면 깨어날 게다. 그때 데려다주지.",
+		"네 몸으로는 아직 품기 어렵단다. 알은 품는 이의 체온을 닮아 가거든…",
+		"내가 맡으마. 사흘이면 깰 게야. 그때 데려다주마.",
 	], func():
 		Vfx.spawn_effect("RING", npc.x, npc.y, { size = 1.2 })
 		Hud.pop("엘더에게 알을 맡겼습니다. 사흘 뒤 아침에 데려옵니다.", "🥚"))
@@ -438,8 +454,8 @@ static func _entrust_egg(npc) -> void:
 static func _set_following(npc, on: bool) -> void:
 	close()
 	npc.state = "PARTNER_FOLLOW" if on else "WANDER"
-	if on: Hud.pop("%s(이)가 다시 따라나섭니다." % Names.npc(npc.config.name), "🤝")
-	else: Hud.pop("%s(이)가 마을에 남습니다. 다시 부르려면 말을 거세요." % Names.npc(npc.config.name), "👋")
+	if on: Hud.pop("%s 다시 따라나섭니다." % Util.josa(Names.npc(npc.config.name), "이", "가"), "🤝")
+	else: Hud.pop("%s 마을에 남습니다. 다시 부르려면 말을 거세요." % Util.josa(Names.npc(npc.config.name), "이", "가"), "👋")
 
 
 static func _set_companion(npc, join: bool) -> void:
@@ -447,11 +463,11 @@ static func _set_companion(npc, join: bool) -> void:
 		if GameState.companion: GameState.companion.state = "WANDER"
 		GameState.companion = npc
 		npc.state = "COMPANION_FOLLOW"
-		Hud.pop("%s(이)가 동료로 합류했습니다!" % Names.npc(npc.config.name), "🤝")
+		Hud.pop("%s 동료로 합류했습니다!" % Util.josa(Names.npc(npc.config.name), "이", "가"), "🤝")
 	else:
 		GameState.companion = null
 		npc.state = "WANDER"
-		Hud.pop("%s(이)가 마을로 돌아갑니다." % Names.npc(npc.config.name), "👋")
+		Hud.pop("%s 마을로 돌아갑니다." % Util.josa(Names.npc(npc.config.name), "이", "가"), "👋")
 	close()
 
 
@@ -459,7 +475,7 @@ static func _set_companion(npc, join: bool) -> void:
 
 static func _blessing(npc) -> void:
 	if GameState.blessingDay == GameState.day:
-		show(npc, "축복은 하루에 한 번이다. 욕심내지 말거라.", [{ label = "네…", on_select = func(): open_hub(npc) }])
+		show(npc, "축복은 하루에 한 번이란다. 욕심내지 말거라.", [{ label = "네…", on_select = func(): open_hub(npc) }])
 		return
 	GameState.blessingDay = GameState.day
 	var p = GameState.player
@@ -570,7 +586,7 @@ static func _start_tag(npc) -> void:
 	close()
 	GameState.activity = { type = "TAG", npc = npc, time = TAG_TIME, max = TAG_TIME, juke = 0.0, jukeAngle = 0.0 }
 	npc.say("나 잡아 봐라~!")
-	Hud.pop("술래잡기! %d초 안에 %s를 잡으세요. (Shift 달리기)" % [TAG_TIME, Names.npc(npc.config.name)], "🏃")
+	Hud.pop("술래잡기! %d초 안에 %s 잡으세요. (Shift 달리기)" % [TAG_TIME, Util.josa(Names.npc(npc.config.name), "을", "를")], "🏃")
 
 
 static func _end_activity(win: bool) -> void:
@@ -600,7 +616,7 @@ static func _end_activity(win: bool) -> void:
 		add_relation(npc, 8 if first else 2)
 		p.gold += 25 if first else 5
 		npc.say(kp.tagWin if kp else "으악 잡혔다! 한 판 더!")
-		Hud.pop("%s를 잡았습니다!" % Names.npc(npc.config.name) + (" (25G, 호감 ↑)" if first else " (5G)"), "🎉")
+		Hud.pop("%s 잡았습니다!" % Util.josa(Names.npc(npc.config.name), "을", "를") + (" (25G, 호감 ↑)" if first else " (5G)"), "🎉")
 		if kp:
 			for pn in kp.parents:
 				var par = World.any_npc(pn)
@@ -637,7 +653,7 @@ static func update_activity_npc(npc, dt: float) -> void:
 		return
 
 	# TAG: 플레이어 반대쪽으로, 가끔 방향을 꺾고, 집에서 너무 멀어지면 돌아온다
-	Hud.current.set_boss_bar("포코와 술래잡기", a.time / a.max)
+	Hud.current.set_boss_bar("%s 술래잡기" % Util.josa(Names.npc(a.npc.config.name) if a.get("npc") else Names.npc("Poco"), "과", "와"), a.time / a.max)
 	a.time -= dt
 	a.juke -= dt
 	if a.juke <= 0:

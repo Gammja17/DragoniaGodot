@@ -86,7 +86,7 @@ func _render() -> void:
 				_item(d.id, "누르면 치워서 되돌린다", false, func():
 					Den.pick_up(i)
 					World.refresh_den()
-					Hud.pop("%s을(를) 치웠다." % F[d.id].name, "🧹")
+					Hud.pop("%s 치웠다." % Util.josa(F[d.id].name, "을", "를"), "🧹")
 					_render())
 			empty = "굴 안이 아직 휑하다."
 	var el: Label = $Frame/Lines/Body/Empty

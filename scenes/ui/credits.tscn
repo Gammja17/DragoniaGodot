@@ -1,0 +1,114 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/credits.gd" id="1"]
+[ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="2"]
+[ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="3"]
+
+[sub_resource type="LabelSettings" id="title_text"]
+font = ExtResource("3")
+font_size = 36
+font_color = Color(1, 0.847, 0.29, 1)
+
+[sub_resource type="LabelSettings" id="head_text"]
+font = ExtResource("3")
+font_size = 24
+font_color = Color(0.847, 0.698, 0.353, 1)
+
+[sub_resource type="LabelSettings" id="line_text"]
+font = ExtResource("2")
+font_size = 24
+font_color = Color(0.925, 0.89, 0.812, 1)
+
+[sub_resource type="LabelSettings" id="small_text"]
+font = ExtResource("2")
+font_size = 12
+font_color = Color(0.639, 0.604, 0.529, 1)
+
+[node name="Credits" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Bg" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0118, 0.0118, 0.0314, 1)
+
+[node name="Roll" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 720.0
+offset_bottom = 720.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="End" type="Label" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("title_text")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Hint" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -360.0
+offset_top = -40.0
+offset_right = -24.0
+offset_bottom = -16.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "[Space] 꾹 누르면 빨리 · [Esc] 건너뛰기"
+label_settings = SubResource("small_text")
+horizontal_alignment = 2
+
+[node name="Templates" type="Control" parent="."]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="Templates"]
+layout_mode = 0
+label_settings = SubResource("title_text")
+horizontal_alignment = 1
+
+[node name="Head" type="Label" parent="Templates"]
+layout_mode = 0
+label_settings = SubResource("head_text")
+horizontal_alignment = 1
+
+[node name="Line" type="Label" parent="Templates"]
+layout_mode = 0
+label_settings = SubResource("line_text")
+horizontal_alignment = 1
+
+[node name="Small" type="Label" parent="Templates"]
+layout_mode = 0
+label_settings = SubResource("small_text")
+horizontal_alignment = 1
+
+[node name="Gap" type="Control" parent="Templates"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 0
+mouse_filter = 2

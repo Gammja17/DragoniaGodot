@@ -49,8 +49,12 @@ var beam = null              # { time, angle, spin, warm }
 var burrow = null            # { time, erupting }
 var blizzard = null          # { time, angle, timer }
 var type := "BOSS"
-var dying := 0.0             # 쓰러지는 중: 빛가루로 흩어지는 남은 시간 (끝나면 보상과 이야기)
+var dying := 0.0             # 쓰러지는 중: 흰 빛 속에 무너지는 남은 시간
+var lingering := false       # 무너진 뒤: 흐릿하게 남아 마지막 말을 한다 (이그나르는 무릎을 꿇은 채 남는다). 장면이 끝나면 흩어진다
+var vanishing := 0.0         # 빛가루로 흩어지는 남은 시간
+var _linger_until := 0
 const DYING_TIME := 1.8
+const VANISH_TIME := 1.6
 static var _introduced := {} # 이번 판에 등장 장면을 본 보스
 
 var _fx: Node2D
@@ -123,6 +127,12 @@ func update(dt: float) -> void:
 		animator.play_base("idle")
 		animator.update(dt)
 		return
+	if vanishing > 0:
+		_update_vanish(dt)
+		return
+	if lingering:
+		_update_linger(dt)
+		return
 	if dying > 0:
 		_update_dying(dt)
 		return
@@ -157,7 +167,7 @@ func update(dt: float) -> void:
 	if spiral: _update_spiral(dt)
 	if blizzard: _update_blizzard(dt)
 
-	if not is_hidden and d < 60 * def.scale: player.take_damage(def.contact * dt * (4 if charge and not charge.windup > 0 else 1))
+	if not is_hidden and d < 60 * def.scale: player.take_damage(def.contact * dt * (2 if charge and not charge.windup > 0 else 1))
 
 	animator.play_base("move" if moving else "idle")
 	animator.update(dt)
@@ -385,7 +395,7 @@ func _update_blizzard(dt: float) -> void:
 
 
 func take_damage(dmg: float, silent := false, _from = null) -> void:
-	if not awake or is_hidden or dying > 0: return
+	if not awake or is_hidden or dying > 0 or lingering or vanishing > 0: return
 	if opening: dmg *= 2   # 간발로 만든 빈틈
 	hp -= dmg
 	if not silent:
@@ -402,20 +412,58 @@ func take_damage(dmg: float, silent := false, _from = null) -> void:
 	die()
 
 
-## 쓰러진다: 세상이 느려지고 흰 빛 속에 무너진 뒤(_update_dying) 빛가루로 흩어진다. 보상과 이야기는 다 흩어진 뒤에
+## 쓰러진다: 세상이 느려지고 흰 빛 속에 무너진다(_update_dying). 무너진 뒤에는 흐릿하게 남아 마지막 말을 하고(lingering),
+## 장면이 끝나면 빛가루로 흩어진다. 숨결·기술·유물·경험치·이야기는 쓰러지는 그 순간에 준다 —
+## 무너지는 사이에 내가 쓰러지거나 지도를 떠나도 잃지 않게 (이야기 장면은 무너짐이 끝날 때까지 Chronicle 이 기다린다)
 func die() -> void:
-	if dying > 0 or remove: return
+	if dying > 0 or remove or lingering: return
 	dying = DYING_TIME
 	awake = true
 	charge = null; spiral = null; beam = null; burrow = null; blizzard = null
 	is_hidden = false
 	Hud.current.set_boss_bar(null)
-	GameState.bossesDefeated[id] = true   # 흩어지는 동안 나가도 쓰러뜨린 것은 남는다
+	GameState.bossesDefeated[id] = true
 	for b in GameState.entities.bullets:
 		if b.faction == "ENEMY": b.remove = true
+	for e in GameState.entities.enemies: e.remove = true   # 불려 나온 졸개도 함께 흩어진다
+	for h in GameState.entities.hazards:
+		if h.get("faction") == "ENEMY": h.remove = true
 	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 4, color = "#fff2b0" })
 	Vfx.spawn_effect("CRIT_FLASH", x, y - 60, { size = 3 })
 	BossShow.finale(self)
+	_grant()
+
+
+## 무너진 뒤에도 흐려진 채 남는다. 이그나르(kneel)는 무릎을 꿇은 채 끝까지 남는다 (결말의 선택을 기다린다)
+func _update_linger(dt: float) -> void:
+	animator.play_base("idle")
+	animator.update(dt * 0.5)
+	if def.get("kneel"): return
+	if Time.get_ticks_msec() > _linger_until and not Cutscene.on and not GameState.isDialogueOpen: vanish()
+
+
+## 빛가루로 흩어진다 (장면이 끝날 때 · 결말에서 '끝낸다')
+func vanish() -> void:
+	if vanishing > 0 or remove: return
+	lingering = false
+	vanishing = VANISH_TIME
+	Sfx.play("chime")
+
+
+func _update_vanish(dt: float) -> void:
+	vanishing -= dt
+	animator.update(dt * 0.5)
+	if randf() < 0.8: Vfx.spawn_effect("SPARKLE", x + Util.rand_range(-70, 70) * def.scale, y - Util.rand_range(10, 130) * def.scale, { size = 1.4, color = "#fff2b0" })
+	if vanishing > 0: return
+	remove = true
+	Vfx.spawn_effect("BLOOM", x, y - 60, { size = 2.2 })
+	Vfx.spawn_effect("RING", x, y - 60, { size = 2.0 })
+
+
+## 세상이 멈춘 장면 안에서도 숨 쉬고, 흩어지던 것은 끝까지 흩어진다 (Cutscene.animate)
+func animate_only(dt: float) -> void:
+	if vanishing > 0: _update_vanish(dt)
+	else: animator.update(dt * (0.5 if lingering else 1.0))
 
 
 ## 무너지는 동안: 몸이 떨리며 흐려지고, 빛가루가 솟는다. 다 흩어지면 보상을 남기고 사라진다
@@ -429,11 +477,13 @@ func _update_dying(dt: float) -> void:
 	if randf() < 0.7: Vfx.spawn_effect("SPARKLE", x + Util.rand_range(-70, 70) * def.scale, y - Util.rand_range(10, 130) * def.scale, { size = 1.3, color = "#fff2b0" })
 	if randf() < 0.25: Vfx.spawn_effect("SMOKE", x + Util.rand_range(-90, 90), y - Util.rand_range(0, 120), { size = 1.4 })
 	if dying > 0: return
-	_rewards()
+	_drops()
+	lingering = true
+	_linger_until = Time.get_ticks_msec() + 7000
 
 
-func _rewards() -> void:
-	remove = true
+## 무너짐이 끝날 때: 떨어지는 것들과 마지막 빛
+func _drops() -> void:
 	for i in 6: Vfx.spawn_effect("SMOKE", x + Util.rand_range(-90, 90), y - Util.rand_range(0, 140), { size = 1.6 })
 	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 4, color = "#fff2b0" })
 	Vfx.spawn_effect("RING", x, y - 60, { size = 2.6 })
@@ -442,6 +492,10 @@ func _rewards() -> void:
 	GameCamera.current.shake(18); Sfx.play("boom")
 	for i in 5: World.add_entity("items", Item.make(x + Util.rand_range(-80, 80), y + Util.rand_range(-50, 50), "MEAT"))
 	World.add_entity("items", Item.make(x, y + 40, "GOLD", 80 + roundi(def.xp / 10.0)))
+
+
+## 쓰러뜨린 값: 숨결 · 기술 · 유물 · 경험치 · 이야기
+func _grant() -> void:
 	var player = GameState.player
 	if def.get("unlock"): player.unlock_element(def.unlock)
 	var skill = Data.get_module("skills").BOSS_SKILLS.get(id)
@@ -449,7 +503,7 @@ func _rewards() -> void:
 	var relic = Relics.boss_relic(id)
 	if relic: Relics.grant(relic, x, y)
 	player.gain_xp(def.xp)
-	# 셋 중 하나 고르는 유물(offerRelics)은 대화창을 옮길 때
+	RelicOffer.offer("%s의 둥지에서" % def.name)   # 셋 중 하나 고르는 유물 (조용해지면 뜬다)
 	Quests.notify("boss", id)
 
 
@@ -457,7 +511,12 @@ func _rewards() -> void:
 
 func _process(_dt: float) -> void:
 	_body.material.set_shader_parameter("m", Basis.from_scale(Vector3(2.2, 2.2, 2.2)) if hit_flash > 0 else Basis.IDENTITY)   # 맞으면 brightness(2.2)
-	_body.modulate.a = (clampf(dying / DYING_TIME * 1.4, 0, 1) if dying > 0 else 1.0) if awake else 0.75
+	var a := 1.0
+	if vanishing > 0: a = (0.55 if not def.get("kneel") else 1.0) * vanishing / VANISH_TIME
+	elif lingering: a = 1.0 if def.get("kneel") else 0.55   # 흐릿하게 남은 마지막 모습
+	elif dying > 0: a = clampf(dying / DYING_TIME * 1.4, 0.55, 1)
+	elif not awake and not Cutscene.on: a = 0.75
+	_body.modulate.a = a
 	queue_redraw(); _fx.queue_redraw(); _body.queue_redraw(); _top.queue_redraw()
 
 
@@ -494,13 +553,18 @@ func _draw_body() -> void:
 	var sc: float = def.scale
 	var hover := sin(GameState.game_time * 2) * 8 if sheet.flying else 0.0
 	var q := sin(squash * PI) if squash > 0 else 0.0
+	# 무릎을 꿇은 이그나르: 날갯짓을 멈추고 몸을 낮춘다
+	var kneel: bool = (lingering or vanishing > 0) and def.get("kneel", false)
+	if kneel:
+		hover = 0.0
+		q = 0.35
 	# draw_frame 은 제 변형을 쓰고 되돌리므로, 눌림(발 위 hover 를 축으로)은 몸 노드의 크기로 준다
 	_body.scale = Vector2(1 + 0.1 * q, 1 - 0.1 * q)
-	_body.position = Vector2(0, hover * (1 - _body.scale.y))
+	_body.position = Vector2(0, hover * (1 - _body.scale.y) + (14 * sc if kneel else 0.0))
 	SpriteSheet.draw_frame(_body, sheet, animator.frame(facing), 0, hover, sc)
 
 
 func _draw_top() -> void:
-	if is_hidden or awake: return
+	if is_hidden or awake or Cutscene.on: return   # 장면 속에서는 잠든 표시를 하지 않는다 (먼저 말을 거는 이그나르)
 	var sc: float = def.scale
 	Fonts.draw_centered(_top, Fonts.bold(), "z z z", 0, -130 * sc + sin(GameState.game_time * 2) * 4, 12, Color.WHITE)

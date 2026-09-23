@@ -101,6 +101,18 @@
       "RING"
      ]
     }
+   ],
+   "fallen": "잠들다",
+   "intro": [
+    {
+     "who": "MORGATH",
+     "text": "「……돌아가거라. 이 골짜기엔… 이제 얼음뿐이다.」",
+     "do": [
+      {
+       "sfx": "wind"
+      }
+     ]
+    }
    ]
   },
   "ZALGORA": {
@@ -159,6 +171,13 @@
       "CHARGE",
       "TWIN_BEAM"
      ]
+    }
+   ],
+   "fallen": "쓰러지다",
+   "intro": [
+    {
+     "who": "ZALGORA",
+     "text": "「내 밀림이다!」 「아니, 내 밀림이다!」"
     }
    ]
   },
@@ -219,6 +238,18 @@
       "BLIZZARD"
      ]
     }
+   ],
+   "fallen": "잠들다",
+   "intro": [
+    {
+     "who": "GLACIA",
+     "text": "「들어오지 마라. …아무도, 들어오지 마라.」",
+     "do": [
+      {
+       "sfx": "wind"
+      }
+     ]
+    }
    ]
   },
   "BASIL": {
@@ -264,7 +295,8 @@
       "BURROW",
       "QUAKE",
       "BURROW"
-     ]
+     ],
+     "say": "(모래가 끓는다. 발밑이 울린다.)"
     },
     {
      "at": 0.33,
@@ -274,9 +306,11 @@
       "CHARGE",
       "QUAKE",
       "CHARGE"
-     ]
+     ],
+     "say": "(폭군이 모래를 박차고 미친 듯이 날뛴다.)"
     }
-   ]
+   ],
+   "fallen": "쓰러지다"
   },
   "IGNAR": {
    "needs": "ev_ignar",
@@ -307,7 +341,7 @@
    "phases": [
     {
      "at": 1,
-     "name": "제 숨결",
+     "name": "첫 숨결",
      "patterns": [
       "AIMED",
       "FLAME_WALL",
@@ -332,7 +366,7 @@
     {
      "at": 0.33,
      "name": "하늘에서 떨어진 것",
-     "say": "「좋다, 그렇다면 끝까지 와 봐라.」",
+     "say": "「카이론이 가르쳤구나. 발 딛는 버릇까지 그 녀석이다.」",
      "patterns": [
       "METEOR_RAIN",
       "SPIRAL",
@@ -340,7 +374,9 @@
       "METEOR_RAIN"
      ]
     }
-   ]
+   ],
+   "kneel": true,
+   "fallen": "무릎을 꿇었다"
   }
  },
  "ENEMIES": {

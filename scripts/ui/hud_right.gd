@@ -25,9 +25,7 @@ func refresh() -> void:
 		_name.text = Delve.dungeon_name()
 		_sub.visible = false
 	else:
-		if GameState.map_id != _last_map:
-			_last_map = GameState.map_id
-			Quests.notify("visit", GameState.map_id)
+		if GameState.map_id != _last_map: _last_map = GameState.map_id
 		_name.text = Names.map(GameState.map_id)
 		var ev = NightEvents.event_name()
 		_sub.text = "%s · %s" % [ev if ev else NightEvents.day_phase_name(), Weather.weather_name()]

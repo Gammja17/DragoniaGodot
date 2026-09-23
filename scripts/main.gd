@@ -103,7 +103,10 @@ func _process(delta: float) -> void:
 	# [Esc]: 하던 것부터 닫는다. 닫을 게 없으면 설정 창
 	var card_skipped := false
 	if GameInput.pressed("cancel") and not NameInput.is_open():
-		if Hud.chapter_card_on():
+		if Credits.is_rolling():
+			Credits.current.skip()
+			card_skipped = true
+		elif Hud.chapter_card_on():
 			Hud.skip_chapter_card()
 			card_skipped = true   # 건너뛴 그 Esc 가 바로 열린 대화까지 닫지 않게
 		elif GameState.prologue: Prologue.skip()
@@ -112,7 +115,7 @@ func _process(delta: float) -> void:
 		elif not GameState.isDialogueOpen and not Cutscene.on: hud.settings.toggle()
 	if GameState.isDialogueOpen:
 		if GameState.nav: GameState.nav = null   # 대화·장면이 열리면 자동 이동은 거기서 끝난다
-		if NameInput.is_open(): pass   # 이름을 적는 중에는 글자 칸이 키를 받는다
+		if NameInput.is_open() or Credits.is_rolling() or Hud.fading(): pass   # 이름을 적는 중 · 크레딧 · 화면이 덮인 동안은 건드리지 않는다
 		elif GameInput.pressed("cancel") and not card_skipped:
 			# 장면이면 끝까지 건너뛴다 (대화창만 닫으면 장면의 끝이 영영 안 불려 사건 시계가 굳는다)
 			if not Chronicle.skip_scene():
@@ -142,6 +145,7 @@ func _process(delta: float) -> void:
 func _update(dt: float) -> void:
 	var E: Dictionary = GameState.entities
 	GameState.game_time += dt
+	GameState.play_time += dt
 	var outside: bool = not GameState.dungeon
 	if outside:   # 굴 속에서는 마을 습격도, 야생 적의 보충도 없다
 		Raid.update(dt)

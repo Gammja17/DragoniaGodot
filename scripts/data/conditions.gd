@@ -74,6 +74,11 @@ static func _build() -> void:
 static func _lessons(s) -> int: return s.story.get("lessons", []).size()
 static func _scene_seen(s, id: String) -> bool: return s.story.get("scenes", []).has(id)
 static func _event_seen(s, id: String) -> bool: return s.story.get("events", []).has(id)
+## 결말(어느 길이든)을 향한 마지막 퀘스트를 끝냈거나 결말을 봤는가
+static func _finale_done(s) -> bool:
+	return s.quests.done.has("m6") or s.quests.done.has("m7d") or s.quests.active.has("m7d") or s.story.get("endingSeen", "") != ""
+
+
 static func _dead(s, nm: String) -> bool: return s.story.get("dead", []).has(nm)
 static func _boss(s, id: String) -> bool: return bool(s.bossesDefeated.get(id, false))
 static func _lessons_at(n: int) -> Callable: return func(s): return _lessons(s) >= n
@@ -96,11 +101,12 @@ static func _build_story() -> void:
 		"story:SCENES.1.when": _lessons_at(1),
 		"story:SCENES.2.when": func(s): return bool(s.story.get("yesterday", {}).get("raid", false)) and _scene_seen(s, "ch1") and s.story.get("dead", []).is_empty(),
 		"story:SCENES.3.when": func(s): return _boss(s, "MORGATH"),
-		"story:SCENES.4.when": func(s): return _boss(s, "ZALGORA"),
+		"story:SCENES.4.when": func(s): return _boss(s, "ZALGORA") and not _dead(s, "Gron"),   # 그론이 말하는 아침 (그가 떠난 뒤에는 나오지 않는다)
 		"story:SCENES.5.when": func(s): return _boss(s, "MORGATH") and _scene_seen(s, "ch4"),
 		"story:SCENES.6.when": func(s): return _boss(s, "ZALGORA") and _scene_seen(s, "ch5"),
-		"story:SCENES.7.when": func(s): return s.quests.done.has("m5c") and _scene_seen(s, "ch6"),
-		"story:SCENES.8.when": _done("m5c"),
+		# 떠나기 전날의 장면들은 결말 뒤에 나오면 안 된다 (잠을 미루면 끝난 이야기 뒤에 흘러나왔다)
+		"story:SCENES.7.when": func(s): return s.quests.done.has("m5c") and _scene_seen(s, "ch6") and not _finale_done(s),
+		"story:SCENES.8.when": func(s): return s.quests.done.has("m5c") and not _finale_done(s),
 		"story:SCENES.9.when": func(s): return s.quests.done.has("m6") and s.story.get("route") != "redeem" and s.story.get("route") != "dark",
 		"story:SCENES.10.when": func(s): return s.quests.done.has("m6") and s.story.get("route") == "redeem",
 		"story:TRIALS.0.needs": _lessons_at(1),
@@ -152,7 +158,7 @@ static func _build_talk() -> void:
 		"npcTalk:SITUATION_LINES.10.when": func(s, _n = null): return _flag(s, "couple_hatched"),
 		"npcTalk:SITUATION_LINES.11.when": func(s, _n = null): return sulking.call(s),
 		"npcTalk:SITUATION_LINES.12.when": func(s, _n = null): return s.partner != null and s.partner.config.name == "Elder",
-		"npcTalk:SITUATION_LINES.13.when": func(s, _n = null): return s.partner != null,
+		"npcTalk:SITUATION_LINES.13.when": func(s, _n = null): return s.partner != null and s.partner != _n,   # 짝 본인이 제 짝을 축하하지 않게
 		"npcTalk:SITUATION_LINES.14.when": func(s, _n = null): return _boss(s, "MORGATH"),
 		"npcTalk:SITUATION_LINES.15.when": func(s, _n = null): return _boss(s, "ZALGORA"),
 		"npcTalk:SITUATION_LINES.16.when": func(s, _n = null): return s.player.stage_index >= 3,
@@ -182,7 +188,7 @@ static func _build_chronicle() -> void:
 		6: func(c): return A.call(c, "m5") and not B.call(c, "ZALGORA") and c.map == "JUNGLE",
 		7: func(c): return D.call(c, "m5") and (D.call(c, "m5g") or B.call(c, "GLACIA")) and not D.call(c, "m5a") and not A.call(c, "m5a") and c.map == "VILLAGE",
 		8: func(c): return (D.call(c, "m6w") or B.call(c, "BASIL")) and not D.call(c, "m5b") and not A.call(c, "m5b") and c.map == "DESERT",
-		9: func(c): return (D.call(c, "m5c") or (D.call(c, "m5b") and B.call(c, "IGNAR"))) and not D.call(c, "m6") and not A.call(c, "m6"),
+		9: func(c): return (D.call(c, "m5c") or (D.call(c, "m5b") and B.call(c, "IGNAR"))) and not D.call(c, "m6") and not A.call(c, "m6") and c.map == "VILLAGE",   # 붉은 하늘은 마을에서 본다 (엘더·카이론이 곁에 있다)
 		10: func(c): return c.map == "VILLAGE" and bool(c.s.den.get("built", false)),
 		11: only_map.call("FALLS"),
 		12: func(c): return c.map == "FALLS" and c.gathering,

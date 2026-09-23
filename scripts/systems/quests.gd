@@ -101,12 +101,13 @@ static func goal_text(g: Dictionary) -> String:
 		"killAny": return "아무 적이나 %d마리 처치" % n
 		"elite": return "정예 몬스터 %d마리 처치" % n
 		"boss": return "%s 처치" % Data.get_module("enemies").BOSSES[g.id].name
-		"stage": return "[%s](으)로 성장" % Data.get_module("elements").STAGES[int(g.index)].name
+		"stage": return "[%s] 단계까지 자라기" % Data.get_module("elements").STAGES[int(g.index)].name
 		"collect": return "고기 %d개 모으기" % n
 		"bring": return "%s에게 고기 %d개 건네기" % [Names.npc(g.target), n]
 		"talk": return "%s에게 말 걸기" % Names.npc(g.target)
 		"tour": return "마을 둘러보기"
 		"event": return "그 자리에 가 있기"
+		"scene": return "이어지는 이야기"
 		"visit": return "%s 방문" % Names.map(g.target)
 		"sleep": return "%d밤 자고 나기" % n if n > 1 else "하룻밤 자고 나기"
 		"hatch": return "알 %d개 부화" % n
@@ -140,8 +141,8 @@ static func reward_text(q: Dictionary) -> String:
 # 대목을 끝낸 자리가 싸움 한복판일 수 있다. 장면은 대기줄에 넣어 두고,
 # Chronicle 이 조용해진 틈에 꺼내 재생한다
 
-static func _queue_scene(title: String, lines: Array) -> void:
-	GameState.questScenes.append({ title = title, lines = lines })
+static func _queue_scene(title: String, lines: Array, place = null) -> void:
+	GameState.questScenes.append({ title = title, lines = lines, place = place })
 
 
 ## 재생할 장면이 있으면 하나 꺼낸다 (Chronicle 이 부른다)
@@ -160,7 +161,7 @@ static func complete_step(q: Dictionary, quiet := false):
 	var st: Dictionary = s[e.step]
 	e.step += 1
 	e.n = 0
-	if not quiet and st.get("scene"): _queue_scene(q.title, st.scene)
+	if not quiet and st.get("scene"): _queue_scene(q.title, st.scene, st.get("place"))
 	if st.get("flag"): on_flag.call(st.flag)
 	if st.get("toast"): Hud.pop(st.toast, st.icon if st.get("icon") else "📜")
 	if is_complete(q): Hud.quest_banner("다음 할 일", q.title, "%s에게 돌아간다%s" % [Names.npc(turn_in_npc(q)), _where_is(turn_in_npc(q))])
@@ -170,7 +171,8 @@ static func complete_step(q: Dictionary, quiet := false):
 	return st
 
 
-## 이미 이룬 목표(잡아 둔 보스, 다 자란 몸, 가 본 곳)는 받자마자 넘긴다
+## 이미 이룬 목표(잡아 둔 보스, 다 자란 몸, 가 본 곳, 이미 본 사건)는 받자마자 넘긴다.
+## 사건은 한 번만 일어나서, 받기 전에 먼저 봐 버리면 그 대목이 영영 안 넘어갔다 (달맞이 모임 · 불탄 도시)
 static func _catch_up(q: Dictionary) -> void:
 	for guard in steps(q).size():
 		var st = cur_step(q)
@@ -178,12 +180,13 @@ static func _catch_up(q: Dictionary) -> void:
 		var g: Dictionary = st.goal
 		var already: bool = (g.type == "boss" and GameState.bossesDefeated.get(g.id, false)) \
 			or (g.type == "stage" and GameState.player.stage_index >= g.index) \
-			or (g.type == "visit" and GameState.visited.has(g.target))
+			or (g.type == "visit" and GameState.visited.has(g.target)) \
+			or (g.type == "event" and GameState.story.events.has(g.target)) 			or g.type == "scene"   # 이어지는 장면만 있는 대목: 앞 대목이 끝나면 곧바로 흐른다
 		if not already: return
 		var e = _entry(q)
 		e.step += 1
 		e.n = 0
-		if st.get("scene"): _queue_scene(q.title, st.scene)
+		if st.get("scene"): _queue_scene(q.title, st.scene, st.get("place"))
 
 
 ## 게임 곳곳에서 부른다. 지금 대목의 목표와 맞으면 진행도가 오른다.
@@ -391,8 +394,8 @@ static func turn_in(q: Dictionary, npc, choice_id = null) -> void:
 	# 고른 선택지에 딸린 장면이 먼저, 그다음이 퀘스트 마무리 장면
 	if q.get("choice"):
 		for o in q.choice.get("options", []):
-			if o.id == choice_id and o.get("scene"): _queue_scene(q.title, o.scene)
-	if r.get("scene"): _queue_scene(q.title, r.scene)
+			if o.id == choice_id and o.get("scene"): _queue_scene(q.title, o.scene, o.get("place"))
+	if r.get("scene"): _queue_scene(q.title, r.scene, r.get("place"))
 	# 끝냈으면 다음에 할 만한 일을 한 번 귀띔한다
 	if active_quests().is_empty():
 		var s = suggestion()

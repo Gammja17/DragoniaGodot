@@ -240,8 +240,8 @@ static func facing_from_vector(dx: float, dy: float, fallback := "down") -> Stri
 
 
 func _update_player(dt: float) -> void:
-	if GameState.prologue:
-		moving = false   # 떨어지던 밤엔 아직 내 몸이 아니다
+	if GameState.prologue or Ending.playing:
+		moving = false   # 떨어지던 밤엔 아직 내 몸이 아니다 · 결말이 흐르는 동안에도
 		return
 	var ax := GameInput.axis()
 	# 추적창을 눌러 알아서 걸어가는 중이면 방향키 대신 길잡이가 방향을 준다. 방향키를 건드리면 멈춘다
@@ -484,8 +484,8 @@ func evolve(idx: int) -> void:
 	max_hp += 30
 	hp = max_hp
 	_outline = null
-	Growth.grant_points(Growth.POINTS_PER_STAGE, "%s(으)로 진화" % stage.name)
-	Hud.pop("진화! [%s](이)가 되었습니다" % stage.name + (". %s" % stage.unlock if stage.get("unlock") else ""), "🐲")
+	Growth.grant_points(Growth.POINTS_PER_STAGE, "%s 단계로 진화" % stage.name)
+	Hud.pop("진화! [%s] 단계에 올랐습니다" % stage.name + (". %s" % stage.unlock if stage.get("unlock") else ""), "🐲")
 	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 3, color = "#ffe9a0" })
 	Vfx.spawn_effect("RING", x, y - 40, { size = 2.6 })
 	Particles.burst(x, y - 30, func():
@@ -537,7 +537,7 @@ func take_damage(dmg: float, _silent := false, _from = null) -> void:
 		down_timer = 25
 		var talk = Data.get_module("npcTalk").NPC_TALK.get(config.get("name"))
 		say(talk.down if talk and talk.get("down") else "으윽…")
-		if config.get("fixed"): Hud.pop("%s(이)가 쓰러졌습니다! 잠시 후 일어납니다." % Names.npc(config.name), "💫")
+		if config.get("fixed"): Hud.pop("%s 쓰러졌습니다! 잠시 후 일어납니다." % Util.josa(Names.npc(config.name), "이", "가"), "💫")
 	if hp <= 0 and is_player:
 		# 유물 '마지막 불씨': 하루 한 번, 쓰러질 일격을 버티고 둘레를 불태운다
 		if Relics.has("LAST_EMBER") and GameState.emberDay != GameState.day:

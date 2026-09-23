@@ -26,8 +26,8 @@ static func status_text() -> String:
 	if not raid.active and raid.count == 0: return ""   # 아직 습격을 겪기 전
 	if raid.active:
 		var ob = raid.get("objective")
-		return "습격 중! 남은 사냥꾼 %d" % GameState.entities.humans.size() + (" · %s를 지켜라" % Names.npc(ob.name) if ob and not ob.failed else "")
-	if GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): return ""   # 나팔은 다시 울리지 않는다
+		return "습격 중! 남은 사냥꾼 %d" % GameState.entities.humans.size() + (" · %s 지켜라" % Util.josa(Names.npc(ob.name), "을", "를") if ob and not ob.failed else "")
+	if not _still_coming(): return ""   # 나팔은 다시 울리지 않는다
 	var t := maxi(0, ceili(GameState.raidTimer))
 	return "다음 습격 %d:%02d" % [t / 60, t % 60]
 
@@ -36,7 +36,15 @@ static func _is_night() -> bool:
 	return GameState.dayTime < 0.22 or GameState.dayTime > 0.82
 
 
+## 이야기가 끝나면 때 되면 오던 사냥꾼이 오지 않는다. 숲길을 알려 주던 지도는 잿마루가 흘린 것이었다
+## (어둠의 결말: 마을이 잿마루의 일부가 됐다 · 수호룡·교화의 결말: 지도를 흘리던 이가 더는 없다)
+static func _still_coming() -> bool:
+	if GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): return false
+	return not Ending.seen()
+
+
 static func update(dt: float) -> void:
+	if Ending.playing: return
 	var raid: Dictionary = GameState.raid
 	if raid.active:
 		if raid.get("captainFell"):
@@ -56,8 +64,7 @@ static func update(dt: float) -> void:
 	if wanted() and _is_night():
 		trigger()
 		return
-	# 어둠의 결말: 마을이 잿마루의 일부가 된 뒤로는 때 되면 오던 사냥꾼이 오지 않는다
-	if GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): return
+	if not _still_coming(): return
 	# 첫 습격은 이야기가 부른다. 그 전에는 시계가 돌지 않는다
 	if raid.count == 0: return
 	GameState.raidTimer -= dt
@@ -177,14 +184,14 @@ static func _end() -> void:
 	Hud.pop("습격 %d차 격퇴! (%dG, 마을 용들의 호감 ↑)" % [raid.count, gold], "🛡️")
 	p.gain_xp(60 + raid.count * 30)
 	GameState.story.today.raid = true   # 내일 아침 "어제 습격" 이야기가 나올 수 있다
-	GameState.story.today.raidEndedAt = GameState.game_time   # 이 뒤로 한동안은 잠자리로 끌려가지 않는다
+	GameState.story.today.raidEndedAt = GameState.play_time   # 이 뒤로 한동안은 잠자리로 끌려가지 않는다
 	var ob = raid.get("objective")
 	if ob:
 		for npc in GameState.entities.npcs:
 			if npc.config.get("name") == ob.name and not ob.failed:
 				npc.relation = minf(100, npc.relation + 8)
 				p.gold += 40; p.gain_xp(80)
-				Hud.pop("%s를 끝까지 지켜 냈다! (40G, 호감 ↑)" % Names.npc(ob.name), "🛡️")
+				Hud.pop("%s 끝까지 지켜 냈다! (40G, 호감 ↑)" % Util.josa(Names.npc(ob.name), "을", "를"), "🛡️")
 				npc.say("고, 고마워… 나 진짜 무서웠어." if ob.name == "Poco" else "덕분에 살았어. 고마워.")
 		raid.objective = null
 	Quests.notify("raid")

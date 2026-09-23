@@ -80,7 +80,7 @@ func grow(amount: float) -> void:
 	if growth >= 70 and stage == "BABY":
 		stage = "TEEN"
 		Kids.set_stage(self, "TEEN")
-		Hud.pop("아기 용이 청소년이 되었습니다! (전투 가능)", "🔥")
+		Hud.pop("아기 용이 어린 용이 되었습니다! (전투 가능)", "🔥")
 	elif growth >= 140 and stage == "TEEN":
 		stage = "ADULT"
 		Kids.set_stage(self, "ADULT")

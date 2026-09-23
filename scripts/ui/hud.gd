@@ -66,6 +66,9 @@ func _ready() -> void:
 	_fit_screen()
 	settings.to_title_pressed.connect(func(): to_title_requested.emit())
 	$HelpChip.visible = false
+	# 장 카드는 누르면 넘어간다 (터치에는 Esc 가 없다)
+	$ChapterCard.gui_input.connect(func(ev):
+		if (ev is InputEventMouseButton or ev is InputEventScreenTouch) and ev.pressed: skip_chapter_card())
 
 
 ## 게임이 시작되면 보인다 (시작 화면에서는 감춘다)
@@ -115,7 +118,7 @@ func refresh_tracker() -> void:
 func show_region_banner(name_text: String, sub := "") -> void:
 	_region_name.text = name_text
 	_region_sub.text = sub
-	GameState.bannerUntil = GameState.game_time + 3   # 이 동안은 사건 컷씬을 띄우지 않는다
+	GameState.bannerUntil = GameState.play_time + 3   # 이 동안은 사건 컷씬을 띄우지 않는다
 	var spacing: FontVariation = _region_name.label_settings.font
 	if _banner_tween: _banner_tween.kill()
 	_banner.modulate.a = 0
@@ -145,6 +148,11 @@ func _banner_top() -> float:
 ## kind: '새 이야기' | '다음 할 일' | '이야기 완료' | '다음에 할 만한 일'
 static func quest_banner(kind: String, title: String, goal := "") -> void:
 	if current: current._qb_queue.append({ kind = kind, title = title, goal = goal })
+
+
+## 쌓아 둔 퀘스트 배너를 버린다 (결말처럼 장면이 직접 이야기를 닫을 때)
+func clear_quest_banners() -> void:
+	_qb_queue.clear()
 
 
 func _flush_quest_banner() -> void:
@@ -179,6 +187,10 @@ func _flush_quest_banner() -> void:
 
 
 # ---------- 화면 가리기 ----------
+## 화면이 까맣게 덮여 있는가 (그 사이의 Esc 가 멈춰 둔 세상을 풀지 않게)
+static func fading() -> bool:
+	return current != null and current.get_node("FadeScreen").visible
+
 ## 화면을 어둡게 했다가(가운데 글자) 다시 밝힌다. mid: 완전히 어두워졌을 때, done: 다시 밝아진 뒤
 static func fade_screen(text: String, mid: Callable, done: Callable) -> void:
 	var f: ColorRect = current.get_node("FadeScreen")
@@ -205,7 +217,7 @@ static func show_chapter_card(no: String, name_text: String, done = null) -> voi
 	c.get_node("Lines/Name").text = name_text
 	c.visible = true
 	GameState.isDialogueOpen = true
-	GameState.bannerUntil = GameState.game_time + 6   # 장 이름이 떠 있는 동안은 사건 컷씬을 띄우지 않는다
+	GameState.bannerUntil = GameState.play_time + 6   # 장 이름이 떠 있는 동안은 사건 컷씬을 띄우지 않는다
 	current._chapter_done = done
 	Sfx.play("quest")
 	var lines := [c.get_node("Lines/No"), c.get_node("Lines/Rule"), c.get_node("Lines/Name")]
@@ -298,8 +310,13 @@ func show_raid_warning(text: String) -> void:
 	_raid_until = Time.get_ticks_msec() + 3500
 
 
+var _visited_map := ""
 func _process(dt: float) -> void:
 	_cinema_fade()
+	# '가 보기' 대목: 오른쪽 기둥을 접어 둬도 센다
+	if GameState.player and not GameState.dungeon and GameState.map_id != _visited_map:
+		_visited_map = GameState.map_id
+		Quests.notify("visit", GameState.map_id)
 	# 판의 숫자는 0.1초마다 (2D판 hudAccumulator)
 	_refresh_t -= dt
 	if _refresh_t <= 0 and GameState.player and status.get_parent():

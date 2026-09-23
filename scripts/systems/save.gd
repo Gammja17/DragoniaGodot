@@ -167,7 +167,7 @@ static func apply(data: Dictionary) -> void:
 	p.ult = data.get("ult", 0)
 	G.story = data.story if data.get("story") else { scenes = [], lessons = [], lessonDay = 0 }
 	Data.get_module("npcs").NAME_OVERRIDES.merge(G.story.get("npcNames", {}), true)   # 이야기 속에서 지어 준 이름
-	for key in ["rites", "clues"]:
+	for key in ["rites", "clues", "events", "bonds", "scenes", "lessons"]:
 		if not G.story.get(key): G.story[key] = []
 	for key in ["today", "yesterday"]:
 		if not G.story.get(key): G.story[key] = {}
@@ -178,6 +178,13 @@ static func apply(data: Dictionary) -> void:
 	G.growth = data.growth if data.get("growth") else { points = 0, nodes = {}, ranks = {} }
 	G.revivedDay = data.get("revivedDay", 0)
 	Growth.reconcile_points()
+	# 막혀 있던 옛 세이브: 이미 본 사건·이미 이룬 목표에 걸려 멈춘 대목을 넘긴다 (달맞이 모임 · 불탄 도시)
+	for q in Quests.active_quests(): Quests._catch_up(q)
+	# 어둠의 길, 스승과의 대결 도중에 꺼졌다: 대결은 저장되지 않으니 마을 어귀의 장면부터 다시
+	var m7d = G.quests.active.get("m7d")
+	if m7d and int(m7d.step) == 2:
+		m7d.step = 1
+		G.story.events.erase("ev_dark_gate")
 	# 유물이 생기기 전에 잡은 보스의 전리품도 챙겨 준다
 	for id in G.bossesDefeated:
 		var r = Relics.boss_relic(id)

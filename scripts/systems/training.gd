@@ -161,7 +161,7 @@ static func _begin(npc, plan: Dictionary) -> void:
 	GameState.companion = npc
 	npc.state = "COMPANION_FOLLOW"
 	plan.lastHp = GameState.player.hp
-	Hud.pop("오늘의 수련: %s. %s(이)가 따라나선다." % [d.title, Names.npc("Kairon")], "🎓")
+	Hud.pop("오늘의 수련: %s. %s 따라나선다." % [d.title, Util.josa(Names.npc("Kairon"), "이", "가")], "🎓")
 	Sfx.play("quest")
 	Save.save_game()
 
@@ -212,7 +212,7 @@ static func _watch(npc, plan: Dictionary, d: Dictionary) -> void:
 			if who: who.relation = minf(100, who.relation + 5)
 			_finish(plan, null))
 	_ask(npc, d.prompt, [
-		{ label = "%s를 응원한다" % Names.npc("Nara"), on_select = func(): cheer.call("Nara") },
+		{ label = "%s 응원한다" % Util.josa(Names.npc("Nara"), "을", "를"), on_select = func(): cheer.call("Nara") },
 		{ label = "%s을 응원한다" % Names.npc("Tiamat"), on_select = func(): cheer.call("Tiamat") },
 	])
 

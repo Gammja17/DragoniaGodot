@@ -174,7 +174,7 @@ static func locked_reason(map_id: String):
 	for n in GameState.entities.npcs:
 		if n.config.get("name") == spec.owner: rel = n.relation
 	if rel >= spec.locked: return null
-	return "아직 %s과(와) 그리 가까운 사이는 아니다. 함부로 들어갈 수는 없다." % spec.name.replace("의 굴", "")
+	return "아직 %s 그리 가까운 사이는 아니다. 함부로 들어갈 수는 없다." % Util.josa(spec.name.replace("의 굴", ""), "과는", "와는")
 
 
 static func den_of(nm: String):
@@ -276,7 +276,7 @@ static func update_place() -> void:
 			return
 		if GameInput.mouse_clicked and _last_valid:
 			place(GameState.holding, t.x, t.y)
-			Hud.pop("%s을(를) 놓았다." % f.name, "🪑")
+			Hud.pop("%s 놓았다." % Util.josa(f.name, "을", "를"), "🪑")
 			GameState.holding = null
 			DenPanel.hint("")
 			World.refresh_den()
@@ -291,7 +291,7 @@ static func update_place() -> void:
 	var d = pick_up(i)
 	if not d: return
 	GameState.holding = d.id
-	Hud.pop("%s을(를) 집어 들었다." % furniture()[d.id].name, "✋")
+	Hud.pop("%s 집어 들었다." % Util.josa(furniture()[d.id].name, "을", "를"), "✋")
 	World.refresh_den()
 
 

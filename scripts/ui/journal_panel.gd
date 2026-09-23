@@ -402,7 +402,7 @@ func _source_text(id: String) -> String:
 		for l in Data.get_module("story").LESSONS:
 			if l.skill == id: return "스승 카이론: %s (레벨 %d)" % [l.title, l.level]
 		return "스승 카이론의 수련"
-	if s.type == "BOSS": return "%s를 쓰러뜨리면" % Data.get_module("enemies").BOSSES.get(s.id, {}).get("name", s.id)
+	if s.type == "BOSS": return "%s 쓰러뜨리면" % Util.josa(Data.get_module("enemies").BOSSES.get(s.id, {}).get("name", s.id), "을", "를")
 	if s.type == "AWAKEN": return "%s: %s" % [s.hint, " + ".join(s.need.map(func(n): return "%s %d단" % [defs[n[0]].name, n[1]]))]
 	return s.get("hint", "")
 

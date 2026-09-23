@@ -46,13 +46,13 @@ static func _ring(types: Array, power: float) -> void:
 static func update(dt: float) -> void:
 	var a = GameState.ambush
 	if not a: return
-	var cap: Human = a.captain
+	var cap = a.captain
 	var p = GameState.player
 	a.t += dt
 
-	# 다른 지도로 달아났다: 이번에는 놓아 준다. 며칠 뒤 또 온다
-	if not GameState.entities.humans.has(cap):
-		if cap.remove and cap.hp <= 0: return   # die 가 처리했다
+	# 다른 지도로 달아났다: 이번에는 놓아 준다. 며칠 뒤 또 온다 (포탈을 넘으면 대장 노드가 먼저 사라진다)
+	if not is_instance_valid(cap) or not GameState.entities.humans.has(cap):
+		if is_instance_valid(cap) and cap.remove and cap.hp <= 0: return   # die 가 처리했다
 		_end(false)
 		return
 
@@ -136,7 +136,7 @@ static func _end(_win: bool) -> void:
 
 ## 지도에 들어설 때 (World). 처음 만난 뒤로는 닷새마다 한 번쯤 길에서 다시 마주친다
 static func maybe(map_id: String) -> void:
-	if GameState.ambush or not GameState.story.get("ambushes", 0) > 0: return
+	if GameState.ambush or not GameState.story.get("ambushes", 0) > 0 or Ending.seen(): return
 	if not ["EAST_ROAD", "SOUTH_ROAD", "LAKE", "HOLLOW", "DESERT"].has(map_id): return
 	if GameState.dayTime < 0.25 or GameState.dayTime > 0.8 or GameState.raid.active or GameState.activity: return
 	if GameState.day - GameState.story.get("lastAmbushDay", 0) < 5: return

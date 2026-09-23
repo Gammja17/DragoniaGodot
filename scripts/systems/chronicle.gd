@@ -64,8 +64,9 @@ static func seen_event(id: String) -> bool:
 
 ## 매 프레임 부른다. 0.8초마다 조건이 맞는 사건이 있는지 살핀다
 static func update(dt: float) -> void:
-	if _playing or GameState.isDialogueOpen or GameState.dungeon or GameState.activity or GameState.raid.active: return
-	if GameState.bannerUntil and GameState.game_time < GameState.bannerUntil: return   # 지역 이름이 떠 있는 동안은 기다린다
+	if _playing or Ending.playing or GameState.isDialogueOpen or GameState.dungeon or GameState.activity or GameState.raid.active: return
+	if GameState.bannerUntil and GameState.play_time < GameState.bannerUntil: return   # 지역 이름이 떠 있는 동안은 기다린다
+	if GameState.entities.bosses.any(func(b): return b.dying > 0): return   # 보스가 무너지는 동안은 기다린다 (작별은 그 뒤에)
 	_check_timer -= dt
 	if _check_timer > 0: return
 	_check_timer = 0.8
@@ -75,8 +76,11 @@ static func update(dt: float) -> void:
 		_playing = true
 		play_scene(qs.title, qs.lines, func():
 			_playing = false
-			Save.save_game())
+			Save.save_game(), true, qs.get("place"))
 		return
+	# 찾아오는 대목(meet): 말을 걸어야 넘어가는 대목인데, 그 용이 있는 지도에 들어서면 그쪽이 먼저 다가온다
+	# (보스를 잡고 돌아와 "누구에게 전한다"를 찾아다니던 심부름을 줄인다)
+	if _meet_step(): return
 	# 대화 중에 사이가 깊어졌으면, 대화가 끝난 지금 그 장면을 보여 준다
 	var bond = GameState.pendingBond
 	if bond:
@@ -84,7 +88,7 @@ static func update(dt: float) -> void:
 		var lines = Data.get_module("npcTalk").BOND_SCENES.get(bond.name, {}).get(str(bond.tier))
 		if lines:
 			_playing = true
-			play_scene("%s와(과) %s가 되었다" % [bond.name, ["", "아는 사이", "친구", "절친"][bond.tier]], lines, func():
+			play_scene("%s하고 %s 되었다" % [Names.npc(bond.name), ["", "아는 사이가", "친구가", "절친이"][bond.tier]], lines, func():
 				_playing = false
 				Save.save_game())
 			return
@@ -93,6 +97,24 @@ static func update(dt: float) -> void:
 		if not seen_event(ev.id) and ev.when.call(ctx):
 			_fire(ev)
 			return
+
+
+static func _meet_step() -> bool:
+	var p = GameState.player
+	for q in Quests.active_quests():
+		var st = Quests.cur_step(q)
+		if not st or not st.get("meet") or st.goal.type != "talk": continue
+		for n in GameState.entities.npcs:
+			if n.config.get("name") != st.goal.target or n.remove or n.is_hidden or n.down_timer > 0: continue
+			if Util.dist(n, p) > 1600: continue
+			_playing = true
+			Quests.complete_step(q, true)
+			var lines: Array = st.get("scene", [])
+			play_scene(q.title, lines if not lines.is_empty() else [{ who = st.goal.target, text = "…왔구나." }], func():
+				_playing = false
+				Save.save_game())
+			return true
+	return false
 
 
 ## 사건 끝에 고르는 것 (ev.choice = { prompt, options: [{ id, label, when(ctx)?, lines, flag?, grant?, clue? }] }).
@@ -121,7 +143,10 @@ static func _choose(ev: Dictionary, done: Callable) -> void:
 
 
 static func _fire(ev: Dictionary) -> void:
-	GameState.story.events.append(ev.id)
+	# 본 사건으로 적는 것은 장면이 끝난 뒤다 (_finish_event). 장면 도중에 저장되고 꺼지면 그 사건이 주는 퀘스트를 영영 잃었다.
+	# 도는 동안은 _playing 이 같은 사건을 다시 부르지 않게 막는다
+	if not GameState.story.has("eventDay"): GameState.story.eventDay = {}
+	GameState.story.eventDay[ev.id] = GameState.day   # 그날 밤은 그 사건이 이어진다 (달맞이 모임)
 	_playing = true
 	play_scene(ev.title, ev.lines, func():
 		if ev.get("choice"): _choose(ev, func(): _finish_event(ev))
@@ -130,6 +155,7 @@ static func _fire(ev: Dictionary) -> void:
 
 static func _finish_event(ev: Dictionary) -> void:
 	_playing = false
+	if not GameState.story.events.has(ev.id): GameState.story.events.append(ev.id)
 	if ev.get("grant"):
 		var q = Quests.by_id(ev.grant)
 		if q: Quests.accept(q)
@@ -162,7 +188,8 @@ static func _look_target(look: String):
 static func _find(who):
 	if who == "나": return GameState.player
 	for b in GameState.entities.bosses:
-		if b.id == who or b.def.name == who: return b
+		if b.remove: continue
+		if who is String and (b.id == who.to_upper() or b.def.name == who): return b
 	return World.any_npc(who) if who is String else null
 
 
@@ -220,8 +247,8 @@ static func _show_line(line: Dictionary, more: bool, cinematic: bool, nxt: Calla
 		Cutscene.line_zoom(line.get("zoom"))
 	GameState.isDialogueOpen = true
 	var text: String = line.text
-	# 내 속말·장면 묘사 "(…)" 는 이름표 없이 해설로 보여 준다
-	var narration: bool = who == "나" and text.begins_with("(") and text.ends_with(")")
+	# 통째로 괄호에 든 줄 "(…)" 은 속말·장면 묘사다. 이름표 없이 해설로 보여 준다 (카메라는 그 이를 본다)
+	var narration: bool = text.begins_with("(") and text.find(")") == text.length() - 1
 	if narration: text = text.substr(1, text.length() - 2)
 	DialogueBox.current.show_dialogue({
 		name = GameState.player.config.get("name", "") if who == "나" else Names.npc(who),

@@ -12,6 +12,7 @@ class_name Cutscene
 ##   { wait = 0.8 }                                   잠깐의 정적
 ##   { move = "Poco", to = [dx, dy] | "near:Elder" | "look:PROP:FOUNTAIN" | "home", speed?, async? }
 ##                                                    [dx, dy] 는 장면이 열린 자리(내 발밑)에서 잰다
+##   { place = "Gron", to = … }                      걷지 않고 그 자리에 둔다 (to 에는 "at:15,8" 처럼 지도의 큰 칸도)
 ##   { exit = "Poco", side? = "left" | "right" }      화면 밖으로 걸어 나가며 사라진다
 ##   { face = "Poco", to = "left" | "right" | "up" | "down" | "나" | "Elder" }
 ##   { emote = "Poco", icon = "!" | "?" | "…" | "♥" | "!?" | "♪" | "💧" | "💢", async? }
@@ -24,6 +25,7 @@ class_name Cutscene
 ##   { caption = "사흘 뒤", time? }                   화면 가운데 큰 글
 ##   { card = "옛 수호룡 모르가스", sub = "달빛 골짜기의 주인", time? }   이름패 (보스·새 땅)
 ##   { hide = "Gron" } · { show = "Gron" } · { down = "Gron" } · { up = "Gron" }
+##   { vanish = "IGNAR" }                            보스는 빛가루로 흩어지고, 용은 제자리에서 흐려진다
 ## 한 줄에는 그 밖에 zoom(그 줄만 당겨 본다) · auto(초. 다 찍히고 이만큼 뒤 저절로 넘어간다)를 달 수 있다.
 ## 대사(text) 없이 do 만 있는 줄은 연출만 하고 넘어간다.
 ## 세계 자체는 대화창이 떠 있는 동안 main 이 멈춰 둔다. 여기서는 "어떻게 보이는가"만 맡는다.
@@ -255,12 +257,21 @@ static func finish() -> void:
 			if stuck: e.x = m.x; e.y = m.y
 			continue
 		if m.guest:
+			if e.remove or Routine.is_dead(str(e.config.get("name", ""))):
+				# 이야기에서 떠난 용은 걸어 나가지 않는다 (쓰러진 그론이 일어나 걸어 나가던 것)
+				e.stage_alpha = 1.0
+				GameState.entities.npcs.erase(e)
+				if e.is_inside_tree(): e.get_parent().remove_child(e)
+				continue
 			# 불러왔던 용은 화면 밖으로 걸어 나가며 흐려진 뒤 제 일과로 돌아간다
 			_leaving.append({ e = e, side = 1.0 if e.x >= GameState.player.x else -1.0 })
 		else:
 			e.stage_alpha = 1.0
 			if stuck: e.x = m.x; e.y = m.y
 	_cast.clear()
+	# 쓰러진 뒤 흐릿하게 남아 마지막 말을 하던 보스는 장면이 끝나면 흩어진다 (무릎 꿇은 이그나르는 결말을 기다린다)
+	for b in GameState.entities.bosses:
+		if is_instance_valid(b) and b.lingering and not b.def.get("kneel"): b.vanish()
 	on = false
 	focus = null
 	_shot = null
@@ -340,6 +351,8 @@ static func animate(dt: float) -> void:
 		if e == null or not is_instance_valid(e) or seen.has(e) or not (e is Dragon): continue
 		seen.append(e)
 		e.animate_only(dt)
+	for b in GameState.entities.bosses:
+		if is_instance_valid(b): b.animate_only(dt)
 	if not on: return
 	var E: Dictionary = GameState.entities
 	for group in ["effects", "particles"]:
@@ -402,7 +415,7 @@ static func _walk_leaving(dt: float) -> void:
 		var e = l.e
 		if not is_instance_valid(e): continue
 		# 지도를 옮겨 이미 떠났거나, 새 장면이 다시 불러 세웠으면 그만 걷는다
-		if not GameState.entities.npcs.has(e) or _in_cast(e):
+		if not GameState.entities.npcs.has(e) or _in_cast(e) or Routine._tied_to_player(e):
 			e.stage_alpha = 1.0
 			continue
 		e.x += l.side * 220 * dt
@@ -486,6 +499,21 @@ static func _start(spec: Dictionary) -> Dictionary:
 				b.until = func(): return not is_instance_valid(e) or Vector2(e.x - m.to.x, e.y - m.to.y).length() <= 3
 				b.rush = func():
 					if is_instance_valid(e): e.x = m.to.x; e.y = m.to.y
+	elif spec.has("place"):
+		# 걷지 않고 그 자리에 둔다 (장면이 열리기 전부터 거기 있던 것처럼). 나를 옮기면 무대의 기준점도 따라간다
+		var e = actor(spec.place)
+		var m = _cast_of(e)
+		if m:
+			var at := _spot(spec.get("to"), m)
+			e.x = at.x; e.y = at.y
+			m.to = at
+			e.moving = false
+			if not m.get("player"): e.stage_alpha = 1.0
+			if m.get("face"): e.facing = m.face
+			if e == GameState.player:
+				_origin = at
+				_shot = null
+				snap = true
 	elif spec.has("exit"):
 		var e = actor(spec.exit)
 		var m = _cast_of(e)
@@ -564,6 +592,18 @@ static func _start(spec: Dictionary) -> Dictionary:
 		show_card(str(spec.card), str(spec.get("sub", "")))
 		b.wait = 0.0 if async else float(spec.get("time", 2.2))
 		b.end = func(): _card_want = 0.0
+	elif spec.has("vanish"):
+		# 보스는 빛가루로 흩어지고, 용은 걸어 나가며 흐려진다
+		var e = actor(spec.vanish)
+		if e is Boss:
+			e.vanish()
+			b.wait = 0.0 if async else Boss.VANISH_TIME
+		else:
+			var m = _cast_of(e)
+			if m and not m.get("player"):
+				m.exit = true
+				m.to = Vector2(e.x, e.y)
+				b.wait = 0.0 if async else 0.7
 	elif spec.has("hide"):
 		var e = actor(spec.hide)
 		var m = _cast_of(e)
@@ -614,6 +654,9 @@ static func _spot(spec, m: Dictionary) -> Vector2:
 	if spec is Dictionary: return Vector2(float(spec.x), float(spec.y))
 	if spec is String:
 		if spec == "home": return Vector2(m.x, m.y)
+		if spec.begins_with("at:"):   # 지도 명세의 큰 칸 좌표 "at:15,8"
+			var xy: PackedStringArray = spec.substr(3).split(",")
+			return _clear_spot(World.at([int(xy[0]), int(xy[1])]).x, World.at([int(xy[0]), int(xy[1])]).y)
 		if spec.begins_with("look:"):
 			var t = Chronicle._look_target(spec.substr(5))
 			if t: return _clear_spot(t.x + 70, t.y + 50)

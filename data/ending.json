@@ -1,0 +1,143 @@
+{
+ "SEQUENCES": {
+  "guardian": [
+   { "fade": "그날 저녁", "place": "VILLAGE", "at": [12, 11], "time": 0.76, "evening": true },
+   { "scene": "evening_guardian", "evening": true },
+   { "fade": "다음 날 아침", "place": "VILLAGE", "at": [12, 9], "time": 0.3, "nextDay": true },
+   { "morning": "ending" },
+   { "fade": "며칠 뒤 · 수련장", "place": "DOJO", "at": [9, 8], "time": 0.38, "nextDay": true },
+   { "scene": "epi_dojo" },
+   { "fade": "구름 폭포", "place": "FALLS", "at": [10, 11], "time": 0.8 },
+   { "scene": "epi_falls" },
+   { "fade": "그날 밤 · 망루", "place": "VILLAGE", "at": [16, 8], "time": 0.9 },
+   { "scene": "epi_tower" },
+   { "credits": "새 수호룡의 이야기 · 끝" },
+   { "fade": "", "place": "VILLAGE", "at": [12, 9], "time": 0.3, "nextDay": true }
+  ],
+  "redeem": [
+   { "fade": "그날 저녁", "place": "VILLAGE", "at": [12, 11], "time": 0.76, "evening": true },
+   { "scene": "evening_redeem", "evening": true },
+   { "fade": "다음 날 아침 · 마을 어귀", "place": "VILLAGE", "at": [19, 9], "time": 0.3, "nextDay": true },
+   { "morning": "ending_redeem" },
+   { "fade": "며칠 뒤 · 호숫가", "place": "LAKE", "at": [13, 10], "time": 0.36, "nextDay": true },
+   { "scene": "epi_lake" },
+   { "fade": "수련장", "place": "DOJO", "at": [9, 8], "time": 0.42 },
+   { "scene": "epi_dojo" },
+   { "fade": "구름 폭포", "place": "FALLS", "at": [10, 11], "time": 0.8 },
+   { "scene": "epi_falls" },
+   { "credits": "돌아온 형의 이야기 · 끝" },
+   { "fade": "", "place": "VILLAGE", "at": [12, 9], "time": 0.3, "nextDay": true }
+  ],
+  "dark": [
+   { "fade": "그날 밤", "place": "VILLAGE", "at": [12, 9], "time": 0.9 },
+   { "quest": "m7d" },
+   { "fade": "며칠 뒤 · 구름 폭포", "place": "FALLS", "at": [10, 11], "time": 0.5, "nextDay": true },
+   { "scene": "epi_dark_falls" },
+   { "credits": "잿빛 날개의 이야기 · 끝" },
+   { "fade": "", "place": "VILLAGE", "at": [12, 9], "time": 0.3, "nextDay": true }
+  ]
+ },
+ "SCENES": {
+  "evening_guardian": { "title": "돌아온 저녁", "lines": [
+   { "who": "나", "text": "(마을에 들어서니 해가 지고 있었다. 모닥불 옆에 스승이 혼자 앉아 있다.)", "do": [{ "bgm": "none" }, { "tone": "warm" }, { "cam": "Kairon", "time": 1.6, "zoom": 1.08 }] },
+   { "who": "Kairon", "text": "…돌아왔구나. 얼굴을 보니, 끝이 나긴 났구나.", "do": [{ "cam": "auto", "zoom": 1.18 }] },
+   { "who": "Kairon", "text": "형이 마지막에 뭐라고 하더냐. …아니다, 천천히 말해라. 나는 예순 해를 기다린 놈이라서 조금 더 기다리는 건 아무것도 아니다." },
+   { "who": "나", "text": "(이그나르가 남긴 말을 그대로 옮겼다. 뒤에서 보는 하늘도, 넓더라고.)", "zoom": 1.3 },
+   { "who": "Kairon", "text": "(스승은 한참 동안 대답 없이 하늘만 올려다보았다.)", "do": [{ "face": "Kairon", "to": "up" }, { "wait": 1.8 }] },
+   { "who": "Kairon", "text": "…그 양반, 끝까지 말은 번지르르하게 하는군.", "do": [{ "emote": "Kairon", "icon": "…" }] },
+   { "who": "Kairon", "text": "됐다. 들어가서 자라. 나는 여기 좀 더 앉아 있다 가마. …오늘은 잔소리 안 한다." }
+  ] },
+  "evening_redeem": { "title": "돌아온 저녁", "lines": [
+   { "who": "나", "text": "(마을 어귀 바위 옆에 이그나르를 내려놓고 들어왔다. 해가 지고 있었다. 모닥불 옆에 스승이 혼자 앉아 있다.)", "do": [{ "bgm": "none" }, { "tone": "warm" }, { "cam": "Kairon", "time": 1.6, "zoom": 1.08 }] },
+   { "who": "Kairon", "text": "…돌아왔구나. 얼굴을 보니, 끝이 나긴 났구나.", "do": [{ "cam": "auto", "zoom": 1.18 }] },
+   { "who": "Kairon", "text": "어떻게 됐는지는… 아니다, 천천히 말해라. 나는 예순 해를 기다린 놈이라서 조금 더 기다리는 건 아무것도 아니다." },
+   { "who": "나", "text": "(이그나르를 데려왔다고 말했다. 지금 마을 어귀 바위에 기대 쉬고 있다고.)", "zoom": 1.3 },
+   { "who": "Kairon", "text": "……", "do": [{ "emote": "Kairon", "icon": "!" }, { "wait": 0.8 }] },
+   { "who": "Kairon", "text": "형이… 마을 밖에 와 있다고?" },
+   { "who": "Kairon", "text": "(스승은 어귀 쪽을 한참 바라보다가, 등을 돌렸다.)", "do": [{ "face": "Kairon", "to": "left" }, { "wait": 1.4 }] },
+   { "who": "Kairon", "text": "…오늘 밤은 못 나가겠다. 날 밝으면 가마. 너는 들어가 자라. 수고했다." }
+  ] },
+  "epi_dojo": { "title": "", "lines": [
+   { "who": "Nara", "text": "스승님! …아니, 카이론 아저씨! 오늘은 나랑 대련해 주는 거죠? 약속했잖아요!", "do": [{ "bgm": "village" }, { "move": "Nara", "to": [150, -20] }] },
+   { "who": "Kairon", "text": "약속한 적 없다. 허수아비나 쳐라." },
+   { "who": "Nara", "text": "아 짜증 나. 맨날 허수아비래.", "do": [{ "move": "Nara", "to": [60, 90] }, { "fx": "PUFF", "at": "Nara" }, { "sfx": "hit" }] },
+   { "who": "Kairon", "text": "(허수아비를 두들기는 나라를 한참 보다가, 스승이 혼잣말처럼 중얼거렸다.) …꼬리 쓰는 게 늘었군. 내 제자답게.", "do": [{ "wait": 1.0 }] },
+   { "who": "Nara", "text": "…방금 뭐라고 했어요? 제자라고 했죠? 했죠?!", "do": [{ "emote": "Nara", "icon": "!" }, { "move": "Nara", "to": "near:Kairon" }] },
+   { "who": "Kairon", "text": "안 했다. 헛것 들었다. …백 번 더 쳐라." },
+   { "who": "Nara", "text": "(나라는 투덜대며 허수아비 앞으로 돌아갔다. 꼬리가 아까보다 두 배는 세게 휘둘러졌다.)", "do": [{ "move": "Nara", "to": [60, 90] }, { "emote": "Nara", "icon": "♪" }] }
+  ] },
+  "epi_falls": { "title": "", "lines": [
+   { "who": "나", "text": "(폭포 아래에는 이제 달이 밝지 않은 밤에도 불이 피었다.)", "do": [{ "bgm": "lake" }, { "cam": "look:PROP:CAMPFIRE", "time": 1.6 }] },
+   { "who": "Yuan", "text": "…또 왔군. 오늘은 약초 핑계도 안 대나.", "do": [{ "cam": "auto" }] },
+   { "who": "Mira", "text": "약초는 이제 구름마루에도 있잖아. 어디서 나는지 네가 알려 줬으면서." },
+   { "who": "Yuan", "text": "……", "do": [{ "emote": "Yuan", "icon": "…" }] },
+   { "who": "Yuan", "text": "경계는 이제 하루 한 번만 돈다. …남는 시간엔 여기 있지." },
+   { "who": "Riun", "text": "(불가 건너편에서 리운이 잔을 들어 보였다.) 아랫마을 촌장, 오늘은 누가 먼저 취하는지 봅시다." },
+   { "who": "Elder", "text": "허허… 이 나이에 내기라니. 무릎이 시려서 오래는 못 앉아 있는단다… 한 잔만 하자꾸나." }
+  ] },
+  "epi_tower": { "title": "", "lines": [
+   { "who": "Tiamat", "text": "오늘 밤도 조용해.", "do": [{ "bgm": "none" }, { "cam": "look:PROP:TOWER", "time": 1.2 }, { "cam": "auto" }] },
+   { "who": "Tiamat", "text": "…나팔을 안 부는 밤이 이렇게 긴 줄 몰랐어." },
+   { "who": "Poco", "text": "누나, 그럼 이제 자도 돼? 있잖아, 나 오늘은 모루 밑 말고 내 굴에서 잘래. …그래도 되지? 그치?", "do": [{ "move": "Poco", "to": "near:Tiamat" }] },
+   { "who": "Tiamat", "text": "…그래. 들어가 자. 오늘은 내가 볼게.", "do": [{ "emote": "Tiamat", "icon": "♥" }] },
+   { "who": "Tiamat", "text": "(포코가 뛰어가자, 티아맷은 여느 밤처럼 망루 위에서 이름을 하나씩 불렀다. 아홉 번째 이름을 부를 때, 목소리가 조금 덜 떨렸다.)", "do": [{ "exit": "Poco" }, { "wait": 0.8 }, { "tone": "warm" }] }
+  ] },
+  "epi_lake": { "title": "", "lines": [
+   { "who": "나", "text": "(호숫가 빈 굴 앞 바위에, 오늘도 고기 한 점이 놓여 있다.)", "do": [{ "bgm": "lake" }, { "cam": "Ignar", "time": 1.4 }] },
+   { "who": "Poco", "text": "(바위 뒤에서 빼꼼 내다보던 포코가, 눈이 마주치자 후다닥 달아났다.)", "do": [{ "move": "Poco", "to": "near:Ignar" }, { "emote": "Poco", "icon": "!" }, { "exit": "Poco" }] },
+   { "who": "Ignar", "text": "……", "do": [{ "cam": "auto" }] },
+   { "who": "Ignar", "text": "고맙다는 말은… 들리게 해 줄 걸 그랬나." },
+   { "who": "Kairon", "text": "(언제 왔는지 스승이 바위 반대편에 앉아 있었다.) 내일은 형이 먼저 말을 걸어 보시오. 저 녀석, 말 한마디 걸어 주면 사흘은 떠들 거요." },
+   { "who": "Ignar", "text": "…삼백 년을 살아도 모르는 게 있구나. 꼬마한테 말 거는 법 같은 것." }
+  ] },
+  "epi_dark_falls": { "title": "", "lines": [
+   { "who": "Haru", "text": "나라, 또 여기 있어? 아랫마을은 오늘도 조용하던데.", "do": [{ "bgm": "lake" }, { "tone": "grief" }] },
+   { "who": "Nara", "text": "알아. 조용해서 보는 거야." },
+   { "who": "Nara", "text": "(나라는 폭포 아래, 재가 내리는 쪽을 오래 내려다보았다.)", "do": [{ "wait": 1.2 }] },
+   { "who": "Nara", "text": "…됐고. 수련이나 하자. 다음에 만나면, 그땐 내가 이길 거거든?", "do": [{ "emote": "Nara", "icon": "💢" }] }
+  ] }
+ },
+ "CREDITS": [
+  { "kind": "title", "text": "Dragonia" },
+  { "kind": "gap" },
+  { "kind": "head", "text": "웨스턴 마을" },
+  { "kind": "line", "text": "{Elder} · {Kairon} · {Nara} · {Tiamat}" },
+  { "kind": "line", "text": "{Poco} · {Gron} · {Ember} · {Mira}" },
+  { "kind": "line", "text": "{Doran} · {Miru}{IseulTail}" },
+  { "kind": "gap" },
+  { "kind": "head", "text": "구름마루" },
+  { "kind": "line", "text": "{Riun} · {Seiran} · {Haru} · {Yuan}" },
+  { "kind": "gap" },
+  { "kind": "head", "text": "잿마루" },
+  { "kind": "line", "text": "{Ignar} · {Vesna}" },
+  { "kind": "gap" },
+  { "kind": "head", "text": "옛 이야기의 용들" },
+  { "kind": "line", "text": "모르가스 · 리크와 로크 · 글라시아 · 바실" },
+  { "kind": "gap" },
+  { "kind": "head", "text": "그림" },
+  { "kind": "line", "text": "Red Dragon — ZaPaper (buko-studios.com, PlayCraft)" },
+  { "kind": "line", "text": "Flying Dragon Rework — ZaPaper · Jordan Irwin" },
+  { "kind": "line", "text": "Stendhal Dragons — Kimmo Rundelin" },
+  { "kind": "line", "text": "Gentle Forest — Seliel the Shaper" },
+  { "kind": "line", "text": "Zelda-like tilesets and sprites — ArMM1998" },
+  { "kind": "line", "text": "Spell Effects — pimen" },
+  { "kind": "line", "text": "Tiny Dungeon · Particle Pack · Fantasy UI Borders — Kenney" },
+  { "kind": "line", "text": "Animated Fire — BenHickling" },
+  { "kind": "gap" },
+  { "kind": "head", "text": "음악" },
+  { "kind": "line", "text": "Eric Matyas · www.soundimage.org" },
+  { "kind": "gap" },
+  { "kind": "head", "text": "효과음" },
+  { "kind": "line", "text": "Impact Sounds · RPG Audio — Kenney" },
+  { "kind": "gap" },
+  { "kind": "head", "text": "글꼴" },
+  { "kind": "line", "text": "물마루 Mulmaru — Mushsooni" },
+  { "kind": "line", "text": "Noto Emoji — Google" },
+  { "kind": "gap" },
+  { "kind": "gap" },
+  { "kind": "head", "text": "그리고" },
+  { "kind": "title", "text": "{name}" },
+  { "kind": "gap" },
+  { "kind": "small", "text": "끝까지 함께해 주셔서 고맙습니다" }
+ ]
+}

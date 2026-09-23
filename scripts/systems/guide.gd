@@ -329,7 +329,7 @@ static func toggle_auto_nav() -> void:
 	if GameState.player.flying:
 		Hud.pop("날고 있을 땐 알아서 걸어갈 수 없다.", "🧭")
 		return
-	if _plan(): Hud.pop("%s(으)로 걸어간다. 방향키를 누르면 멈춘다." % (t.label if t.label else "목표"), "🧭")
+	if _plan(): Hud.pop("%s 쪽으로 걸어간다. 방향키를 누르면 멈춘다." % (t.label if t.label else "목표"), "🧭")
 
 
 static func cancel_nav() -> void: GameState.nav = null

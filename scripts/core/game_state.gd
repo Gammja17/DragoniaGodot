@@ -4,7 +4,8 @@ extends Node
 
 var gameActive := false
 var isDialogueOpen := false
-var game_time := 0.0          # 2D판 gameTime
+var game_time := 0.0          # 2D판 gameTime. 대화·장면 중에도 흐른다 (폭포·불빛·숨쉬기 같은 그림이 멈추지 않게)
+var play_time := 0.0          # 세상이 실제로 굴러간 시간. 대화·장면 중에는 멈춘다 (배너 기다리기 · 습격 뒤 숨 돌리기)
 var dayTime := 0.27           # 0~1, 하루 중 시각 (조명용). 새벽에서 시작
 var day := 1
 var weather := {}
@@ -73,6 +74,7 @@ func reset() -> void:
 	gameActive = false
 	isDialogueOpen = false
 	game_time = 0.0
+	play_time = 0.0
 	dayTime = 0.27
 	day = 1
 	weather = { type = "CLEAR", timer = 70, intensity = 0, flash = 0 }

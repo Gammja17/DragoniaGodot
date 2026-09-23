@@ -23,7 +23,7 @@ static func day_phase_name() -> String:
 	if t < 0.22 or t >= 0.82: return "밤"
 	if t < 0.36: return "새벽"
 	if t < 0.68: return "낮"
-	return "해질녘"
+	return "해 질 녘"
 
 
 static func enemy_cap_mult() -> float:

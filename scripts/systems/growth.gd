@@ -48,3 +48,61 @@ static func reconcile_points() -> void:
 	var p = GameState.player
 	var earned: int = (p.level - 1) * POINTS_PER_LEVEL + p.stage_index * POINTS_PER_STAGE
 	GameState.growth.points = maxi(0, earned - _spent_points())
+
+
+const STAGE_LABEL := ["해츨링", "어린 용", "성체", "고룡", "삼원룡"]
+
+
+static func _nodes_by_id() -> Dictionary: return Data.get_module("growth").NODES_BY_ID
+
+
+## 이 노드를 지금 찍을 수 있는지. 못 찍으면 이유를 돌려준다 { rank, can, reason }
+static func node_status(node: Dictionary) -> Dictionary:
+	var rank := node_rank(node.id)
+	var stage_index: int = GameState.player.stage_index if GameState.player else 0
+	if rank >= node.max: return { rank = rank, can = false, reason = "최대" }
+	if stage_index < node.tier: return { rank = rank, can = false, reason = "%s 필요" % STAGE_LABEL[node.tier] }
+	if node.get("need") and node_rank(node.need[0]) < node.need[1]:
+		return { rank = rank, can = false, reason = "%s %d단 필요" % [_nodes_by_id()[node.need[0]].name, node.need[1]] }
+	if GameState.growth.points < node.cost: return { rank = rank, can = false, reason = "포인트 %d 필요" % node.cost }
+	return { rank = rank, can = true, reason = null }
+
+
+static func invest_node(id: String) -> bool:
+	var node: Dictionary = _nodes_by_id()[id]
+	var st := node_status(node)
+	if not st.can:
+		Hud.pop("이미 끝까지 키웠습니다." if st.reason == "최대" else st.reason, "🌱")
+		return false
+	var g: Dictionary = GameState.growth
+	g.points -= node.cost
+	g.nodes[id] = st.rank + 1
+	if node.get("stat") == "hp":   # 최대 체력만은 찍는 즉시 몸에 반영한다
+		GameState.player.max_hp += node.per
+		GameState.player.hp += node.per
+	Hud.pop("[%s] %d단. %s" % [node.name, g.nodes[id], node.desc.call(g.nodes[id])], "🌱")
+	Sfx.play("level")
+	return true
+
+
+## 스킬을 한 단 더 올리는 값. 끝까지 익혔으면 null
+static func skill_upgrade_cost(id: String):
+	var r := Skills.rank(id)
+	var ranks: Array = Data.get_module("skills").SKILL_RANKS
+	return null if r >= ranks.size() else int(ranks[r].cost)
+
+
+static func upgrade_skill(id: String) -> bool:
+	var cost = skill_upgrade_cost(id)
+	if cost == null:
+		Hud.pop("이미 끝까지 익힌 기술입니다.", "📖")
+		return false
+	var g: Dictionary = GameState.growth
+	if g.points < cost:
+		Hud.pop("성장 포인트가 %d 필요합니다." % cost, "📖")
+		return false
+	g.points -= cost
+	g.ranks[id] = Skills.rank(id) + 1
+	Hud.pop("[%s] %d단. 위력 ↑ 대기 시간 ↓" % [Skills.defs()[id].name, g.ranks[id]], "📖")
+	Sfx.play("level")
+	return true

@@ -197,3 +197,27 @@ static func update(dt: float, get_npc: Callable) -> void:
 		fresh.job = plan.job
 		fresh.walk_to = { x = plan.x, y = plan.y }
 		World.add_entity("npcs", fresh)
+
+
+## 일지에 뿌릴 표: 누가 어디서 무엇을 하는지
+static func roster() -> Array:
+	var fixed: Array = Data.get_module("npcs").FIXED_NPCS
+	var out := []
+	for nm in routine_names():
+		if is_dead(nm): continue
+		var npc = _find_npc(nm)
+		var plan = plan_for(nm)
+		if plan == null and npc == null: continue
+		var here: bool = npc != null and _tied_to_player(npc)
+		var east := false
+		for d in fixed:
+			if d.name == nm: east = bool(d.get("east", false))
+		var m: String = GameState.map_id if here else (plan.map if plan else "")
+		out.append({
+			name = nm, label = Names.npc(nm), job = plan.job if plan else "",
+			map = m, where = "나와 함께 있다" if here else (plan.mapName if plan else "?"),
+			doing = "나를 따라다니고 있다" if here else (plan.doing if plan else ""),
+			near = m == GameState.map_id, east = east,
+			relation = npc.relation if npc else World.any_npc(nm).relation if World.any_npc(nm) else 0.0,
+		})
+	return out

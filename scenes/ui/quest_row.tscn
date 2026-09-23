@@ -1,0 +1,168 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/quest_row.gd" id="1"]
+[ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="item"]
+bg_color = Color(1, 1, 1, 0.055)
+border_width_left = 3
+border_color = Color(1, 0.847, 0.29, 1)
+
+[sub_resource type="StyleBoxFlat" id="summary"]
+content_margin_left = 9.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_color = Color(0.847, 0.698, 0.353, 0.38)
+
+[sub_resource type="StyleBoxFlat" id="done_text"]
+content_margin_left = 9.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_color = Color(0.306, 0.333, 0.376, 1)
+
+[node name="QuestRow" type="PanelContainer"]
+theme_override_styles/panel = SubResource("item")
+script = ExtResource("1")
+
+[node name="Lines" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Head" type="Button" parent="Lines"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+focus_mode = 0
+flat = true
+
+[node name="Row" type="HBoxContainer" parent="Lines/Head"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_right = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Mark" type="Label" parent="Lines/Head/Row"]
+custom_minimum_size = Vector2(11, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+text = "▸"
+
+[node name="Title" type="Label" parent="Lines/Head/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2")
+text = "퀘스트"
+clip_text = true
+
+[node name="Prog" type="Label" parent="Lines/Head/Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+
+[node name="Body" type="MarginContainer" parent="Lines"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Lines" type="VBoxContainer" parent="Lines/Body"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Giver" type="HBoxContainer" parent="Lines/Body/Lines"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="Key" type="Label" parent="Lines/Body/Lines/Giver"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+text = "의뢰"
+
+[node name="Text" type="Label" parent="Lines/Body/Lines/Giver"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+autowrap_mode = 3
+
+[node name="Summary" type="Label" parent="Lines/Body/Lines"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("summary")
+autowrap_mode = 3
+
+[node name="Chapter" type="HBoxContainer" parent="Lines/Body/Lines"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="Key" type="Label" parent="Lines/Body/Lines/Chapter"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+text = "진행"
+
+[node name="Text" type="Label" parent="Lines/Body/Lines/Chapter"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+
+[node name="Steps" type="VBoxContainer" parent="Lines/Body/Lines"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Hint" type="HBoxContainer" parent="Lines/Body/Lines"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="Key" type="Label" parent="Lines/Body/Lines/Hint"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+text = "해야 할 일"
+
+[node name="Text" type="Label" parent="Lines/Body/Lines/Hint"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+autowrap_mode = 3
+
+[node name="DoneText" type="Label" parent="Lines/Body/Lines"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_styles/normal = SubResource("done_text")
+autowrap_mode = 3
+
+[node name="EndScene" type="Button" parent="Lines/Body/Lines"]
+layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+text = "마무리 장면 다시 보기"
+
+[node name="Reward" type="HBoxContainer" parent="Lines/Body/Lines"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="Key" type="Label" parent="Lines/Body/Lines/Reward"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+text = "보상"
+
+[node name="Text" type="Label" parent="Lines/Body/Lines/Reward"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+autowrap_mode = 3
+
+[node name="Track" type="Button" parent="Lines/Body/Lines"]
+layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+text = "☆ 이 퀘스트를 추적"

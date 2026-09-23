@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3]
+[gd_scene load_steps=35 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1"]
 [ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="2"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_bottom.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/ui/help_panel.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://scenes/ui/journal_panel.tscn" id="11"]
 
 [sub_resource type="Gradient" id="rule_grad"]
 offsets = PackedFloat32Array(0, 0.5, 1)
@@ -455,6 +456,8 @@ mouse_filter = 2
 label_settings = SubResource("boss_text")
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Journal" parent="." instance=ExtResource("11")]
 
 [node name="Settings" parent="." instance=ExtResource("9")]
 

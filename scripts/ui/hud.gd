@@ -25,6 +25,7 @@ const MAX_TOASTS := 4
 @onready var bottom: HudBottom = $Bottom
 @onready var settings: SettingsPanel = $Settings
 @onready var help: GamePanel = $Help
+@onready var journal: JournalPanel = $Journal
 
 ## 설정의 [저장하고 처음 화면으로] (main 이 받는다)
 signal to_title_requested
@@ -54,6 +55,7 @@ func _ready() -> void:
 	right.collapse_pressed.connect(func(): collapse_right(true))
 	$ShowRight.pressed.connect(func(): collapse_right(false))
 	settings.help_pressed.connect(help.open)
+	status.growth_pressed.connect(func(): journal.toggle_tab("growth"))
 	settings.to_title_pressed.connect(func(): to_title_requested.emit())
 	$HelpChip.visible = false
 
@@ -86,6 +88,7 @@ func toggle_ui() -> void:
 ## 퀘스트가 바뀌면 추적창을 다시 채운다 (Quests.on_change)
 func refresh_tracker() -> void:
 	right.quest.refresh()
+	journal.refresh()
 
 
 ## 지도를 옮기면 지역 이름을 위쪽에 잠깐 띄웠다 지운다 (2.8초).

@@ -1,0 +1,63 @@
+[gd_scene load_steps=4 format=3]
+
+[sub_resource type="StyleBoxFlat" id="row"]
+content_margin_left = 10.0
+content_margin_top = 7.0
+content_margin_right = 10.0
+content_margin_bottom = 7.0
+bg_color = Color(1, 1, 1, 0.055)
+border_width_left = 3
+border_color = Color(0.847, 0.698, 0.353, 0.38)
+
+[sub_resource type="StyleBoxFlat" id="row_hover"]
+content_margin_left = 10.0
+content_margin_top = 7.0
+content_margin_right = 10.0
+content_margin_bottom = 7.0
+bg_color = Color(1, 1, 1, 0.11)
+border_width_left = 3
+border_color = Color(0.847, 0.698, 0.353, 0.7)
+
+[sub_resource type="StyleBoxFlat" id="row_on"]
+content_margin_left = 10.0
+content_margin_top = 7.0
+content_margin_right = 10.0
+content_margin_bottom = 7.0
+bg_color = Color(1, 0.847, 0.29, 0.1)
+border_width_left = 3
+border_color = Color(1, 0.847, 0.29, 1)
+
+[node name="RelicRow" type="Button"]
+custom_minimum_size = Vector2(0, 30)
+focus_mode = 0
+theme_override_styles/normal = SubResource("row")
+theme_override_styles/hover = SubResource("row_hover")
+theme_override_styles/pressed = SubResource("row_hover")
+metadata/on_style = SubResource("row_on")
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_right = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Name" type="Label" parent="Row"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+
+[node name="Desc" type="Label" parent="Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="State" type="Label" parent="Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)

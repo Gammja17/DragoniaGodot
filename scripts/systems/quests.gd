@@ -431,3 +431,53 @@ static func migrate(Q: Dictionary) -> Dictionary:
 		if by_id(id) == null: out.active.erase(id)
 	if out.tracked and not out.active.has(out.tracked): out.tracked = null
 	return out
+
+
+## 일지 [퀘스트] 탭: 막마다 묶은 줄들. 앞으로 올 대목은 숨긴다 (이야기를 미리 보이지 않게)
+static func quest_log() -> Array:
+	var Q: Dictionary = GameState.quests
+	var acts: Dictionary = Data.get_module("quests").ACT_NAMES
+	var groups := []
+	var today = training.row.call()
+	if today: groups.append({ act = "training", name = "오늘의 수련", rows = [today] })
+	var by_act := {}
+	for q in all():
+		var active: bool = Q.active.has(q.id)
+		var done: bool = Q.done.has(q.id)
+		if not active and not done: continue   # 아직 받지도 않았으면 로그에 나오지 않는다
+		if not by_act.has(q.act):
+			by_act[q.act] = { act = q.act, name = acts.get(q.act, q.act), rows = [] }
+			groups.append(by_act[q.act])
+		var total := steps(q).size()
+		var complete: bool = active and is_complete(q)
+		var si := step_index(q)
+		var st_rows := []
+		var qs := steps(q)
+		for i in qs.size():
+			var st: Dictionary = qs[i]
+			var sdone: bool = done or i < si
+			var snow: bool = active and i == si
+			if sdone or snow: st_rows.append({ hint = st.hint if st.get("hint") else goal_text(st.goal), scene = st.get("scene"), done = sdone, now = snow })
+		var cs = cur_step(q) if active else null
+		by_act[q.act].rows.append({
+			id = q.id, title = q.title, giver = giver_line(q.giver),
+			summary = q.get("summary", ""),
+			hint = "%s에게 돌아가 보고한다." % Names.npc(turn_in_npc(q)) if complete else ((cs.hint if cs and cs.get("hint") else step_goal_text(q)) if active else ""),
+			goal = step_goal_text(q) if active and not complete else "-",
+			reward = reward_text(q),
+			progress = "완료" if done else "보고 대기" if complete else "%d / %d" % [progress(q), step_total(q)],
+			chapter = "대목 %d / %d" % [mini(si + 1, total), total] if total > 1 and active else "",
+			steps = st_rows,
+			doneText = q.done if done else "",
+			endScene = q.reward.scene if done and q.get("reward") and q.reward.get("scene") else null,
+			done = done, complete = complete, tracked = Q.tracked == q.id,
+		})
+	# 다음에 열릴 퀘스트를 '???' 로 한 줄 귀띔
+	for g in groups:
+		for q in all():
+			if acts.get(q.act, q.act) != g.name or Q.active.has(q.id) or Q.done.has(q.id): continue
+			if q.get("requires") and not Q.done.has(q.requires): continue
+			g.rows.append({ id = q.id, title = "???", giver = giver_line(q.giver), upcoming = true,
+				hint = "아직 때가 아니다. 세상을 더 돌아다녀 보자." if q.get("auto") else "%s에게 말을 걸어 보자." % Names.npc(q.giver) })
+			break
+	return groups

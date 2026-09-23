@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[node name="QuestStep" type="HBoxContainer"]
+theme_override_constants/separation = 8
+
+[node name="Mark" type="Label" parent="."]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "✔"
+
+[node name="Text" type="Label" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+
+[node name="Replay" type="Button" parent="."]
+visible = false
+layout_mode = 2
+size_flags_vertical = 0
+focus_mode = 0
+theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+text = "다시 보기"

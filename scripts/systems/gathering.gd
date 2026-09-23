@@ -40,3 +40,7 @@ static func days_to_gather() -> int:
 ## 폭포 위로 올라가 본 적이 있는가 (모임에 한 번 나가면 열린다)
 static func invited_up() -> bool:
 	return GameState.story.events.has("ev_gathering")
+
+
+## 구름마루를 아는가 (폭포에서 처음 마주친 뒤)
+static func knows_cloudtop() -> bool: return GameState.story.get("events", []).has("ev_falls")

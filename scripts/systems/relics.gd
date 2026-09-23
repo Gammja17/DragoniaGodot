@@ -63,3 +63,22 @@ static func has(id: String) -> bool:
 ## 같은 갈래(kin)의 유물을 둘 이상 끼면 공명한다
 static func resonates(kin: String) -> bool:
 	return equipped().filter(func(id): return table().has(id) and table()[id].get("kin") == kin).size() >= 2
+
+
+## 끼우거나 뺀다 (일지 유물 탭). 칸이 차 있으면 알려 준다
+static func toggle(id: String) -> bool:
+	if not owns(id): return false
+	var list := slots()
+	var mx := slot_count()
+	var at := list.find(id)
+	if at >= 0 and at < mx:   # 빼기
+		list[at] = null
+		Sfx.play("ui")
+		return true
+	for i in mx:
+		if list[i] == null:
+			list[i] = id
+			Sfx.play("relic")
+			return true
+	Hud.pop("유물 칸이 %d칸뿐입니다. 끼운 것을 먼저 빼세요. (몸이 자라면 칸이 늘어납니다)" % mx, "💎")
+	return false

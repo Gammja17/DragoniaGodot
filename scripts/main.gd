@@ -89,6 +89,9 @@ func _process(delta: float) -> void:
 	if GameInput.wheel: camera.step_zoom(GameInput.wheel)   # 휠은 조용히 (알림이 정신 사납다고 해서)
 	if GameInput.pressed("hideUi") and not GameState.isDialogueOpen: hud.toggle_ui()
 	if GameInput.pressed("help") and not GameState.isDialogueOpen: hud.help.toggle()
+	if not GameState.isDialogueOpen:   # 일지의 탭으로 바로 간다
+		for k in [["journal", ""], ["skillbook", "skills"], ["growthTab", "growth"], ["worldmap", "map"], ["inventory", "bag"]]:
+			if GameInput.pressed(k[0]): hud.journal.toggle_tab(k[1])
 	if GameInput.pressed("mute"):
 		var muted: bool = not Prefs.get_value("sound", "muted", false)
 		Prefs.set_value("sound", "muted", muted)

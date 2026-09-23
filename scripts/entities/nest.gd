@@ -41,6 +41,12 @@ func attack_egg(amount: float) -> void:
 		Hud.pop("사냥꾼에게 알을 빼앗겼습니다…!", "💔")
 
 
+func light():
+	if has_egg: return { r = 150, color = "#fff2c8", intensity = 0.8 }
+	# 알이 없어도, 지어 둔 둥지는 굴 안에서 은은히 빛난다 (깜깜한 데서 찾지 못하면 소용없다)
+	return { r = 120, color = "#ffd89a", intensity = 0.45 } if GameState.den.get("built") else null
+
+
 func update(dt: float) -> void:
 	queue_redraw()
 	if not has_egg: return

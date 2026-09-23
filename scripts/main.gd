@@ -23,6 +23,8 @@ var _save_timer := 0.0
 func _ready() -> void:
 	World.container = world
 	overlay.camera = camera
+	$LightLayer/Lighting.camera = camera
+	$WeatherLayer/Weather.camera = camera
 	overlay.world = world
 	cutscene_view.camera = camera
 	$Marks.camera = camera
@@ -89,6 +91,7 @@ func _process(delta: float) -> void:
 	if GameInput.wheel: camera.step_zoom(GameInput.wheel)   # 휠은 조용히 (알림이 정신 사납다고 해서)
 	if GameInput.pressed("hideUi") and not GameState.isDialogueOpen: hud.toggle_ui()
 	if GameInput.pressed("help") and not GameState.isDialogueOpen: hud.help.toggle()
+	if GameInput.pressed("screenFx") and not GameState.isDialogueOpen: hud.fx.toggle()
 	if GameInput.pressed("kids") and not GameState.isDialogueOpen: hud.kids.toggle()
 	if not GameState.isDialogueOpen:   # 일지의 탭으로 바로 간다
 		for k in [["journal", ""], ["skillbook", "skills"], ["growthTab", "growth"], ["worldmap", "map"], ["inventory", "bag"]]:

@@ -46,6 +46,10 @@ func _targets() -> Array:
 		return d <= r + (50 if e.def.get("scale") else 0) and d >= inner)
 
 
+func light():
+	return { r = r * 1.6, color = color, intensity = 0.7, emissive = true } if burst and linger > 0 else null
+
+
 func update(dt: float) -> void:
 	t += dt
 	var player = GameState.player

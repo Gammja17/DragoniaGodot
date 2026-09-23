@@ -6,7 +6,7 @@ class_name Vfx
 
 ##  - 시트형: { img, fw, fh, row?, frames:[...], fps, scale, ax, ay, additive }
 ##  - 한 장짜리(커지며 사라짐): { img, life, from, to, spin, additive, flat?(바닥에 눕힘), rise?(떠오름) }
-##  light: 조명 시스템이 읽는 값 { r, color } (조명은 6단계)
+##  light: 조명 시스템이 읽는 값 { r, color } (render/lighting.gd)
 const EFFECTS := {
 	"FIRE_HIT": { img = "firebolt", fw = 48, fh = 48, frames = [5, 6, 7, 8, 9, 10], fps = 20, scale = 3, ax = 0.83, ay = 0.5, additive = true, light = { r = 220, color = "#ff9a3c" } },
 	"ICE_HIT": { img = "ice_hit", fw = 48, fh = 32, frames = [0, 1, 2, 3, 4, 5, 6, 7], fps = 20, scale = 3, ax = 0.5, ay = 0.5, additive = true, light = { r = 200, color = "#7fd4ff" } },
@@ -100,6 +100,10 @@ class Effect:
 		duration = d.frames.size() / float(d.fps) if d.has("frames") else d.life
 		additive = d.get("additive", false)
 
+	func light():
+		var l = def.get("light")
+		return { r = l.r * size, color = l.color, intensity = 1 - t / duration, emissive = true } if l else null
+
 	func update(dt: float) -> void:
 		t += dt
 		if t >= duration: remove = true
@@ -154,6 +158,8 @@ class Shatter:
 		for i in bands:
 			bits.append({ i = i, vx = (randf() - 0.5) * 210, vy = -60 - (bands - i) * 26 - randf() * 50, spin = (randf() - 0.5) * 7 })
 
+	func light(): return { r = 90, color = color, intensity = (1 - t / life) * 0.7, emissive = true }
+
 	func update(dt: float) -> void:
 		t += dt
 		if t >= life: remove = true
@@ -193,6 +199,8 @@ class Bolt:
 			var k := i / float(n)
 			var jitter := 0.0 if i == 0 or i == n else 14.0
 			points.append(Vector2(x1 + (x2 - x1) * k + (randf() - 0.5) * jitter * 2, y1 + (y2 - y1) * k + (randf() - 0.5) * jitter * 2))
+
+	func light(): return { r = 200, color = "#ffe27a", intensity = 1 - t / 0.18, emissive = true }
 
 	func update(dt: float) -> void:
 		t += dt

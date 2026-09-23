@@ -91,6 +91,11 @@ func _ready() -> void:
 	add_child(_top)
 
 
+func light():
+	if elite: return { r = 150, color = "#ffd84a", intensity = 0.7 }
+	return { r = 120, color = def.glow, intensity = 0.6 } if def.get("glow") else null
+
+
 func update(dt: float) -> void:
 	if hit_flash > 0: hit_flash -= dt * 10
 	if knock and knock.t > 0: knock.t -= dt * 6

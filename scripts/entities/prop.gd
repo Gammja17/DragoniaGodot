@@ -122,6 +122,29 @@ func _process(_dt: float) -> void:
 		if _flame: _flame.queue_redraw()
 
 
+## 밤에 주변을 밝히는 빛 (render/lighting.gd)
+func light():
+	var t := GameState.game_time
+	match type:
+		"CAMPFIRE": return { r = 340 + sin(t * 13 + seed * 9) * 22, color = "#ffab5c", dy = -30, emissive = true }
+		"HOUSE": return { r = 210, color = "#ffd38a", intensity = 0.85, dy = -50 }   # 창문 불빛
+		"FOUNTAIN": return { r = 170, color = "#9fd8ff", intensity = 0.5, dy = -20 }
+		"BERRY": return { r = 70, color = "#ff7a9a", intensity = 0.4, dy = -20 } if ripe else null
+		"CHEST": return null if opened else { r = 110, color = "#ffd84a", intensity = 0.7, dy = -16 }
+		"WAYSTONE": return { r = 130, color = "#7fd4ff", intensity = 0.85 if awake else 0.35, dy = -40 }
+		"STAIRS_UP": return { r = 200, color = "#ffe9b0", intensity = 0.9, dy = -20, emissive = true }
+		"CAVE": return { r = 170, color = "#c58aff", intensity = 0.6, dy = -34, emissive = true }
+		"DEN_MOUTH": return { r = 190, color = "#ffc87a", intensity = 0.75, dy = -34, emissive = true }
+		"TOWER": return { r = 230, color = "#ffc87a", intensity = 0.8, dy = -120, emissive = true }   # 망루의 등불
+		"FURNITURE":   # 스스로 빛나는 살림살이 (화로·구슬)
+			var f = Den.furniture().get(fid)
+			if not f or not f.get("light"): return null
+			return { r = 240 + sin(t * 9 + seed * 7) * 16, color = f.light, dy = -28, emissive = true }
+		"PORTAL": return { r = 150, color = "#9fe3ff", intensity = 0.7, dy = -40, emissive = true }
+		"WATERFALL": return { r = 260, color = "#bfe9ff", intensity = 0.45, dy = -160 }
+	return null
+
+
 func _draw() -> void:
 	if is_hidden: return
 	match type:

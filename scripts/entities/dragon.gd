@@ -160,6 +160,11 @@ func _draw_scale() -> float:
 	return stage.scale if is_player else 0.92 * config.get("scale", 1.0)
 
 
+## 밤에 주변을 밝히는 빛 (render/lighting.gd)
+func light():
+	return { r = 300, color = "#ffe2b0", dy = -40 } if is_player else { r = 170, color = "#ffe2b0", intensity = 0.55, dy = -40 }
+
+
 func update(dt: float) -> void:
 	if chat_fade > 0: chat_fade -= dt * 0.3
 	hover_y = sin(GameState.game_time * 2 + anim_phase) * 6 if sheet.flying else 0.0

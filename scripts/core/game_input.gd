@@ -24,6 +24,7 @@ const KEYMAP := {
 	"skillQ": [KEY_Q], "skillF": [KEY_F], "skillR": [KEY_R],
 	"ultimate": [KEY_X],
 	"help": [KEY_H],
+	"screenFx": [KEY_L],       # 화면 효과 판
 	"num1": [KEY_1], "num2": [KEY_2], "num3": [KEY_3], "num4": [KEY_4], "num5": [KEY_5],
 	"num6": [KEY_6], "num7": [KEY_7], "num8": [KEY_8], "num9": [KEY_9],
 	"zoom": [KEY_V],

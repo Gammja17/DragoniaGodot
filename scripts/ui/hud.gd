@@ -25,6 +25,7 @@ const MAX_TOASTS := 4
 @onready var bottom: HudBottom = $Bottom
 @onready var settings: SettingsPanel = $Settings
 @onready var help: GamePanel = $Help
+@onready var fx: FxPanel = $Fx
 @onready var journal: JournalPanel = $Journal
 @onready var kids: KidsPanel = $Kids
 @onready var touch: TouchLayer = $Touch
@@ -57,6 +58,7 @@ func _ready() -> void:
 	right.collapse_pressed.connect(func(): collapse_right(true))
 	$ShowRight.pressed.connect(func(): collapse_right(false))
 	settings.help_pressed.connect(help.open)
+	settings.fx_pressed.connect(fx.open)
 	status.growth_pressed.connect(func(): journal.toggle_tab("growth"))
 	status.family_pressed.connect(kids.toggle)
 	touch.settings_pressed.connect(settings.toggle)

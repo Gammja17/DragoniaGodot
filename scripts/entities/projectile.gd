@@ -63,6 +63,10 @@ func additive() -> bool:
 	return kind == "BREATH" and not els()[element].proj.get("solid", false)
 
 
+func light():
+	return { r = 170 * scale, color = Data.get_module("elements").ELEMENTS[element].color, emissive = true } if kind == "BREATH" else null
+
+
 func update(dt: float) -> void:
 	if homing:
 		var tg = homing_target if homing_target else GameState.player

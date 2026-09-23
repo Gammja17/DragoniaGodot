@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3]
+[gd_scene load_steps=39 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1"]
 [ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="2"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/kids_panel.tscn" id="12"]
 [ext_resource type="PackedScene" path="res://scenes/ui/den_panel.tscn" id="13"]
 [ext_resource type="PackedScene" path="res://scenes/ui/touch_layer.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://scenes/ui/fx_panel.tscn" id="fx"]
 
 [sub_resource type="Gradient" id="rule_grad"]
 offsets = PackedFloat32Array(0, 0.5, 1)
@@ -469,6 +470,8 @@ vertical_alignment = 1
 [node name="Settings" parent="." instance=ExtResource("9")]
 
 [node name="Help" parent="." instance=ExtResource("10")]
+
+[node name="Fx" parent="." instance=ExtResource("fx")]
 
 [node name="NameInput" parent="." instance=ExtResource("5")]
 

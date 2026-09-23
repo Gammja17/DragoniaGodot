@@ -89,6 +89,9 @@ func grow(amount: float) -> void:
 		Hud.pop("자식이 성체가 되었습니다! 이제 둥지 근처에서 지냅니다.", "🐉")
 
 
+func light(): return { r = 110, color = "#ffe2b0", intensity = 0.5 }
+
+
 func update(dt: float) -> void:
 	var px := x
 	var py := y

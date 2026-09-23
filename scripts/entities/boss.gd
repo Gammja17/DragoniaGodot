@@ -93,6 +93,11 @@ var rage: bool:
 	get: return phase == def.phases.size() - 1 if def.get("phases") else (hp < def.hp * 0.4 or phase2)
 
 
+func light():
+	if is_hidden: return null
+	return { r = 360, color = Data.get_module("elements").ELEMENTS[def.element].color, intensity = 0.9 if awake else 0.4, dy = -60 }
+
+
 func update(dt: float) -> void:
 	if hit_flash > 0: hit_flash -= dt * 8
 	if squash > 0: squash -= dt * 7

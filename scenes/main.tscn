@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/world/terrain.gd" id="2"]
@@ -9,6 +9,19 @@
 [ext_resource type="Script" path="res://scripts/render/feedback.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/render/marks.gd" id="8"]
 [ext_resource type="Script" path="res://scripts/render/cutscene_view.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/render/lighting.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/render/weather_view.gd" id="11"]
+[ext_resource type="Script" path="res://scripts/render/post_fx.gd" id="12"]
+[ext_resource type="Shader" path="res://assets/shaders/postfx.gdshader" id="13"]
+
+[sub_resource type="CanvasItemMaterial" id="add"]
+blend_mode = 1
+
+[sub_resource type="CanvasItemMaterial" id="mul"]
+blend_mode = 3
+
+[sub_resource type="ShaderMaterial" id="postfx"]
+shader = ExtResource("13")
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -56,6 +69,55 @@ mode = 6
 
 [node name="Camera" type="Camera2D" parent="."]
 script = ExtResource("3")
+
+[node name="LightLayer" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="Lighting" type="Node2D" parent="LightLayer"]
+script = ExtResource("10")
+
+[node name="Map" type="SubViewport" parent="LightLayer/Lighting"]
+disable_3d = true
+size = Vector2i(640, 360)
+render_target_update_mode = 4
+
+[node name="Base" type="Node2D" parent="LightLayer/Lighting/Map"]
+
+[node name="Glows" type="Node2D" parent="LightLayer/Lighting/Map"]
+material = SubResource("add")
+
+[node name="Multiply" type="TextureRect" parent="LightLayer/Lighting"]
+texture_filter = 2
+material = SubResource("mul")
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="Emissive" type="Node2D" parent="LightLayer/Lighting"]
+material = SubResource("add")
+
+[node name="WeatherLayer" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="Weather" type="Node2D" parent="WeatherLayer"]
+script = ExtResource("11")
+
+[node name="Embers" type="Node2D" parent="WeatherLayer/Weather"]
+material = SubResource("add")
+
+[node name="PostLayer" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="PostFx" type="ColorRect" parent="PostLayer"]
+material = SubResource("postfx")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("12")
 
 [node name="FeedbackLayer" type="CanvasLayer" parent="."]
 layer = 4

@@ -1,0 +1,154 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/game_panel.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/fx_panel.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/fx_row.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/fx_toggle.tscn" id="4"]
+[ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="5"]
+
+[sub_resource type="LabelSettings" id="section"]
+font = ExtResource("5")
+font_size = 12
+font_color = Color(1, 0.847, 0.29, 1)
+
+[sub_resource type="LabelSettings" id="howto"]
+font_size = 12
+font_color = Color(0.714, 0.682, 0.604, 1)
+
+[node name="FxPanel" instance=ExtResource("1")]
+script = ExtResource("2")
+title = "화면 효과"
+panel_size = Vector2(430, 700)
+close_label = "닫기 (L)"
+mouse_filter = 2
+
+[node name="Dim" parent="." index="0"]
+visible = false
+mouse_filter = 2
+
+[node name="HowTo" type="Label" parent="Frame/Lines/Body" index="0"]
+layout_mode = 2
+text = "손잡이를 끌면 바로 화면에 나타난다. 이 판은 화면을 가리지 않으니 연 채로 걸어 다니고 싸우며 보면 된다.
+[L] 또는 설정 창의 [화면 효과] 로 열고 닫는다. 고친 값은 이 기기에 저장된다."
+label_settings = SubResource("howto")
+autowrap_mode = 3
+
+[node name="Scroll" type="ScrollContainer" parent="Frame/Lines/Body" index="1"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Rows" type="VBoxContainer" parent="Frame/Lines/Body/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Head0" type="Label" parent="Frame/Lines/Body/Scroll/Rows"]
+layout_mode = 2
+text = "후처리"
+label_settings = SubResource("section")
+
+[node name="post" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("4")]
+layout_mode = 2
+key = "post"
+label = "후처리 전체"
+note = "아래 번짐부터 채도까지를 한꺼번에 켜고 끈다. 느린 기기라면 끄면 가벼워진다."
+
+[node name="bloom" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("3")]
+layout_mode = 2
+key = "bloom"
+label = "빛 번짐"
+note = "불길·번개·밝은 빛이 둘레로 번지는 세기. 기본 85%. 0%면 번지지 않는다."
+min_value = 0.0
+max_value = 2.0
+
+[node name="threshold" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("3")]
+layout_mode = 2
+key = "threshold"
+label = "번짐 문턱"
+note = "이 밝기보다 밝은 곳만 번진다. 낮출수록 온 화면이 뿌옇게 빛난다. 기본 62%."
+min_value = 0.3
+max_value = 0.95
+
+[node name="aberration" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("3")]
+layout_mode = 2
+key = "aberration"
+label = "색 어긋남"
+note = "화면 가장자리에서 빨강·파랑이 살짝 벌어지는 렌즈 느낌. 기본 100%."
+min_value = 0.0
+max_value = 3.0
+
+[node name="warp" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("3")]
+layout_mode = 2
+key = "warp"
+label = "피격 일렁임"
+note = "맞은 순간 화면이 물결치는 세기. 어지러우면 0%로. 기본 100%."
+min_value = 0.0
+max_value = 2.0
+
+[node name="vignette" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("3")]
+layout_mode = 2
+key = "vignette"
+label = "가장자리 어둠"
+note = "화면 네 귀퉁이를 어둡게 눌러 가운데로 눈이 가게 한다. 기본 100%."
+min_value = 0.0
+max_value = 2.0
+
+[node name="Head7" type="Label" parent="Frame/Lines/Body/Scroll/Rows"]
+layout_mode = 2
+text = "색"
+label_settings = SubResource("section")
+
+[node name="brightness" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("3")]
+layout_mode = 2
+key = "brightness"
+label = "밝기"
+note = "화면 전체를 밝게·어둡게. 기본 100%."
+min_value = 0.6
+max_value = 1.4
+
+[node name="contrast" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("3")]
+layout_mode = 2
+key = "contrast"
+label = "대비"
+note = "밝은 곳과 어두운 곳의 차이. 올리면 또렷하고 내리면 부드럽다. 기본 100%."
+min_value = 0.6
+max_value = 1.4
+
+[node name="saturation" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("3")]
+layout_mode = 2
+key = "saturation"
+label = "채도"
+note = "색의 진하기. 0%면 흑백. 기본 100%."
+min_value = 0.0
+max_value = 1.6
+
+[node name="Head11" type="Label" parent="Frame/Lines/Body/Scroll/Rows"]
+layout_mode = 2
+text = "조명 · 날씨"
+label_settings = SubResource("section")
+
+[node name="night" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("3")]
+layout_mode = 2
+key = "night"
+label = "밤의 어둠"
+note = "밤·굴 속이 어두워지는 정도. 0%면 늘 낮처럼 밝다 (광원도 안 보인다). 기본 100%."
+min_value = 0.0
+max_value = 1.0
+
+[node name="clouds" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("4")]
+layout_mode = 2
+key = "clouds"
+label = "구름 그림자 · 반딧불이"
+note = "낮에 땅 위를 지나가는 구름 그림자와 밤의 반딧불이."
+
+[node name="weather" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("4")]
+layout_mode = 2
+key = "weather"
+label = "비 · 눈 · 불티"
+note = "비·폭풍의 빗줄기와 번갯불, 설원의 눈, 화산의 불티. 꺼도 날씨의 효과(숨결 세기)는 그대로다."
+
+[node name="Reset" type="Button" parent="Frame/Lines/Body" index="2"]
+layout_mode = 2
+focus_mode = 0
+text = "처음 값으로 되돌리기"

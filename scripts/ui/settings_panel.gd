@@ -2,7 +2,7 @@ class_name SettingsPanel
 extends GamePanel
 ## 2D판 ui/settings.js. 설정 창. [Esc] 로 연다 (열려 있는 다른 창이 있으면 Esc 는 그것부터 닫는다).
 ##   소리: 배경음·효과음 손잡이, 전체 끄기 (systems/audio · sfx 가 매 프레임 따른다)
-##   화면: 시점 단계, 좌우 판 접기, 대사 글자 크기, 화면 효과 판 · 길잡이 · 테스트 · 조작법 · 처음 화면으로
+##   화면: 시점 단계, 좌우 판 접기, UI 크기, 대사 글자 크기, 화면 효과 판 · 길잡이 · 테스트 · 조작법 · 처음 화면으로
 
 signal help_pressed
 signal fx_pressed
@@ -39,6 +39,9 @@ func _ready() -> void:
 		GameCamera.current.cycle_zoom()
 		_refresh())
 	_btn("Ui").pressed.connect(func(): Hud.current.toggle_ui())
+	_btn("UiSize").pressed.connect(func():
+		Hud.pop("UI 크기: %s" % UiScale.cycle(), "🔎")
+		_refresh())
 	_btn("Dlg").pressed.connect(func():
 		DialogueBox.step = DialogueBox.step % 4 + 1
 		Prefs.set_value("dialogue", "step", DialogueBox.step)
@@ -68,6 +71,7 @@ func _refresh() -> void:
 		_rows.get_node("%s/Num" % key).text = str(roundi(_rows.get_node("%s/Slider" % key).value))
 	_btn("Mute").text = "꺼짐 · 켜기" if Prefs.get_value("sound", "muted", false) else "켜짐 · 끄기"
 	_btn("Zoom").text = GameCamera.current.zoom_name()
+	_btn("UiSize").text = UiScale.setting_name()
 	_btn("Dlg").text = DLG_NAMES[DialogueBox.step]
 	_btn("Guide").text = Guide.LEVELS[Guide.level()]
 	var p = GameState.player

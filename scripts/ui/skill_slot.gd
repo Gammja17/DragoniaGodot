@@ -1,9 +1,12 @@
 class_name SkillSlot
 extends Control
 ## 기술 칸 하나 (숨결 1~6 · Q F R · X). 2D판 .slot
-## 고른 칸은 테두리가 제 색으로 빛나며 4px 떠오르고, 대기 중이면 아래에서부터 검게 덮인다.
+## 고른 칸은 테두리와 바탕이 제 색으로 물들며 4px 떠오르고, 대기 중이면 아래에서부터 검게 덮인다.
 
-const IDLE_BORDER := Color("#4b3f26")
+const IDLE_BORDER := Color("#6a5a38")
+const LOCKED_BORDER := Color("#2e2819")
+const LOCKED_TEXT := Color("#5f584a")
+const BG := Color(0.055, 0.051, 0.086, 0.95)
 const H := 58.0
 
 @onready var _box: Panel = $Box
@@ -26,11 +29,11 @@ func show_state(key: String, label: String, locked: bool, active: bool, cd_ratio
 	_key.text = key
 	_name.text = label
 	_rank.text = rank
-	# 잠긴 칸은 반쯤 투명하고 잿빛 (2D판 opacity .5 + grayscale)
-	_box.modulate = Color(0.85, 0.85, 0.85, 0.5) if locked else Color.WHITE
-	_style.border_color = accent if active else IDLE_BORDER
-	_key.add_theme_color_override("font_color", text_accent if active else Color("#ece3cf"))
-	_name.add_theme_color_override("font_color", text_accent if active else Color("#b6ae9a"))
+	# 잠긴 칸은 글자만 잿빛으로 가라앉힌다. 칸 바탕까지 투명하게 하면 뒤의 땅 글씨(포탈 이름 등)가 비쳐 어지럽다
+	_style.border_color = accent if active else LOCKED_BORDER if locked else IDLE_BORDER
+	_style.bg_color = BG.lerp(accent, 0.16) if active else BG
+	_key.add_theme_color_override("font_color", text_accent if active else LOCKED_TEXT if locked else Color("#ece3cf"))
+	_name.add_theme_color_override("font_color", text_accent if active else LOCKED_TEXT if locked else Color("#cdc4af"))
 	_set_cd(cd_ratio)
 	_lift = 4.0 if active else 0.0
 

@@ -36,11 +36,11 @@ func setup(d: Dictionary) -> void:
 	locked = d.get("locked", false)
 	sel = d.get("sel", false)
 	$Gem/Rank.text = d.rank
-	$Gem/Rank.add_theme_color_override("font_color", Color("#11131f") if full else Color("#ece3cf") if on else Color("#857e6e"))
+	$Gem/Rank.add_theme_color_override("font_color", Color("#11131f") if full else Color("#ece3cf") if on else Color("#a39a87"))
 	$Gem/Slot.visible = d.get("slot", "") != ""
 	$Gem/Slot.text = d.get("slot", "")
 	$Name.text = d.name
-	$Name.add_theme_color_override("font_color", Color("#ece3cf") if on or sel else Color("#ffd84a") if can else Color("#857e6e") if locked else Color("#b6ae9a"))
+	$Name.add_theme_color_override("font_color", Color("#ece3cf") if on or sel else Color("#ffd84a") if can else Color("#a39a87") if locked else Color("#cdc4af"))
 	$Gem.queue_redraw()
 
 

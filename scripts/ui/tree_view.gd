@@ -8,7 +8,7 @@ signal node_picked(item)
 
 const BRANCH := preload("res://scenes/ui/tree_branch.tscn")
 const NODE := preload("res://scenes/ui/tree_node.tscn")
-const GLYPHS := { "FANG": "▲", "SCALE": "⬢", "WING": "✦", "BODY": "▲", "BREATH": "⬢", "SOUL": "✦" }
+const GLYPHS := { "FANG": "▲", "SCALE": "◆", "WING": "◇", "BODY": "▲", "BREATH": "◆", "SOUL": "★" }
 const LINK_DIM := Color(216 / 255.0, 178 / 255.0, 90 / 255.0, 0.38)
 
 var _branches := []   # [{ color, rows: [[TreeNode, ...] 아래줄부터] }]

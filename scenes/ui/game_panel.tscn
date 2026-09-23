@@ -72,7 +72,7 @@ theme_override_constants/separation = 8
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 theme_override_styles/normal = SubResource("close")
 text = "닫기"
 

@@ -19,9 +19,9 @@ func _ready() -> void:
 	await get_tree().process_frame
 	print("[새 용] 만들기 판 보임=%s, 외형 칸 %d개" % [title.get_node("Center/Column/Create").visible, title._cells.size()])
 	title._select(title._cells[27])   # 와이번 (색을 바꿀 수 있다)
-	title.get_node("Center/Column/Create/Lines/Name").text = "시험용"
-	title.get_node("Center/Column/Create/Lines/Accessory/Pick").select(6)
-	title.get_node("Center/Column/Create/Lines/Start").pressed.emit()
+	title.get_node("Center/Column/Create/Lines/Body/Left/Name").text = "시험용"
+	title.get_node("Center/Column/Create/Lines/Body/Left/Accessory/Pick").select(6)
+	title.get_node("Center/Column/Create/Lines/Buttons/Start").pressed.emit()
 	await _wait(1.5)
 	var p = GameState.player
 	print("[게임] 이름=%s 종족=%s 장신구=%s 칸=%d 프롤로그=%s" % [p.config.name, p.species, p.config.get("accessory"), Save.slot, GameState.prologue != null])

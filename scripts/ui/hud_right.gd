@@ -35,4 +35,4 @@ func refresh() -> void:
 	_raid.text = Raid.status_text()
 	_raid.visible = _raid.text != ""
 	_raid.add_theme_stylebox_override("normal", raid_active_style if GameState.raid.active else raid_style)
-	_raid.add_theme_color_override("font_color", Color.WHITE if GameState.raid.active else Color("#b6ae9a"))
+	_raid.add_theme_color_override("font_color", Color.WHITE if GameState.raid.active else Color("#cdc4af"))

@@ -1,22 +1,47 @@
 class_name Minimap
 extends Control
 ## 2D판 HUD 의 미니맵. 지금 밟고 있는 지도 한 장만 보여 준다.
-## 구운 바닥 그림을 칸에 맞춰 줄이고, 포탈·석비·굴·보스·상자·마을 용을 점으로 찍는다.
+## 지도 전체를 칸에 욱여넣으면 점이 콩알만 해지고 위아래가 비어서, 내 둘레 VIEW 만큼을 칸에 꽉 채워 보여 준다
+## (지도가 그보다 작으면 통째로). 바닥은 한 톤 어둡게 깔아 포탈·석비·굴·보스·상자·마을 용 점이 도드라지게 하고,
+## 테두리는 판과 같은 금테(ui/kit/panel.png)를 두른다.
 
 const BG := Color("#0b0d16")
+const VIEW := 1900.0                     # 미니맵이 보여 주는 월드 폭 (px)
+const FLOOR_TINT := Color(0.78, 0.78, 0.8)
+const FRAME := preload("res://assets/ui/kit/panel.png")
+
+var _frame_box: StyleBoxTexture
 
 
 func _process(_dt: float) -> void:
 	if is_visible_in_tree(): queue_redraw()
 
 
-## 미니맵 안에서 월드 좌표가 놓일 자리 { k, ox, oy }
+func _ready() -> void:
+	clip_contents = true
+	_frame_box = StyleBoxTexture.new()
+	_frame_box.texture = FRAME
+	_frame_box.set_texture_margin_all(8)
+	_frame_box.draw_center = false
+
+
+## 미니맵 안에서 월드 좌표가 놓일 자리 { k, ox, oy }: 화면 = (ox, oy) + 월드 × k
+## 내 용을 가운데 두되, 지도 끝에 닿으면 멈춰서 칸 밖이 비지 않게 한다
 func _place(m: GameMap) -> Dictionary:
-	var s := size.x
+	var s := size
 	var tex := m.texture
-	if tex == null: return { k = s / m.w, ox = 0.0, oy = 0.0 }
-	var k := minf(s / tex.get_width(), s / tex.get_height()) / GameMap.TILE_SCALE
-	return { k = k, ox = (s - tex.get_width() * k * GameMap.TILE_SCALE) / 2, oy = (s - tex.get_height() * k * GameMap.TILE_SCALE) / 2 }
+	if tex == null: return { k = s.x / m.w, ox = 0.0, oy = 0.0 }
+	var mw := float(tex.get_width() * GameMap.TILE_SCALE)
+	var mh := float(tex.get_height() * GameMap.TILE_SCALE)
+	var k := maxf(minf(s.x / mw, s.y / mh), s.x / VIEW)
+	var p = GameState.player
+	return { k = k, ox = _axis(p.x, mw, k, s.x), oy = _axis(p.y, mh, k, s.y) }
+
+
+## 한 축의 어긋남: 지도가 칸보다 작으면 가운데, 크면 나를 가운데 두고 끝에서 멈춘다
+func _axis(me: float, world: float, k: float, box: float) -> float:
+	if world * k <= box: return (box - world * k) / 2
+	return clampf(box / 2 - me * k, box - world * k, 0.0)
 
 
 func _draw() -> void:
@@ -32,7 +57,7 @@ func _draw() -> void:
 	if m.texture:
 		var sc: float = k * GameMap.TILE_SCALE
 		texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		draw_texture_rect(m.texture, Rect2(ox, oy, m.texture.get_width() * sc, m.texture.get_height() * sc), false)
+		draw_texture_rect(m.texture, Rect2(ox, oy, m.texture.get_width() * sc, m.texture.get_height() * sc), false, FLOOR_TINT)
 	var at := func(x: float, y: float) -> Vector2: return Vector2(ox + x * k, oy + y * k)
 	var dot := func(x: float, y: float, r: float, c: Color) -> void: draw_circle(at.call(x, y), r, c)
 	# 점마다 검은 테를 둘러 바탕과 떨어져 보이게 한다 (초록 바탕 위의 초록 점은 안 보였다)
@@ -87,6 +112,6 @@ func _draw() -> void:
 	_frame()
 
 
-## 금테 (2D판 border: 2px solid gold)
+## 판과 같은 금테 (안쪽은 비워 둔다)
 func _frame() -> void:
-	draw_rect(Rect2(Vector2(1, 1), size - Vector2(2, 2)), Color("#d8b25a"), false, 2)
+	draw_style_box(_frame_box, Rect2(Vector2.ZERO, size))

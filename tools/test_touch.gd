@@ -32,13 +32,14 @@ func _ready() -> void:
 	# 2) [불]: 곁의 슬라임을 붙잡아 따라가는 숨결
 	var e := Enemy.make(p.x - 200, p.y + 150, "SLIME")
 	World.add_entity("enemies", e)
+	var hp0: float = e.hp
 	var fire: Panel = t.get_node("Buttons/attack")
 	var c := fire.position + fire.size / 2
 	_touch(1, c, true)
 	await _wait(0.4)
 	_touch(1, c, false)
 	var homing: Array = GameState.entities.bullets.filter(func(b): return b.faction == "ALLY" and b.homing > 0 and b.homing_target == e)
-	print("   마우스 조준=%s 붙잡은 적=%s" % [GameInput.mouse_inside, p.aim_lock])
+	print("   마우스 조준=%s 붙잡은 적=%s 슬라임 체력 %.0f → %.0f (숨결이 벌써 맞았으면 줄어 있다)" % [GameInput.mouse_inside, p.aim_lock == e, hp0, e.hp])
 	print("[불] 숨결 %d발, 그중 슬라임을 따라가는 것 %d발" % [GameState.entities.bullets.filter(func(b): return b.faction == "ALLY").size(), homing.size()])
 	e.remove = true
 	# 3) 용을 탭하면 말 걸기

@@ -11,7 +11,6 @@ class_name Guide
 ## 얼마나 알려 줄까: 'main' 본 이야기만 (기본) · 'all' 맡은 일 전부 · 'off' 끔
 
 const LEVELS := { "main": "본 이야기만", "all": "맡은 일 전부", "off": "끔" }
-const SETTINGS := "user://settings.cfg"
 const CELL := 32
 
 static var _level := ""
@@ -22,19 +21,14 @@ static var _cache_map := ""
 
 static func level() -> String:
 	if _level == "":
-		var cfg := ConfigFile.new()
-		cfg.load(SETTINGS)
-		var v: String = cfg.get_value("guide", "level", "main")
+		var v: String = Prefs.get_value("guide", "level", "main")
 		_level = v if LEVELS.has(v) else "main"
 	return _level
 
 
 static func set_level(v: String) -> void:
 	_level = v
-	var cfg := ConfigFile.new()
-	cfg.load(SETTINGS)
-	cfg.set_value("guide", "level", v)
-	cfg.save(SETTINGS)
+	Prefs.set_value("guide", "level", v)
 	_cache_at = -1.0
 
 

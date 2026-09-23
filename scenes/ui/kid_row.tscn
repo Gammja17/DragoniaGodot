@@ -29,7 +29,7 @@ theme_override_fonts/font = ExtResource("1")
 
 [node name="Stage" type="Label" parent="Row/Info"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.522, 0.494, 0.431, 1)
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 
 [node name="Hearts" type="Label" parent="Row"]
 layout_mode = 2
@@ -40,12 +40,12 @@ theme_override_colors/font_color = Color(1, 0.478, 0.659, 1)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 text = "이름"
 
 [node name="Mode" type="Button" parent="Row"]
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 text = "따라오는 중"

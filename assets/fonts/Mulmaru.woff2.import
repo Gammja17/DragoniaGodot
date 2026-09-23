@@ -2,7 +2,7 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://dbc6f8vcu3ecn"
+uid="uid://sxgd0sj6myop"
 path="res://.godot/imported/Mulmaru.woff2-4e56b87cb5513d4ddeca3acfa04c7723.fontdata"
 
 [deps]
@@ -13,7 +13,7 @@ dest_files=["res://.godot/imported/Mulmaru.woff2-4e56b87cb5513d4ddeca3acfa04c772
 [params]
 
 Rendering=null
-antialiasing=0
+antialiasing=1
 generate_mipmaps=false
 disable_embedded_bitmaps=true
 multichannel_signed_distance_field=false
@@ -22,12 +22,12 @@ msdf_size=48
 allow_system_fallback=true
 force_autohinter=false
 modulate_color_glyphs=false
-hinting=0
-subpixel_positioning=0
+hinting=3
+subpixel_positioning=4
 keep_rounding_remainders=true
 oversampling=0.0
 Fallbacks=null
-fallbacks=[]
+fallbacks=[Resource("uid://cpey1vyyokqxn", "res://assets/fonts/NotoEmoji-subset.ttf")]
 Compress=null
 compress=true
 preload=[]

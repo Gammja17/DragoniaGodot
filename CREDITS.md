@@ -101,6 +101,16 @@ CC BY-SA 에셋(`behemoth`, `bone`)을 수정한 결과물은 같은 CC BY-SA 3.
 변경 사항: 원본 ttf/otf 를 게임에 쓰는 글자(라틴, 한글 11,172자, 문장부호·괘선)만 남겨
 서브셋한 뒤 woff2 로 압축했다. 글꼴 파일 자체를 따로 배포하거나 팔지 않는다.
 
+| `NotoEmoji-subset.ttf` | "Noto Emoji" (흑백) by Google | SIL OFL 1.1 (`NotoEmoji-OFL.txt`) | https://github.com/google/fonts/tree/main/ofl/notoemoji |
+
+물마루에 없는 이모지·기호를 뒤잇는 글꼴(fallback)로 쓴다 (웹판에는 시스템 글꼴이 없어 이모지가 네모로 깨졌다).
+변경 사항: 굵기 600 한 벌로 고정하고, 게임이 쓰는 101자만 잘라 냈다 (`tools/make_emoji_font.py`).
+
+## UI 조각 (`assets/ui/kit/`)
+
+판 금테·단추·탭 그림은 `tools/make_ui_kit.py` 가 픽셀 단위로 찍어 만든다 (외부 에셋 아님).
+모양은 2D판이 쓰던 Kenney "Fantasy UI Borders" 금테(`frame.png`)의 두 줄 금선 · 모서리 네모를 1배 크기에 맞춰 다시 그린 것.
+
 ## 라이선스 전문
 - CC BY 3.0: https://creativecommons.org/licenses/by/3.0/
 - CC BY-SA 3.0: https://creativecommons.org/licenses/by-sa/3.0/

@@ -103,7 +103,7 @@ shadow_offset = Vector2(0, 2)
 [sub_resource type="LabelSettings" id="qb_goal"]
 font = ExtResource("2")
 font_size = 12
-font_color = Color(0.714, 0.682, 0.604, 1)
+font_color = Color(0.804, 0.769, 0.686, 1)
 shadow_size = 3
 shadow_color = Color(0, 0, 0, 1)
 shadow_offset = Vector2(0, 1)
@@ -222,7 +222,7 @@ offset_right = 110.0
 offset_bottom = -18.0
 grow_vertical = 0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.714, 0.682, 0.604, 1)
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 theme_override_styles/normal = SubResource("help_chip")
 text = "H 도움말"
 

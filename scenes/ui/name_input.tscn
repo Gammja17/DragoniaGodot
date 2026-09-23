@@ -1,16 +1,16 @@
 [gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/name_input.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/ui/frame_panel.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/kit/panel.png" id="2"]
 [ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="3"]
 [ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="4"]
 
 [sub_resource type="StyleBoxTexture" id="frame"]
 texture = ExtResource("2")
-texture_margin_left = 18.0
-texture_margin_top = 18.0
-texture_margin_right = 18.0
-texture_margin_bottom = 18.0
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
 content_margin_left = 24.0
 content_margin_top = 22.0
 content_margin_right = 24.0

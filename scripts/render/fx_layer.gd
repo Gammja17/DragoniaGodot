@@ -29,6 +29,7 @@ func _draw() -> void:
 			for h in E.hazards: h.draw(self)   # 바닥 장판은 개체들 밑에
 			for e in E.enemies: EnemyAI.draw_tell(self, e)
 		Mode.BULLETS, Mode.BULLETS_ADD:
+			if Cutscene.on: return   # 허공에 멈춘 화살은 장면을 깬다
 			var add := mode == Mode.BULLETS_ADD
 			for b in E.bullets:
 				if b.additive() == add: b.draw(self)
@@ -36,6 +37,7 @@ func _draw() -> void:
 			var add := mode == Mode.EFFECTS_ADD
 			for fx in E.effects:
 				if fx.additive == add: fx.draw(self)
+			if add: NightEvents.draw(self)   # 떨어지는 별의 꼬리
 		Mode.PARTICLES:
 			for p in E.particles: p.draw(self)
 		Mode.CROSSHAIR:

@@ -2,9 +2,8 @@ class_name Dragon
 extends Node2D
 ## 2D판 entities/Dragon.js. 플레이어와 NPC 공용.
 ##
-## 지금까지 옮긴 것: 걷기·달리기·대시(간발·물어뜯기), 숨결 쏘기와 조준, 스킬, 필살기, 맞기·쓰러지기, 경험치·레벨,
-## 마을 용의 어슬렁거림·혼잣말·전투·따라다니기, 그리기(이름표·말풍선·장신구·머리 위 체력바).
-## 비행·상호작용(말 걸기·줍기·낚시)·승급은 그 시스템을 옮기는 단계에서 같은 자리에 붙인다.
+## 걷기·달리기·대시, 비행, 숨결과 조준, 스킬, 필살기, 맞기·쓰러지기, 경험치·레벨·승급,
+## 말 걸기·줍기·낚시·먹기, 마을 용의 어슬렁거림·혼잣말·전투·따라다니기·놀이, 그리기(이름표·말풍선·장신구·체력바).
 ##
 ## 좌표는 2D판처럼 x, y(발 위치)로 다룬다. 노드 위치가 곧 발 위치라 부모의 y 정렬이 앞뒤를 가른다.
 
@@ -23,6 +22,8 @@ const MOUTH_OFFSET := 40     # 화염구가 생성되는 위치(발 기준점에
 # 지금 보고 있는 축(가로/세로)을 조금 우대한다. 정확히 대각선으로 움직일 때
 # |dx| 와 |dy| 가 엎치락뒤치락하면서 매 프레임 방향이 갈리던 것을 막는다
 const FACE_BIAS := 1.2
+const INTERACT_RANGE := 120   # 이만큼 가까운 용에게 [Space] 로 말을 건다
+const TALK_RANGE := 260       # 마우스로 가리킨 용은 이만큼 떨어져 있어도 된다
 
 var x: float:
 	get: return position.x
@@ -102,6 +103,24 @@ var walk_to = null        # 일과대로 걸어가는 중이면 { x, y }
 var home_map = null
 var atk_timer := 0.0      # NPC 전투: 다음 사격까지
 var passive := false      # 오늘은 구경만 하기로 한 스승 (수련)
+# 사이 (NpcActions · Romance). 세이브가 이름으로 되살린다
+var dates := 0
+var last_gift_day = null
+var last_talk_day = null
+var last_present_day = null
+var last_play_day = null
+var last_date_day = null
+var last_egg_day = null
+var last_ride_day = null
+var last_meditate_day = null
+# 플레이어
+var carrying = null          # 'EGG'
+var fishing = null           # { x, y, wait, bite } 낚시 중일 때
+# 컷씬 무대로 걸어 들어오는 중이면 흐릿하다 (Cutscene)
+var stage_alpha := 1.0:
+	set(v):
+		stage_alpha = v
+		modulate.a = v
 var remove := false
 var is_hidden := false
 
@@ -158,6 +177,7 @@ func update(dt: float) -> void:
 	animator.update(dt)
 	# 줄여 그리는 시트는 보간을 켜 둬야 획이 듬성듬성 빠지지 않고, 키워 그리는 픽셀아트는 꺼야 뭉개지지 않는다
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR if sheet.scale * _draw_scale() < 1 else CanvasItem.TEXTURE_FILTER_NEAREST
+	self_modulate.a = 0.55 if down_timer > 0 else 1.0   # 쓰러져 누운 몸은 흐릿하다
 	queue_redraw()
 
 
@@ -196,6 +216,10 @@ func _update_player(dt: float) -> void:
 		moving = false   # 떨어지던 밤엔 아직 내 몸이 아니다
 		return
 	var ax := GameInput.axis()
+	# 추적창을 눌러 알아서 걸어가는 중이면 방향키 대신 길잡이가 방향을 준다. 방향키를 건드리면 멈춘다
+	if ax != Vector2.ZERO: Guide.cancel_nav()
+	elif GameState.nav: ax = Guide.nav_axis(self, dt)
+	if fishing: _update_fishing(dt, ax != Vector2.ZERO)
 	feast -= dt
 	dash_cd -= dt; invuln -= dt; fury -= dt; guard -= dt; slow_timer -= dt; gale -= dt
 	var hunger_slow: float = [1.0, 0.86, 0.7][hunger_level]
@@ -227,11 +251,16 @@ func _update_player(dt: float) -> void:
 	elif ax != Vector2.ZERO:
 		move_by(ax.x, ax.y, base_speed * (SPRINT_MULT if GameInput.down("sprint") else 1.0) * (1.45 if flying else 1.0), dt)
 		hunger -= 0.35 * dt * hunger_mult * (3 if flying else 1)   # 나는 건 배가 빨리 꺼진다
+		Tutorial.mark("moved")
 	else:
 		hunger -= 0.08 * dt * hunger_mult * (3 if flying else 1)
+	if GameInput.pressed("fly"): toggle_flight()
+	if flying and hunger <= 0 and can_land(): land("배가 꺼져서 내려앉았다.")
 	if Relics.has("LIFE_STONE"): hp = minf(max_hp, hp + 1.5 * dt)
 	if Relics.has("VOW_RING") and GameState.partner and GameState.partner.state != "WANDER" and Util.dist(self, GameState.partner) < 420: hp = minf(max_hp, hp + 2 * dt)
 	hunger = maxf(0, hunger)
+
+	if _update_talk(): return   # 대화를 열었으면 이번 프레임은 여기까지
 
 	for k in cooldowns: cooldowns[k] = maxf(0, cooldowns[k] - dt * Flow.cooldown_rate())   # 기세가 절정이면 기술이 빨리 돌아온다
 	Skills.update_channels(self, dt)
@@ -248,6 +277,8 @@ func _update_player(dt: float) -> void:
 	if GameInput.pressed("ultimate"): use_ultimate()
 	if GameInput.pressed("nextElement"): cycle_element()   # 터치의 [속성] 버튼
 	if beam: _update_beam(dt)
+	if GameInput.pressed("interact"): interact()
+	if GameInput.pressed("eat"): eat()
 
 	# 보는 방향은 프레임 끝에 딱 한 번, 아래 순서대로 정한다.
 	#   1) 쏘는 중이면 겨눈 쪽   — 숨결이 엉뚱한 쪽에서 나가지 않게
@@ -265,6 +296,38 @@ func _update_player(dt: float) -> void:
 	if unlock_timer <= 0:
 		unlock_timer = 1.0
 		Skills.check_unlocks()
+
+
+# ---------- 비행 ----------
+## 성체부터 난다. 하늘에서는 벽도 물도 없고 땅의 적이 못 치지만, 배가 세 배로 꺼진다
+func toggle_flight() -> void:
+	if flying:
+		if can_land(): land()
+		else: Hud.pop("여기엔 내려앉을 수 없다.", "☁️")
+		return
+	if stage_index < 2:
+		Hud.pop("아직 날개가 몸을 못 든다. 성체가 되면 난다.", "🪽")
+		return
+	if GameState.dungeon or GameState.indoors or World.dens().has(GameState.map_id):
+		Hud.pop("천장이 있다. 밖에서 날자.", "🪽")
+		return
+	if fishing or GameState.activity: return
+	flying = true
+	invuln = maxf(invuln, 0.3)
+	Vfx.spawn_effect("PUFF", x, y - 6, { size = 1.4 })
+	Sfx.play("dash")
+	Hud.pop("날아오른다. 같은 키로 내려앉는다.", "🪽")
+
+
+## 발밑이 땅이고 비어 있어야 내려앉는다
+func can_land() -> bool: return not Collision.solid_at(x, y, 20)
+
+
+func land(msg := "") -> void:
+	flying = false
+	Vfx.spawn_effect("PUFF", x, y - 6, { size = 1.2 })
+	Sfx.play("dash")
+	if msg != "": Hud.pop(msg, "🪽")
 
 
 ## 땅을 겨누는 스킬(운석·급강하)이 떨어질 자리. 커서가 적 위면 그 적, 아니면 커서 자리(최대 사거리까지)
@@ -376,11 +439,38 @@ func gain_xp(amount: float) -> void:
 	Sfx.play("level")
 	Particles.burst(x, y, "#f1c40f", 1.2, 25)
 	Vfx.spawn_effect("STAR", x, y - 50, { size = 1.6 })
-	# 승급 시험 안내(스승 카이론)는 이야기를 옮길 때
+	check_evolution()
+
+
+## 레벨이 다음 단계에 닿으면 스승의 승급 시험을 받을 수 있다 (Story). 자동으로 자라지는 않는다
+func check_evolution() -> void:
+	if Story.pending_trial(): Hud.pop("몸이 근질거린다… 스승 카이론에게 [승급 시험]을 청할 수 있습니다!", "🐲")
+
+
+## 승급 시험을 통과했을 때
+func evolve(idx: int) -> void:
+	stage_index = idx
+	max_hp += 30
+	hp = max_hp
+	_outline = null
+	Growth.grant_points(Growth.POINTS_PER_STAGE, "%s(으)로 진화" % stage.name)
+	Hud.pop("진화! [%s](이)가 되었습니다" % stage.name + (". %s" % stage.unlock if stage.get("unlock") else ""), "🐲")
+	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 3, color = "#ffe9a0" })
+	Vfx.spawn_effect("RING", x, y - 40, { size = 2.6 })
+	Particles.burst(x, y - 30, func():
+		var rgb := Util.hsl_to_rgb(40 + floori(randf() * 3) * 10, 1.0, 0.65)
+		return Color8(roundi(rgb[0]), roundi(rgb[1]), roundi(rgb[2])), 1.4, 40)
+	GameCamera.current.shake(10)
+	Sfx.play("evolve")
+	Quests.notify("stage", idx)
 
 
 func take_damage(dmg: float, _silent := false, _from = null) -> void:
-	# 대련 중 기력 깎기는 대련을 옮길 때
+	var act = GameState.activity
+	if act and (act.type == "SPAR" or act.type == "DUEL") and act.npc == self:   # 대련: 실제 체력 대신 기력이 깎인다
+		act.hp -= dmg
+		animator.play("hit")
+		return
 	if not is_player and down_timer > 0: return
 	if is_player and invuln > 0: return
 	if is_player:
@@ -474,6 +564,275 @@ func aim_angle() -> Dictionary:
 	return { angle = angle, target = null }
 
 
+# ---------- 말 걸기 · 줍기 · 낚시 ----------
+
+## 말 걸 상대와 눈앞의 것을 고르고, [Space]·[T] 를 처리한다. 대화를 열었으면 true
+func _update_talk() -> bool:
+	var E0: Dictionary = GameState.entities
+	var near := func(list: Array, rng: float):
+		var best = null
+		var bd := rng
+		for e in list:
+			var d := Util.dist(self, e)
+			if d < bd:
+				bd = d
+				best = e
+		return best
+	# 말 걸 상대: 마우스로 가리킨 용이 우선, 없으면 가장 가까운 용. 둥지는 그 다음
+	var pointed = null
+	if GameInput.mouse_inside or GameInput.mouse_clicked:
+		var c: Vector2 = GameCamera.current.screen_to_world(GameInput.mouse_pos)
+		var pd := 90.0
+		for e in E0.npcs + E0.babies:
+			var d := Vector2(e.x - c.x, e.y - 50 - c.y).length()
+			if d < pd:
+				pd = d
+				pointed = e
+	var target = pointed if pointed and Util.dist(self, pointed) < TALK_RANGE else null
+	if not target: target = near.call(E0.npcs, INTERACT_RANGE)
+	if not target: target = near.call(E0.babies, 130)
+	# 대련·술래잡기·수련 중에는 누구에게도 말을 걸 수 없다 (한창 싸우다 대화창이 열리던 것)
+	if GameState.activity: target = null
+	# 눈앞의 것이 먼저다. 따라오는 용은 물건보다 뒤로 밀리고, 물건이 용보다 가까워도 물건이 먼저다. 마우스로 콕 집은 용만 예외
+	var thing = null if GameState.activity else nearby_thing()
+	var follower: bool = target != null and not E0.babies.has(target) and target.state != "WANDER"
+	if thing and target and target != pointed and (follower or thing.d < Util.dist(self, target)): target = null
+	var is_kid: bool = target != null and E0.babies.has(target)
+	var nests: Array = E0.nests
+	var nest_near = nests[0] if not target and not nests.is_empty() and Util.dist(self, nests[0]) < 110 else null
+	GameState.talkTarget = target   # 그릴 때 발밑에 표시한다
+	# 굴 입구·굴 안은 [E] 로
+	var mouth = null
+	if not target and not nest_near:
+		for pr in E0.props:
+			if pr.type == "DEN_MOUTH" and Util.dist(self, pr) < 120:
+				mouth = pr
+				break
+	# 이동 석비. 광장처럼 용이 북적이는 곳에서도 쓸 수 있게, 상대보다 가까이 서 있으면 석비가 먼저다
+	var stone = Travel.nearby_waystone() if not flying and not fishing and not carrying else null
+	var stone_first: bool = stone != null and not nest_near and (not target or Util.dist(self, stone) < 95 or Util.dist(self, stone) < Util.dist(self, target))
+	var tip := ""
+	var tip_at = null
+	if nest_near:
+		tip_at = nest_near
+		tip = "Space · E 둥지에서 잔다" if Den.in_my_den() else "Space 둥지에서 쉬기"
+	elif stone_first:
+		tip_at = stone
+		tip = "Space 석비로 건너뛴다"
+	elif target:
+		tip_at = target
+		tip = "Space 아이와 대화" if is_kid else "Space 대화"
+	elif mouth:
+		tip_at = mouth
+		tip = "E 내 굴에 들어간다 (둥지)" if mouth.den_id == "DEN_MINE" else "E 굴에 들어간다"
+	elif thing:
+		tip_at = thing.at
+		tip = "E · Space %s" % thing.label
+	elif Den.in_my_den():
+		tip_at = self
+		tip = "E 굴 꾸미기"
+	Hud.current.set_interact(tip_at, tip)
+
+	# 말 걸기는 [Space]. T 도 그대로 쓸 수 있다. (탭으로 말 걸기는 터치 조작을 옮길 때)
+	var want_talk: bool = not flying and (GameInput.pressed("confirm") or GameInput.pressed("talk"))
+	# [T] 는 물건이 앞에 있어도 곁의 용에게 말을 건다 (따라오는 짝에게 말을 걸 길)
+	if GameInput.pressed("talk") and not target and not GameState.activity and not flying:
+		var n = near.call(E0.npcs, INTERACT_RANGE)
+		if n:
+			Dialogue.start(n, "TALK")
+			return true
+	if want_talk and stone_first:
+		Travel.open_menu(stone)
+		return true
+	if want_talk and target:
+		if is_kid: KidActions.open_hub(target)
+		else: Dialogue.start(target, "TALK")
+		return true
+	if want_talk and nest_near:
+		Story.open_nest_menu()
+		return true
+	if GameInput.pressed("confirm") and not flying: interact()   # 말 걸 상대가 없으면 눈앞의 것을 집는다
+	return false
+
+
+func _near_water():
+	for i in 12:
+		var a := angle + (i / 12.0) * TAU
+		var wx := x + cos(a) * 110
+		var wy := y + sin(a) * 110
+		if Terrain.ground_at(wx, wy) == "WATER" and Terrain.active_biome() != "VOLCANO": return Vector2(wx, wy)   # 용암에선 낚시 불가
+	return null
+
+
+func _update_fishing(dt: float, moved: bool) -> void:
+	var f: Dictionary = fishing
+	if moved:   # 움직이면 낚시를 접는다
+		fishing = null
+		return
+	if f.bite > 0:
+		f.bite -= dt
+		if f.bite <= 0:
+			fishing = null
+			Hud.pop("물고기가 달아났습니다…", "💨")
+	else:
+		f.wait -= dt
+		if f.wait <= 0:
+			f.bite = 1.0
+			Particles.burst(f.x, f.y, "#bfe9ff", 0.5, 6)
+			Sfx.play("splash")
+
+
+## 들고 있는 알을 곁의 둥지에 놓는다. 놓았거나 못 놓는 까닭을 알렸으면 true.
+## 둥지가 곁에 없으면 false 를 돌려 [E] 가 원래 하던 일(굴 꾸미기 · 줍기 · 낚시)로 넘어가게 한다
+func _put_egg_in_nest() -> bool:
+	var nest = null
+	for n in GameState.entities.nests:
+		if Util.dist(self, n) < 110: nest = n
+	if not nest: return false
+	if not GameState.den.get("built"):
+		Hud.pop("아직 둥지가 없습니다. 둥지 앞에서 [E]로 먼저 지으세요. (나뭇가지 8, 30G)", "🪹")
+		return true
+	if nest.has_egg:
+		Hud.pop("둥지에 이미 알이 있습니다.", "🥚")
+		return true
+	if GameState.kids.size() >= Data.get_module("core_config").MAX_KIDS:
+		Hud.pop("둥지가 꽉 찼습니다! 더 이상 알을 둘 수 없어요.", "😅")
+		return true
+	# 제 알을 품으려면 다 자라야 한다. 아직 어리면 엘더에게 맡기는 길이 있다
+	var adult := 0
+	var stages: Array = Data.get_module("elements").STAGES
+	for i in stages.size():
+		if stages[i].id == "ADULT": adult = i
+	if stage_index < adult:
+		Hud.pop("아직 알을 품을 몸이 아닙니다. 엘더에게 맡겨 보세요.", "🥚")
+		return true
+	carrying = null
+	nest.lay_egg(self, GameState.partner)
+	Hud.pop("알을 둥지에 안착시켰습니다. 곁에 있어 주면 빨리 자랍니다.", "🏠")
+	return true
+
+
+## 눈앞에 있는 물건 (말 걸 상대 말고). interact() 와 같은 순서로 본다. { label, d, at } 없으면 null
+func nearby_thing():
+	var E: Dictionary = GameState.entities
+	var hit := func(list: Array, rng: float, label: String):
+		var best = null
+		var bd := rng
+		for it in list:
+			var d := Util.dist(self, it)
+			if d < bd:
+				bd = d
+				best = it
+		return { label = label, d = bd, at = best } if best else null
+	if fishing: return null
+	var props: Array = E.props
+	var r = null
+	if carrying == "EGG" and not E.nests.is_empty(): r = hit.call(E.nests, 110, "알을 둥지에 놓는다")
+	if not r: r = hit.call(props.filter(func(p): return p.type == "CAVE"), 120, "굴에 들어간다")
+	if not r: r = hit.call(props.filter(func(p): return p.type == "STAIRS_DOWN" or p.type == "STAIRS_UP"), 100, "오르내린다")
+	if not r and not carrying: r = hit.call(props.filter(func(p): return p.type == "BOARD"), 90, "게시판을 본다")
+	if not r: r = hit.call(E.items.filter(func(it): return not it.remove and (it.type == "MEAT" or (it.type == "EGG" and not carrying))), 60, "줍는다")
+	if not r and not GameState.den.get("built"): r = hit.call(props.filter(func(p): return p.type == "STUMP" and p.ripe), 80, "나뭇가지를 줍는다")
+	if not r and hunger < 95: r = hit.call(props.filter(func(p): return p.type == "BERRY" and p.ripe), 80, "열매를 딴다")
+	if not r: r = hit.call(props.filter(func(p): return p.type == "CHEST" and not p.opened), 80, "상자를 연다")
+	return r
+
+
+## [E] 눈앞의 것
+func interact() -> void:
+	var E: Dictionary = GameState.entities
+	if GameState.activity: return   # 대련·술래잡기 중에는 상자도 석비도 나중이다
+	# 알을 들고 둥지 앞에 섰으면 놓는 것이 먼저다 (굴 안에서는 아래 Den 이 [E] 를 늘 채 가기 때문에)
+	if not fishing and carrying == "EGG" and _put_egg_in_nest(): return
+	if not fishing and Arena.nearby():          # 수련장 시험 표지
+		Arena.open()
+		return
+	if not fishing and Story.try_awaken(): return          # 구름 위 빈 둥지 — 고룡의 깨어남
+	if not fishing and Den.try_interact(): return          # 보금자리 굴 — 들어가기 / 안에서는 꾸미기
+	if not fishing and Delve.try_interact(): return        # 굴 입구·오르내리는 구멍
+	if not fishing and not carrying:                       # 이동 석비
+		var stone = Travel.nearby_waystone()
+		if stone:
+			Travel.open_menu(stone)
+			return
+	if not fishing and not carrying:                       # 마을 게시판 — 숫자를 채우는 일거리는 여기에만 붙는다
+		for b in E.props:
+			if b.type == "BOARD" and Util.dist(self, b) < 90:
+				Chores.open_board()
+				return
+	# 낚시 중: 입질이 왔을 때 누르면 낚는다
+	if fishing:
+		if fishing.bite > 0:
+			var n := 2 if randf() < 0.25 else 1
+			inventory.meat += n
+			Vfx.spawn_text(x, y - 100 * stage.scale, "물고기 +%d" % n, "#9fe3ff", 16)
+			Particles.burst(fishing.x, fishing.y, "#bfe9ff", 0.7, 10)
+			gain_xp(6)
+		else:
+			Hud.pop("너무 일찍 당겼습니다.", "🎣")
+		fishing = null
+		return
+	# 1) 줍기
+	var picked := false
+	for item in E.items:
+		if item.remove or Util.dist(self, item) >= 60: continue
+		if item.type == "MEAT":
+			inventory.meat += 1
+			item.remove = true
+			picked = true
+			Sfx.play("pickup")
+			Hud.pop("고기 획득!", "🍖")
+		elif item.type == "EGG" and not carrying:
+			carrying = "EGG"
+			item.remove = true
+			picked = true
+			Hud.pop("알을 들었습니다.", "🥚")
+	if picked: return
+	# 2) 그루터기에서 나뭇가지 줍기 (둥지 재료)
+	for s in E.props:
+		if s.type == "STUMP" and s.ripe and Util.dist(self, s) < 80 and not GameState.den.get("built"):
+			s.gather()
+			return
+	# 3) 열매 따기
+	for b in E.props:
+		if b.type == "BERRY" and b.ripe and Util.dist(self, b) < 80 and hunger < 95:
+			b.harvest()
+			return
+	# 3-0) 보물상자 열기
+	for c in E.props:
+		if c.type == "CHEST" and not c.opened and Util.dist(self, c) < 80:
+			c.open()
+			return
+	# 3-1) 아기 쓰다듬기 (고기를 먹이는 건 아이 대화창에서)
+	for k in E.babies:
+		if Util.dist(self, k) < 80 and not carrying and k.pet(): return
+	# 5) 물가라면 낚시
+	var water = _near_water() if not carrying else null
+	if water:
+		fishing = { x = water.x, y = water.y, wait = Util.rand_range(1.5, 4.5), bite = 0.0 }
+		Hud.pop("낚싯줄을 드리웠습니다. 찌가 흔들릴 때 [Space]!", "🎣")
+
+
+## [C] 고기를 먹는다. 상호작용과 섞어 두면 상자를 열려다 고기가 먹힌다
+func eat() -> void:
+	if inventory.meat <= 0:
+		Hud.pop("가진 고기가 없습니다.", "🍖")
+		return
+	if hunger >= 95:
+		Hud.pop("배가 너무 불러요!", "✋")
+		return
+	inventory.meat -= 1
+	hunger = minf(100, hunger + 40)
+	hp = minf(max_hp, hp + 30)
+	Tutorial.mark("ate")
+	Vfx.spawn_text(x, y - 90 * stage.scale, "+40", "#9fe08a", 15)
+	if Relics.has("GREEDY_MAW"):
+		feast = 12.0
+		Vfx.spawn_text(x, y - 112 * stage.scale, "포식!", "#ffb347", 15)
+	Hud.pop("고기를 먹었습니다.", "😋")
+	Sfx.play("eat")
+
+
 func attack() -> void:
 	var el: Dictionary = Data.get_module("elements").ELEMENTS[element]
 	var st := stage_index
@@ -496,8 +855,7 @@ func breathe(a: float, mult := 1.0) -> void:
 	var my := y - 40 * sc + sin(a) * MOUTH_OFFSET * sc
 	var breath_bonus := 1 + Growth.stat("breath") if is_player else 1.0   # 성장 트리 '타오르는 목'
 	var el: Dictionary = Data.get_module("elements").ELEMENTS[element]
-	# 날씨가 숨결을 거드는 배율은 날씨를 옮길 때 곱한다
-	var damage: float = el.damage * damage_mult * breath_bonus * mult
+	var damage: float = el.damage * damage_mult * breath_bonus * Weather.damage_mult(element) * mult
 	Projectile.add(Projectile.new(mx, my, a, { faction = "ALLY", element = element, damage = damage, scale = 0.7 + sc * 0.3,
 		pierce = el.get("pierce", false) and stage_index >= el.get("pierceFromStage", 0), fromPlayer = true }))
 
@@ -513,6 +871,12 @@ func _update_npc(dt: float) -> void:
 		if Util.dist(self, GameState.player) < 640 and talking < 2 and not GameState.isDialogueOpen: say(idle_line())
 		chat_timer = Util.rand_range(45, 100)
 
+	var act = GameState.activity
+	if act and act.get("npc") == self:
+		NpcActions.update_activity_npc(self, dt)
+		return
+	if act and act.get("rival") == self: return   # 허수아비 내기 중인 맞수 (Story 가 움직인다)
+
 	if down_timer > 0:               # 쓰러져 쉬는 중
 		down_timer -= dt
 		if down_timer <= 0:
@@ -523,7 +887,6 @@ func _update_npc(dt: float) -> void:
 	if walk_to:   # 일과대로 걸어가는 중 (systems/routine 이 옮긴다)
 		facing = facing_from_vector(walk_to.x - x, walk_to.y - y, facing)
 		return
-	# 대련·술래잡기 중의 움직임은 마을 용과의 놀이를 옮길 때
 	var following := state != "WANDER"
 	var busy: bool = (config.get("fixed") or following) and _fight(dt, following)
 	if following: _update_partner(dt, busy)
@@ -661,8 +1024,39 @@ func _draw() -> void:
 	}
 	SpriteSheet.draw_frame(self, sheet, f, 0, body_y - dive_height, sc, motion, _outline)
 	_draw_accessory(sc, hover_y - dive_height)
+	# 정체의 무늬. 어린 용이 된 뒤 목 아래에서 희미하게 빛나고, 자랄수록 또렷해진다
+	if is_player and not GameState.story.get("rites", []).is_empty():
+		var n: int = GameState.story.rites.size()
+		var pulse := 0.22 + n * 0.08 + sin(GameState.game_time * 2.2) * 0.08
+		var fx := (-6.0 if facing == "left" else 6.0 if facing == "right" else 0.0) * sc
+		Pixel.draw_glow(self, fx, hover_y - dive_height - 30 * sc, (7 + n * 2) * sc, Color("#c58aff"), pulse)
+	if fishing: _draw_fishing(sc)
+	if carrying == "EGG": Pixel.draw_icon(self, "EGG", 0, -100 * sc + hover_y, 2.5)
 	if not is_player: _draw_hp_bar(hp / max_hp, -12, 60)
 	else: _draw_player_bar()
+
+
+## 낚싯줄과 찌. 입질이 오면 찌가 떨고 느낌표가 뜬다
+func _draw_fishing(sc: float) -> void:
+	var f: Dictionary = fishing
+	var bob := sin(GameState.game_time * 40) * 5 if f.bite > 0 else sin(GameState.game_time * 3) * 2
+	var fx: float = f.x - x
+	var fy: float = f.y - y
+	var p0 := Vector2(0, -50 * sc)
+	var c := Vector2(fx / 2, minf(0, fy) - 70)
+	var p1 := Vector2(fx, fy + bob)
+	var pts := PackedVector2Array()
+	for i in 17:
+		var t := i / 16.0
+		pts.append(p0.lerp(c, t).lerp(c.lerp(p1, t), t))
+	draw_polyline(pts, Color(1, 1, 1, 0.7), 1.5, true)
+	draw_rect(Rect2(fx - 4, fy - 5 + bob, 8, 5), Color("#ff4d4d"))
+	draw_rect(Rect2(fx - 4, fy + bob, 8, 5), Color.WHITE)
+	if f.bite > 0:
+		var font := Fonts.bold()
+		var w := Fonts.text_width(font, "!", 36)
+		draw_string_outline(font, Vector2(fx - w / 2, fy - 22), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 36, 5, Color(0, 0, 0, 0.75))
+		draw_string(font, Vector2(fx - w / 2, fy - 22), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 36, Color("#ffd84a"))
 
 
 ## 내 용 머리 위의 체력바. 구석의 막대만으로는 싸우는 중에 눈이 가지 않아 언제 맞았는지도 모른 채 쓰러진다.
@@ -753,15 +1147,20 @@ func crisp_anchor() -> Vector2:
 
 ## 월드 좌표계가 아니라 화면 픽셀 단위로 그린다. 그래야 멀리 당겨 봐도 글씨가 같은 크기로 또렷하게 남는다
 func draw_crisp(ci: CanvasItem, _zoom: float) -> void:
-	if is_player or is_hidden: return
+	if is_player or is_hidden or Cutscene.on: return   # 컷씬에서는 대화창이 말하는 이를 알려 준다
 	var nm := Names.npc(config.get("name", ""))
 	var bold := Fonts.bold()
 	var nw := ceilf(Fonts.text_width(bold, nm, 12)) + 16
 	ci.draw_rect(Rect2(-nw / 2, -16, nw, 21), Color(10 / 255.0, 9 / 255.0, 16 / 255.0, 0.78))
 	ci.draw_rect(Rect2(-nw / 2, 4, nw, 1), Color(216 / 255.0, 178 / 255.0, 90 / 255.0, 0.55))
 	Fonts.draw_centered(ci, bold, nm, 0, 0, 12, Color("#ece3cf"))
-	# 퀘스트 표시(! ?)는 퀘스트를 옮길 때 붙인다. 그때 말풍선이 그만큼 위로 올라간다
-	var mark := ""
+	# 퀘스트 표시 (! 새 부탁 / ? 보고할 것)
+	var mark: String = Quests.marker(self) if config.get("fixed") else ""
+	if mark != "":
+		var my := -26 + sin(GameState.game_time * 4) * 3
+		var mw := Fonts.text_width(bold, mark, 36)
+		ci.draw_string_outline(bold, Vector2(-mw / 2, my), mark, HORIZONTAL_ALIGNMENT_LEFT, -1, 36, 5, Color(0, 0, 0, 0.8))
+		ci.draw_string(bold, Vector2(-mw / 2, my), mark, HORIZONTAL_ALIGNMENT_LEFT, -1, 36, Color("#7dd36a") if mark == "?" else Color("#ffd84a"))
 	# 말풍선. 길면 줄을 나눈다
 	if chat_fade > 0 and current_chat:
 		var alpha := minf(1, chat_fade)

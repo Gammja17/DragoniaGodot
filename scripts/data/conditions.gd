@@ -65,3 +65,156 @@ static func _build() -> void:
 	for i in order.size():
 		_table["growth:GROWTH_NODES.%d.desc" % i] = descs[order[i]]
 		_table["growth:NODES_BY_ID.%s.desc" % order[i]] = descs[order[i]]
+	_build_story()
+	_build_talk()
+	_build_chronicle()
+
+
+# ---- 자주 쓰는 것들 ----
+static func _lessons(s) -> int: return s.story.get("lessons", []).size()
+static func _scene_seen(s, id: String) -> bool: return s.story.get("scenes", []).has(id)
+static func _event_seen(s, id: String) -> bool: return s.story.get("events", []).has(id)
+static func _dead(s, nm: String) -> bool: return s.story.get("dead", []).has(nm)
+static func _boss(s, id: String) -> bool: return bool(s.bossesDefeated.get(id, false))
+static func _lessons_at(n: int) -> Callable: return func(s): return _lessons(s) >= n
+
+
+static func _build_story() -> void:
+	var t := {
+		# ---- quests.js: 부탁이 나오는 조건 ----
+		"quests:QUESTS.2.needs": func(s): return _scene_seen(s, "ch1"),
+		"quests:QUESTS.6.needs": func(s): return not s.quests.done.has("m5a") and not s.quests.active.has("m5a"),
+		"quests:QUESTS.10.needs": func(s): return not _boss(s, "IGNAR"),
+		"quests:QUESTS.17.needs": func(s): return s.quests.done.has("m3") and not _dead(s, "Gron"),
+		"quests:QUESTS.18.needs": _lessons_at(2),
+		"quests:QUESTS.23.needs": _done("m5c"),
+		"quests:QUESTS.24.needs": _lessons_at(2),
+		"quests:QUESTS.25.needs": func(s): return _lessons(s) >= 4 and Chapters.map_open(s, "VOLCANO"),
+
+		# ---- story.js: 아침 장면 · 승급 시험 ----
+		"story:SCENES.0.when": func(s): return s.day >= 2,
+		"story:SCENES.1.when": _lessons_at(1),
+		"story:SCENES.2.when": func(s): return bool(s.story.get("yesterday", {}).get("raid", false)) and _scene_seen(s, "ch1") and s.story.get("dead", []).is_empty(),
+		"story:SCENES.3.when": func(s): return _boss(s, "MORGATH"),
+		"story:SCENES.4.when": func(s): return _boss(s, "ZALGORA"),
+		"story:SCENES.5.when": func(s): return _boss(s, "MORGATH") and _scene_seen(s, "ch4"),
+		"story:SCENES.6.when": func(s): return _boss(s, "ZALGORA") and _scene_seen(s, "ch5"),
+		"story:SCENES.7.when": func(s): return s.quests.done.has("m5c") and _scene_seen(s, "ch6"),
+		"story:SCENES.8.when": _done("m5c"),
+		"story:SCENES.9.when": func(s): return s.quests.done.has("m6") and s.story.get("route") != "redeem" and s.story.get("route") != "dark",
+		"story:SCENES.10.when": func(s): return s.quests.done.has("m6") and s.story.get("route") == "redeem",
+		"story:TRIALS.0.needs": _lessons_at(1),
+		"story:TRIALS.1.needs": func(s): return _lessons(s) >= 2 and s.quests.done.has("m3"),
+
+		# ---- training.js: 스승이 쉬는 날 · 데리고 나가는 날 ----
+		"training:RESTS.0.when": func(_s = null): return true,
+		"training:RESTS.1.when": _lessons_at(2),
+		"training:RESTS.2.when": _lessons_at(4),
+		"training:TRIPS.0.when": func(_s = null): return true,
+		"training:TRIPS.1.when": _lessons_at(3),
+		"training:TRIPS.2.when": func(s): return _boss(s, "MORGATH"),
+	}
+	# ---- ceremony.js: 승급 의식 대사. 숨결 × 구름마루를 겪었는가 조합마다 미리 뽑아 둔 것에서 이름만 채운다 ----
+	for stage in ["1", "2", "3", "4"]:
+		t["ceremony:RITES.%s.lines" % stage] = func(c = {}):
+			var key := "%s|%s" % [c.get("element", "FIRE"), "true" if c.get("cloudtop", false) else "false"]
+			var lines: Array = Data.get_module("ceremony_lines").RITE_LINES[stage][key]
+			return lines.map(func(l): return { who = l.who, text = l.text.replace("{name}", c.get("name", "")) })
+	_table.merge(t)
+
+
+static func _build_talk() -> void:
+	var mourning := func(s): return _dead(s, "Gron") and s.day - int(s.story.get("deathDay", {}).get("Gron", 0)) < 6
+	var sulking := func(s):
+		var love = s.story.get("love")
+		if not s.partner or not love: return false
+		var m = love.mood.get(s.partner.config.name)
+		return m != null and m.kind == "SULK"
+	_table.merge({
+		# ---- npcTalk.js: 마음을 꺼낼 수 있는 때 ----
+		"npcTalk:ROMANCE_GATES.Kairon.gate": _lessons_at(5),
+		"npcTalk:ROMANCE_GATES.Seiran.gate": func(s): return _event_seen(s, "ev_gathering"),
+		"npcTalk:ROMANCE_GATES.Ignar.gate": func(s): return s.story.get("route") == "redeem" or s.story.get("route") == "dark",
+		"npcTalk:ROMANCE_GATES.Haru.gate": func(s): return _event_seen(s, "ev_gathering"),
+		"npcTalk:ROMANCE_GATES.Elder.gate": _done("m3"),
+		"npcTalk:ROMANCE_GATES.Gron.gate": _done("g1"),
+		# ---- npcTalk.js: 상황에 맞는 인사 (s, npc) ----
+		"npcTalk:SITUATION_LINES.0.when": func(s, _n = null): return s.story.get("route") == "dark" and s.quests.done.has("m7d"),
+		"npcTalk:SITUATION_LINES.1.when": func(s, _n = null): return mourning.call(s),
+		"npcTalk:SITUATION_LINES.2.when": func(s, _n = null): return _dead(s, "Gron") and not mourning.call(s),
+		"npcTalk:SITUATION_LINES.3.when": func(s, _n = null): return s.weather.type != "CLEAR",
+		"npcTalk:SITUATION_LINES.4.when": func(s, _n = null): return s.dayTime < 0.22 or s.dayTime > 0.84,
+		"npcTalk:SITUATION_LINES.5.when": func(s, _n = null): return s.event == "BLOOD_MOON",
+		"npcTalk:SITUATION_LINES.6.when": func(s, _n = null): return s.raid.active,
+		"npcTalk:SITUATION_LINES.7.when": func(s, _n = null): return s.raid.count >= 3 and not s.raid.active,
+		"npcTalk:SITUATION_LINES.8.when": func(s, _n = null): return s.kids.size() > 0,
+		"npcTalk:SITUATION_LINES.9.when": func(s, _n = null): return _flag(s, "couple_egg") and not _flag(s, "couple_hatched"),
+		"npcTalk:SITUATION_LINES.10.when": func(s, _n = null): return _flag(s, "couple_hatched"),
+		"npcTalk:SITUATION_LINES.11.when": func(s, _n = null): return sulking.call(s),
+		"npcTalk:SITUATION_LINES.12.when": func(s, _n = null): return s.partner != null and s.partner.config.name == "Elder",
+		"npcTalk:SITUATION_LINES.13.when": func(s, _n = null): return s.partner != null,
+		"npcTalk:SITUATION_LINES.14.when": func(s, _n = null): return _boss(s, "MORGATH"),
+		"npcTalk:SITUATION_LINES.15.when": func(s, _n = null): return _boss(s, "ZALGORA"),
+		"npcTalk:SITUATION_LINES.16.when": func(s, _n = null): return s.player.stage_index >= 3,
+		"npcTalk:SITUATION_LINES.17.when": func(s, _n = null): return s.player.hp < s.player.max_hp * 0.4,
+	})
+
+
+## chronicle.js 의 사건 조건. 인자 c 는 Chronicle.context()
+static func _build_chronicle() -> void:
+	var D := func(c, id): return c.done.call(id)
+	var A := func(c, id): return c.active.call(id)
+	var B := func(c, id): return c.boss.call(id)
+	var ev := func(c, id): return c.s.story.get("events", []).has(id)
+	var home_night := func(c): return c.night and (c.map == "VILLAGE" or c.map == "DEN_MINE")
+	var near := func(c, type: String, r: float):
+		for p in c.s.entities.props:
+			if p.type == type and Vector2(p.x - c.s.player.x, p.y - c.s.player.y).length() < r: return true
+		return false
+	var only_map := func(id: String): return func(c): return c.map == id
+	var w := {
+		0: func(c): return c.s.story.scenes.has("ch1") and c.map == "DOJO",
+		1: func(c): return c.night and c.day >= 2 and c.lessons >= 1 and c.map == "VILLAGE",
+		2: func(c): return c.map == "VILLAGE" and D.call(c, "m1"),
+		3: func(c): return c.s.story.rites.has(1) and home_night.call(c),
+		4: func(c): return c.map == "FALLS" and c.s.story.get("clues", []).has("mark") and ev.call(c, "ev_falls"),
+		5: func(c): return D.call(c, "m3") and not D.call(c, "m4") and not A.call(c, "m4") and c.map == "HOLLOW",
+		6: func(c): return A.call(c, "m5") and not B.call(c, "ZALGORA") and c.map == "JUNGLE",
+		7: func(c): return D.call(c, "m5") and (D.call(c, "m5g") or B.call(c, "GLACIA")) and not D.call(c, "m5a") and not A.call(c, "m5a") and c.map == "VILLAGE",
+		8: func(c): return (D.call(c, "m6w") or B.call(c, "BASIL")) and not D.call(c, "m5b") and not A.call(c, "m5b") and c.map == "DESERT",
+		9: func(c): return (D.call(c, "m5c") or (D.call(c, "m5b") and B.call(c, "IGNAR"))) and not D.call(c, "m6") and not A.call(c, "m6"),
+		10: func(c): return c.map == "VILLAGE" and bool(c.s.den.get("built", false)),
+		11: only_map.call("FALLS"),
+		12: func(c): return c.map == "FALLS" and c.gathering,
+		13: only_map.call("CLOUDTOP"),
+		14: func(c): return D.call(c, "m6w") and home_night.call(c) and c.clueCount >= 3 and not c.s.raid.active,
+		15: func(c): return c.map == "IGNAR_LAIR" and A.call(c, "m6") and not B.call(c, "IGNAR"),
+		16: func(c): return c.map == "IGNAR_LAIR" and B.call(c, "IGNAR") and A.call(c, "m6"),
+		17: func(c): return c.map == "VILLAGE" and A.call(c, "m7d") and c.route == "dark",
+		18: only_map.call("ASH_CITY"),
+		19: func(c): return c.map == "FALLS" and A.call(c, "m6w") and c.s.quests.active.m6w.step >= 1,
+		20: func(c): return c.map == "FALLS" and c.hour >= 17 and c.hour < 20 and D.call(c, "m5g") and not c.gathering and c.datesOf.call("Haru") == 0 and not ev.call(c, "ev_tryst_mine"),
+		21: func(c): return c.map == "FALLS" and c.hour >= 17 and c.hour < 20 and D.call(c, "m5g") and not c.gathering and c.datesOf.call("Haru") >= 1 and not ev.call(c, "ev_tryst"),
+		22: func(c): return c.map == "VILLAGE" and c.night and A.call(c, "t1") and not c.s.raid.active \
+			and Vector2(c.s.player.x - (17 * 96 + 48), c.s.player.y - (7 * 96 + 48)).length() < 300,
+		23: func(c): return c.map == "VILLAGE" and D.call(c, "m5g") and c.hour >= 7 and c.hour < 18 and not c.s.raid.active and not c.flag.call("couple_egg"),
+		24: func(c): return c.map == "VILLAGE" and c.flag.call("couple_egg") and not c.flag.call("couple_hatched") \
+			and c.day - int(c.s.story.get("coupleEggDay", 0)) >= 6 and c.hour >= 7 and c.hour < 18 and not c.s.raid.active,
+		25: func(c): return ["EAST_ROAD", "SOUTH_ROAD", "LAKE"].has(c.map) and c.raids >= 2 and D.call(c, "m4") and c.hour >= 7 and c.hour < 18 and not c.s.raid.active and not c.s.activity,
+		26: func(c): return (c.map == "FALLS" or c.map == "CLOUDTOP") and D.call(c, "s1") and not c.night and not c.gathering and not D.call(c, "m6w"),
+		27: func(c): return c.map == "DOJO" and c.hour >= 8 and c.hour < 12 and c.datesOf.call("Elder") >= 1 and not c.gathering,
+		28: func(c): return near.call(c, "WAYSTONE", 340) and c.map != "VILLAGE",
+		29: func(c): return near.call(c, "CAVE", 360),
+		30: only_map.call("SKY_RUINS"),
+		31: only_map.call("HOLLOW_DEEP"),
+		32: only_map.call("SNOW_RIDGE"),
+		33: only_map.call("JUNGLE_DEEP"),
+		34: only_map.call("DESERT_BONES"),
+		35: only_map.call("VOLCANO_PATH"),
+		36: only_map.call("SNOW_ROAD"),
+		37: func(c): return c.map == "VOLCANO" and ev.call(c, "ev_volcano") and c.s.story.rites.has(3),
+		38: only_map.call("VOLCANO"),
+	}
+	for i in w: _table["chronicle:CHRONICLE.%d.when" % i] = w[i]
+	_table["chronicle:CHRONICLE.15.choice.options.1.when"] = func(c): return c.flag.call("messenger")
+	_table["chronicle:CHRONICLE.16.choice.options.1.when"] = func(c): return c.clueCount >= 4

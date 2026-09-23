@@ -1,8 +1,10 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1"]
 [ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="2"]
 [ext_resource type="FontVariation" path="res://assets/fonts/mulmaru_bold.tres" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/name_input.tscn" id="5"]
 
 [sub_resource type="Gradient" id="rule_grad"]
 offsets = PackedFloat32Array(0, 0.5, 1)
@@ -72,6 +74,88 @@ shadow_size = 0
 shadow_color = Color(0.165, 0, 0, 1)
 shadow_offset = Vector2(0, 3)
 
+[sub_resource type="LabelSettings" id="qb_kind"]
+font = ExtResource("2")
+font_size = 12
+font_color = Color(1, 0.847, 0.29, 1)
+shadow_size = 3
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 1)
+
+[sub_resource type="LabelSettings" id="qb_title"]
+font = ExtResource("3")
+font_size = 24
+font_color = Color(0.925, 0.89, 0.812, 1)
+shadow_size = 0
+shadow_color = Color(0.102, 0.0706, 0.0235, 1)
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="LabelSettings" id="qb_goal"]
+font = ExtResource("2")
+font_size = 12
+font_color = Color(0.714, 0.682, 0.604, 1)
+shadow_size = 3
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 1)
+
+[sub_resource type="Gradient" id="qb_bg_grad"]
+offsets = PackedFloat32Array(0, 0.12, 0.88, 1)
+colors = PackedColorArray(0.0549, 0.051, 0.0863, 0, 0.0549, 0.051, 0.0863, 0.92, 0.0549, 0.051, 0.0863, 0.92, 0.0549, 0.051, 0.0863, 0)
+
+[sub_resource type="GradientTexture2D" id="qb_bg"]
+gradient = SubResource("qb_bg_grad")
+width = 256
+height = 4
+
+[sub_resource type="LabelSettings" id="fade_text"]
+font = ExtResource("2")
+font_size = 24
+font_color = Color(1, 0.847, 0.29, 1)
+
+[sub_resource type="FontVariation" id="ch_no_font"]
+base_font = ExtResource("2")
+spacing_glyph = 12
+
+[sub_resource type="LabelSettings" id="ch_no"]
+font = SubResource("ch_no_font")
+font_size = 24
+font_color = Color(0.847, 0.698, 0.353, 1)
+
+[sub_resource type="FontVariation" id="ch_name_font"]
+base_font = ExtResource("2")
+variation_embolden = 0.6
+spacing_glyph = 4
+
+[sub_resource type="LabelSettings" id="ch_name"]
+font = SubResource("ch_name_font")
+font_size = 36
+font_color = Color(0.925, 0.89, 0.812, 1)
+
+[sub_resource type="FontVariation" id="scene_font"]
+base_font = ExtResource("2")
+variation_embolden = 0.6
+spacing_glyph = 3
+
+[sub_resource type="LabelSettings" id="scene_text"]
+font = SubResource("scene_font")
+font_size = 24
+font_color = Color(1, 0.847, 0.29, 1)
+shadow_size = 0
+shadow_color = Color(0.0235, 0.0196, 0.0471, 1)
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="tip_box"]
+content_margin_left = 9.0
+content_margin_top = 4.0
+content_margin_right = 9.0
+content_margin_bottom = 4.0
+bg_color = Color(0.055, 0.051, 0.086, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.847, 0.698, 0.353, 1)
+
 [node name="Hud" type="CanvasLayer"]
 layer = 10
 script = ExtResource("1")
@@ -109,6 +193,74 @@ size_flags_horizontal = 4
 mouse_filter = 2
 texture = SubResource("rule")
 expand_mode = 1
+
+[node name="QuestBanner" type="Control" parent="."]
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 10
+anchor_top = 0.25
+anchor_right = 1.0
+anchor_bottom = 0.25
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="Bg" type="TextureRect" parent="QuestBanner"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -260.0
+offset_right = 260.0
+offset_bottom = 74.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = SubResource("qb_bg")
+expand_mode = 1
+
+[node name="RuleTop" type="ColorRect" parent="QuestBanner/Bg"]
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 0.08
+anchor_right = 0.92
+offset_bottom = 1.0
+mouse_filter = 2
+color = Color(0.847, 0.698, 0.353, 0.8)
+
+[node name="RuleBottom" type="ColorRect" parent="QuestBanner/Bg"]
+layout_mode = 1
+anchors_preset = 12
+anchor_left = 0.08
+anchor_top = 1.0
+anchor_right = 0.92
+anchor_bottom = 1.0
+offset_top = -1.0
+mouse_filter = 2
+color = Color(0.847, 0.698, 0.353, 0.8)
+
+[node name="Lines" type="VBoxContainer" parent="QuestBanner/Bg"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 10.0
+offset_bottom = -12.0
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="Kind" type="Label" parent="QuestBanner/Bg/Lines"]
+layout_mode = 2
+label_settings = SubResource("qb_kind")
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="QuestBanner/Bg/Lines"]
+layout_mode = 2
+label_settings = SubResource("qb_title")
+horizontal_alignment = 1
+
+[node name="Goal" type="Label" parent="QuestBanner/Bg/Lines"]
+layout_mode = 2
+label_settings = SubResource("qb_goal")
+horizontal_alignment = 1
 
 [node name="BossBar" type="VBoxContainer" parent="."]
 visible = false
@@ -160,6 +312,34 @@ label_settings = SubResource("raid_text")
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="InteractTip" type="Label" parent="."]
+visible = false
+offset_right = 40.0
+offset_bottom = 23.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+theme_override_fonts/font = ExtResource("2")
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("tip_box")
+
+[node name="DialogueBox" parent="." instance=ExtResource("4")]
+
+[node name="NameInput" parent="." instance=ExtResource("5")]
+
+[node name="SceneTitle" type="Label" parent="."]
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 10
+anchor_top = 0.27
+anchor_right = 1.0
+anchor_bottom = 0.27
+offset_top = -24.0
+offset_bottom = 24.0
+grow_horizontal = 2
+mouse_filter = 2
+label_settings = SubResource("scene_text")
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="ToastBox" type="VBoxContainer" parent="."]
 anchors_preset = 5
 anchor_left = 0.5
@@ -171,3 +351,68 @@ offset_bottom = 70.0
 grow_horizontal = 2
 mouse_filter = 2
 theme_override_constants/separation = 5
+
+[node name="Hint" type="Label" parent="."]
+visible = false
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -118.0
+offset_bottom = -96.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+label_settings = SubResource("boss_text")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FadeScreen" type="ColorRect" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.0196, 0.0235, 0.0471, 1)
+
+[node name="Text" type="Label" parent="FadeScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+label_settings = SubResource("fade_text")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ChapterCard" type="ColorRect" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.0118, 0.0118, 0.0314, 1)
+
+[node name="Lines" type="VBoxContainer" parent="ChapterCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="No" type="Label" parent="ChapterCard/Lines"]
+layout_mode = 2
+label_settings = SubResource("ch_no")
+horizontal_alignment = 1
+
+[node name="Rule" type="TextureRect" parent="ChapterCard/Lines"]
+custom_minimum_size = Vector2(300, 1)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = SubResource("rule")
+expand_mode = 1
+
+[node name="Name" type="Label" parent="ChapterCard/Lines"]
+layout_mode = 2
+label_settings = SubResource("ch_name")
+horizontal_alignment = 1

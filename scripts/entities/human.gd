@@ -177,7 +177,7 @@ func die() -> void:
 	remove = true
 	Flow.on_kill(type == "CAPTAIN")
 	if type == "CAPTAIN": GameState.raid.captainFell = true
-	# 베르단의 포위에서 대장이 쓰러지면 남은 사냥꾼이 흔들리는 것은 포위를 옮길 때
+	if type == "CAPTAIN" and Ambush.active(): Ambush.on_captain_down(self)   # 남은 사냥꾼이 흔들린다
 	GameState.player.gain_xp(def.xp * NightEvents.xp_mult())
 	GameState.stats.kills.HUNTER = GameState.stats.kills.get("HUNTER", 0) + 1
 	Quests.notify("kill", "HUNTER")

@@ -90,14 +90,25 @@ func screen_to_world(p: Vector2) -> Vector2:
 	return p / zoom.x + position
 
 
-## 컷씬 연출은 cutscene 을 옮길 때 이어 붙인다
 func follow(target, smooth := 0.1) -> void:
-	cam_x += (target.x - w / 2 - cam_x) * smooth
-	cam_y += (target.y - h / 2 - cam_y) * smooth
-	# 지도가 화면보다 작으면 가운데에 둔다
+	var tx: float = target.x
+	var ty: float = target.y
+	# 컷씬이면 둘 사이를 천천히 본다
+	var shot = Cutscene.camera_target(h)
+	if shot != null:
+		tx = shot.x
+		ty = shot.y
+		smooth = 1.0 if Cutscene.snap else 0.055
+		Cutscene.snap = false
+	if absf(_boost - Cutscene.boost) > 0.0015: _apply_boost(Cutscene.boost)
+	cam_x += (tx - w / 2 - cam_x) * smooth
+	cam_y += (ty - h / 2 - cam_y) * smooth
+	# 지도가 화면보다 작으면 가운데에 둔다. 컷씬일 때는 경계를 조금 넘어가도 둔다 —
+	# 인물을 대화창 위로 올려야 하는데 작은 지도에서는 경계에 걸려 화면 아래쪽에 박혀 버린다 (어차피 띠가 가린다)
 	var b := Terrain.current_map_bounds()
-	cam_x = (b.x - w) / 2 if b.x <= w else clampf(cam_x, 0, b.x - w)
-	cam_y = (b.y - h) / 2 if b.y <= h else clampf(cam_y, 0, maxf(0, b.y - h))
+	var slack := h * 0.34 if shot != null else 0.0
+	cam_x = (b.x - w) / 2 if b.x <= w else clampf(cam_x, -slack, b.x - w + slack)
+	cam_y = (b.y - h) / 2 if b.y <= h and shot == null else clampf(cam_y, -slack, maxf(-slack, b.y - h + slack))
 	_shake_power *= 0.86
 	shake_x = (randf() - 0.5) * _shake_power * 2
 	shake_y = (randf() - 0.5) * _shake_power * 2

@@ -3,7 +3,7 @@ extends Node2D
 ## 2D판 entities/Prop.js. 나무·덤불·집·분수·포탈·석비·굴 입구 같은 붙박이들.
 ## 노드 원점이 발 위치(x, y)라 부모의 y 정렬이 앞뒤를 가른다.
 ##
-## 보물상자 열기·열매 따기·나뭇가지 줍기, 밤의 불빛은 그 시스템을 옮길 때 붙인다.
+## 밤의 불빛(light)은 연출 단계에서 조명과 함께 붙인다.
 
 # 코드로 찍은 픽셀 아이콘으로 그리는 소품: [배율, 발에서 위로 올릴 px]
 const ICON_PROPS := { "CAVE": [8, 48], "DEN_MOUTH": [8, 48], "STAIRS_DOWN": [5, 24], "STAIRS_UP": [5, 24], "ARENA": [4, 26], "TOWER": [7, 77] }
@@ -31,6 +31,9 @@ var stone_id = null
 var cave_id = null
 var den_id = null
 var ripe_at := 0.0
+var fid = null               # 굴 살림살이 (data/furniture.json 의 id)
+
+const BERRY_REGROW := 100.0  # 초
 
 var _flame: Node2D           # 모닥불 불꽃 (더하기 섞기라 따로 그린다)
 
@@ -67,6 +70,52 @@ var ripe: bool:
 	get: return GameState.game_time >= ripe_at
 
 
+## 그루터기(type 'STUMP')에서 나뭇가지를 줍는다. 열매처럼 시간이 지나면 다시 생긴다
+func gather() -> void:
+	ripe_at = GameState.game_time + BERRY_REGROW
+	var n := 2 if randf() < 0.4 else 1
+	GameState.den.twigs += n
+	Sfx.play("pickup")
+	Hud.pop("나뭇가지 +%d (%d / 8)" % [n, GameState.den.twigs], "🪵")
+
+
+func harvest() -> void:
+	ripe_at = GameState.game_time + BERRY_REGROW
+	var p = GameState.player
+	p.hunger = minf(100, p.hunger + 30)
+	p.hp = minf(p.max_hp, p.hp + 15)
+	Hud.pop("달콤한 열매를 먹었습니다. (허기 +30, 체력 +15)", "🍒")
+
+
+## 보물상자 열기 (type 'CHEST'). chest_id 로 열린 상자를 기억한다
+func open() -> void:
+	opened = true
+	sprite = Data.get_module("tiles").PROP_SPRITES.CHEST_OPEN[0]
+	sheet_key = sprite.sheet
+	queue_redraw()
+	if chest_id != null: GameState.openedChests[chest_id] = true   # 굴의 상자는 한 판짜리라 기록하지 않는다
+	var far := Vector2(x - 1200, y - 1200).length() / 1000   # 마을에서 멀수록 두둑하다
+	var gold := roundi(20 + far * 25 + randf() * 20)
+	World.add_entity("items", Item.make(x, y + 30, "GOLD", gold))
+	if randf() < 0.6: World.add_entity("items", Item.make(x - 30, y + 20, "MEAT"))
+	for i in 1 + floori(randf() * 2): World.add_entity("items", Item.make(x - 50 - i * 24, y + 26, "MAT", "ORE"))
+	# 알은 귀하다. 성체가 된 뒤에만, 쉰에 하나
+	if GameState.player.stage_index >= 2 and randf() < 0.02:
+		World.add_entity("items", Item.make(x + 30, y + 20, "EGG"))
+		Hud.pop("상자 안에 용의 알이 있습니다!", "🥚")
+	Vfx.spawn_effect("STAR", x, y - 20)
+	Sfx.play("pickup")
+	if randf() < 0.22:
+		var id = Relics.random_relic()
+		if id: Relics.grant(id, x, y)
+	# 가끔 굴에 들여놓을 살림살이가 들어 있다
+	if randf() < 0.3:
+		var pool := Den.furniture().keys().filter(func(k): return Den.furniture()[k].cost.get("gold", 0) <= 120)
+		Den.give_furniture(pool.pick_random())
+	Hud.pop("보물상자를 열었습니다!", "🎁")
+	Quests.notify("chest")
+
+
 func _process(_dt: float) -> void:
 	if ANIMATED.has(type):
 		queue_redraw()
@@ -81,6 +130,7 @@ func _draw() -> void:
 		"WAYSTONE": _draw_waystone()
 		"CAVE": _draw_cave()
 		"TOWER": _draw_tower()
+		"FURNITURE": _draw_furniture()
 		_:
 			if ICON_PROPS.has(type): Pixel.draw_icon(self, type, 0, -ICON_PROPS[type][1], ICON_PROPS[type][0])
 			elif sprite: _draw_sprite()
@@ -121,6 +171,18 @@ func _draw_waterfall() -> void:
 		put.call(W.SPLASH[0], gx, rows - 2); put.call(W.SPLASH[1], gx, rows - 1)
 	put.call(W.CAP[0], -1, rows - 2); put.call(W.CAP[1], -1, rows - 1)
 	put.call(W.CAP[0], cols, rows - 2, true); put.call(W.CAP[1], cols, rows - 1, true)
+
+
+## 굴에 놓은 살림살이. 타일 시트에서 칸 하나를 떠 온다
+func _draw_furniture() -> void:
+	var f = Den.furniture().get(fid)
+	if not f: return
+	var sheet := TileImages.get_texture(Den.sheet_of(f))
+	var T := GameMap.TILE
+	var S := GameMap.TILE_SRC
+	var w: float = f.span[0] * T
+	var h: float = f.span[1] * T
+	draw_texture_rect_region(sheet, Rect2(roundf(x - w / 2) - x, roundf(y - h) - y, w, h), Rect2(f.tile[0] * S, f.tile[1] * S, f.span[0] * S, f.span[1] * S))
 
 
 ## 다른 지도로 넘어가는 문. 이름표는 Overlay 가 화면 픽셀로 따로 단다
@@ -193,6 +255,7 @@ func _draw_sprite() -> void:
 
 ## 화면 픽셀로 다는 이름표 (Overlay 가 부른다). ci 의 원점은 이 소품의 발 위치를 화면으로 옮긴 곳
 func draw_crisp(ci: CanvasItem, zoom: float) -> void:
+	if Cutscene.on: return   # 컷씬에서는 안내 글자를 비운다
 	var label := ""
 	var ly := 0.0
 	var color: Color

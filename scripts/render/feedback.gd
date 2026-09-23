@@ -60,6 +60,8 @@ func _draw() -> void:
 	# 2) 맞은 순간의 번쩍임
 	if _flash_a > 0.004:
 		draw_rect(Rect2(Vector2.ZERO, size), Color(_flash_color, _flash_a * 0.42))
+	# 3) 퀘스트 목표가 화면 밖이면 가장자리에 방향 화살표 (2D판도 번쩍임 다음에 그렸다)
+	if p: Guide.draw_edge(self, size.x, size.y)
 
 
 ## 가운데는 비고 가장자리로 갈수록 붉은 원형 그러데이션. inner: 안쪽 원 / 바깥 원

@@ -58,6 +58,7 @@ var bannerUntil := 0.0
 var flow := {}                # 싸움의 흐름 (systems/flow)
 var packTurn := 0.0           # 포위하는 무리가 덤빌 차례
 var emberDay := 0
+var ambush = null             # 베르단의 포위 { phase, captain, t, waveT, first } (systems/ambush)
 
 
 func _ready() -> void:
@@ -122,3 +123,4 @@ func reset() -> void:
 	flow = {}
 	packTurn = 0.0
 	emberDay = 0
+	ambush = null

@@ -176,7 +176,7 @@ func die() -> void:
 	Quests.notify("kill", type)
 	if def.move != "flee": Quests.notify("killAny")
 	if elite: Quests.notify("elite")
-	# 굴의 파수꾼(is_guardian)은 굴을 옮길 때
+	if is_guardian: Delve.on_guardian_down(self)
 
 
 # ---------- 그리기 ----------

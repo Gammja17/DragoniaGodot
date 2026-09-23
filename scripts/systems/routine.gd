@@ -103,3 +103,97 @@ static func place_by_routine(map_id: String, pools: Dictionary, get_npc: Callabl
 		npc.remove = false    # 딴 지도에서 문을 나서며 지워졌던 용이면 표시가 남아 있다
 		npc.is_hidden = false    # 프롤로그가 감춰 둔 채 남아 있으면 투명인간이 된다
 		pools.npcs.append(npc)
+
+
+# ---------- 매 프레임: 걸어서 들고 나기 ----------
+
+const WALK := 150.0          # 들고 나는 걸음 속도
+const ARRIVED := 56.0        # 목표에 이만큼 가까워지면 다 온 것으로 친다
+static var _tick := 0.0
+
+
+## 수련·대련의 상대이거나 지금 말을 나누는 중이면 일과 시간이 돼도 자리를 뜨지 않는다
+static func _tied_to_player(npc) -> bool:
+	var a = GameState.activity
+	if a and (a.get("npc") == npc or a.get("rival") == npc): return true
+	if GameState.isDialogueOpen and GameState.currentNpc == npc: return true
+	return npc.state != "WANDER"
+
+
+static func _find_npc(nm: String):
+	for n in GameState.entities.npcs:
+		if n.config.get("name") == nm: return n
+	return null
+
+
+## 지도 가장자리에서 제일 가까운 포탈 (들고 날 문)
+static func _nearest_portal(x: float, y: float):
+	var best = null
+	var best_d := INF
+	for p in GameState.entities.props:
+		if not p.portal: continue
+		var d := Vector2(p.x - x, p.y - y).length()
+		if d < best_d:
+			best_d = d
+			best = p
+	return best
+
+
+## 매 프레임. 1초에 한 번 일과를 다시 읽고, 바뀐 만큼만 움직인다
+static func update(dt: float, get_npc: Callable) -> void:
+	# 걷는 중인 용은 매 프레임 옮긴다
+	for npc in GameState.entities.npcs:
+		if not npc.walk_to or _tied_to_player(npc): continue
+		var dx: float = npc.walk_to.x - npc.x
+		var dy: float = npc.walk_to.y - npc.y
+		if Vector2(dx, dy).length() < ARRIVED:
+			if npc.walk_to.get("leave"): npc.remove = true      # 문을 나섰다
+			npc.walk_to = null
+			continue
+		npc.move_by(dx, dy, WALK, dt)
+
+	_tick -= dt
+	if _tick > 0: return
+	_tick = 1.0
+	if GameState.dungeon: return
+
+	var here := GameState.map_id
+	for nm in routine_names():
+		var plan = plan_for(nm)
+		if not plan:
+			var gone = _find_npc(nm) if is_dead(nm) else null
+			if gone: gone.remove = true
+			continue
+		var npc = _find_npc(nm)
+		if npc and _tied_to_player(npc):   # 나를 따라다니는 중
+			npc.walk_to = null
+			continue
+		if nm == "Poco" and GameState.tour: continue   # 첫날 마을을 데리고 도는 중 (Tour)
+
+		if npc:
+			npc.doing = plan.doing
+			npc.job = plan.job
+			if plan.map == here:
+				# 같은 지도 안에서 자리만 옮긴다 — 어슬렁대는 중심을 바꿔 주면 알아서 간다
+				if Vector2(npc.home_x - plan.x, npc.home_y - plan.y).length() > 60:
+					npc.home_x = plan.x; npc.home_y = plan.y
+					npc.walk_to = { x = plan.x, y = plan.y }
+			elif not npc.walk_to or not npc.walk_to.get("leave"):
+				var gate = _nearest_portal(npc.x, npc.y)                # 문으로 걸어 나간다
+				npc.walk_to = { x = gate.x, y = gate.y, leave = true } if gate else null
+				if not gate: npc.remove = true
+			continue
+
+		# 여기 있어야 하는데 없다 — 문으로 걸어 들어온다
+		if plan.map != here: continue
+		var gate = _nearest_portal(plan.x, plan.y)
+		var from := Vector2(gate.x, gate.y) if gate else Vector2(plan.x, plan.y)
+		var fresh = get_npc.call(nm, from)
+		fresh.x = from.x; fresh.y = from.y
+		fresh.remove = false
+		fresh.is_hidden = false
+		fresh.home_x = plan.x; fresh.home_y = plan.y
+		fresh.doing = plan.doing
+		fresh.job = plan.job
+		fresh.walk_to = { x = plan.x, y = plan.y }
+		World.add_entity("npcs", fresh)

@@ -59,6 +59,23 @@ for (const m of modules) {
     console.log(`${m} → data/${name}.json${fnCount > before ? `  (함수 ${fnCount - before}개)` : ''}`);
 }
 
+// 승급 의식의 대사(data/ceremony.js 의 RITES[n].lines(ctx))는 글을 만드는 함수라 손으로 옮기면 글자가 어긋나기 쉽다.
+// 받을 수 있는 값을 다 넣어 미리 돌려 둔다. 이름은 대화창이 채우는 {name} 으로 남긴다.
+{
+    const { RITES } = await import(pathToFileURL(join(src, 'data', 'ceremony.js')).href);
+    const { ELEMENTS } = await import(pathToFileURL(join(src, 'data', 'elements.js')).href);
+    const out2 = {};
+    for (const [stage, rite] of Object.entries(RITES)) {
+        if (typeof rite.lines !== 'function') continue;
+        out2[stage] = {};
+        for (const element of Object.keys(ELEMENTS)) for (const cloudtop of [false, true]) {
+            out2[stage][`${element}|${cloudtop}`] = rite.lines({ name: '{name}', element, cloudtop });
+        }
+    }
+    writeFileSync(join(out, 'ceremony_lines.json'), JSON.stringify({ RITE_LINES: out2 }, null, 1));
+    console.log('data/ceremony.js RITES[].lines → data/ceremony_lines.json');
+}
+
 // 코드로 찍은 픽셀 아이콘(render/pixel.js 의 ICONS)은 모듈 밖으로 나오지 않는 상수라 소스에서 떠 온다
 const pixelSrc = readFileSync(join(src, 'render', 'pixel.js'), 'utf8');
 const iconsAt = pixelSrc.indexOf('const ICONS = {');

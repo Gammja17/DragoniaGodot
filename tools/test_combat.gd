@@ -5,6 +5,8 @@ extends Node
 
 func _ready() -> void:
 	var main: Node = load("res://scenes/main.tscn").instantiate()
+	main.play_intro = false
+	main.load_save = false
 	add_child(main)
 	await get_tree().process_frame
 	World.travel_to("EAST_ROAD")

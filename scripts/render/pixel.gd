@@ -31,12 +31,15 @@ static func get_icon(name: String) -> Texture2D:
 	var def: Dictionary = Data.get_module("icons").ICONS[name]
 	var rows: Array = def.rows
 	var img := Image.create_empty(rows[0].length(), rows.size(), false, Image.FORMAT_RGBA8)
+	# 팔레트에 없는 글자(아이콘 표의 오타)는 2D판 캔버스처럼 바로 앞 색을 그대로 쓴다 (fillStyle 에 undefined 를 넣으면 무시된다)
+	var last := Color.BLACK
 	for y in rows.size():
 		var row: String = rows[y]
-		for x in row.length():
+		for x in mini(row.length(), img.get_width()):   # 캔버스 밖으로 삐져나간 글자는 잘린다
 			var ch := row[x]
 			if ch == ".": continue
-			img.set_pixel(x, y, Color(def.palette[ch]))
+			if def.palette.has(ch): last = Color(def.palette[ch])
+			img.set_pixel(x, y, last)
 	var tex := ImageTexture.create_from_image(img)
 	_icons[name] = tex
 	return tex

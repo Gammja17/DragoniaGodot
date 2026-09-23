@@ -199,7 +199,8 @@
    "id": "ch1",
    "title": "1장. 스승",
    "when": {
-    "$fn": "s => s.day >= 2"
+    "$fn": "s => s.day >= 2",
+    "$at": "SCENES.0.when"
    },
    "place": "VILLAGE",
    "lines": [
@@ -249,7 +250,8 @@
    "id": "ch1b",
    "title": "1장. 같이 구르는 사이",
    "when": {
-    "$fn": "s => s.story.lessons.length >= 1"
+    "$fn": "s => s.story.lessons.length >= 1",
+    "$at": "SCENES.1.when"
    },
    "lines": [
     {
@@ -278,7 +280,8 @@
    "id": "ch3",
    "title": "2장. 다음 날 아침",
    "when": {
-    "$fn": "s => s.story.yesterday.raid && s.story.scenes.includes('ch1') && !(s.story.dead || []).length"
+    "$fn": "s => s.story.yesterday.raid && s.story.scenes.includes('ch1') && !(s.story.dead || []).length",
+    "$at": "SCENES.2.when"
    },
    "place": "VILLAGE",
    "lines": [
@@ -316,7 +319,8 @@
    "id": "ch4",
    "title": "3장. 꿈",
    "when": {
-    "$fn": "s => s.bossesDefeated.MORGATH"
+    "$fn": "s => s.bossesDefeated.MORGATH",
+    "$at": "SCENES.3.when"
    },
    "lines": [
     {
@@ -345,7 +349,8 @@
    "id": "ch5",
    "title": "4장. 고기 나온 아침",
    "when": {
-    "$fn": "s => s.bossesDefeated.ZALGORA"
+    "$fn": "s => s.bossesDefeated.ZALGORA",
+    "$at": "SCENES.4.when"
    },
    "place": "VILLAGE",
    "lines": [
@@ -367,7 +372,8 @@
    "id": "dream_ice",
    "title": "재 냄새가 나는 꿈",
    "when": {
-    "$fn": "s => s.bossesDefeated.MORGATH && s.story.scenes.includes('ch4')"
+    "$fn": "s => s.bossesDefeated.MORGATH && s.story.scenes.includes('ch4')",
+    "$at": "SCENES.5.when"
    },
    "lines": [
     {
@@ -392,7 +398,8 @@
    "id": "dream_thunder",
    "title": "두 번째 꿈",
    "when": {
-    "$fn": "s => s.bossesDefeated.ZALGORA && s.story.scenes.includes('ch5')"
+    "$fn": "s => s.bossesDefeated.ZALGORA && s.story.scenes.includes('ch5')",
+    "$at": "SCENES.6.when"
    },
    "lines": [
     {
@@ -417,7 +424,8 @@
    "id": "dream_city",
    "title": "세 번째 꿈",
    "when": {
-    "$fn": "s => s.quests.done.includes('m5c') && s.story.scenes.includes('ch6')"
+    "$fn": "s => s.quests.done.includes('m5c') && s.story.scenes.includes('ch6')",
+    "$at": "SCENES.7.when"
    },
    "lines": [
     {
@@ -438,7 +446,8 @@
    "id": "ch6",
    "title": "8장. 떠나기 전날 밤",
    "when": {
-    "$fn": "s => s.quests.done.includes('m5c')"
+    "$fn": "s => s.quests.done.includes('m5c')",
+    "$at": "SCENES.8.when"
    },
    "lines": [
     {
@@ -471,7 +480,8 @@
    "id": "ending",
    "title": "마지막 장. 새 수호룡",
    "when": {
-    "$fn": "s => s.quests.done.includes('m6') && s.story.route !== 'redeem' && s.story.route !== 'dark'"
+    "$fn": "s => s.quests.done.includes('m6') && s.story.route !== 'redeem' && s.story.route !== 'dark'",
+    "$at": "SCENES.9.when"
    },
    "place": "VILLAGE",
    "lines": [
@@ -509,7 +519,8 @@
    "id": "ending_redeem",
    "title": "마지막 장. 돌아온 형",
    "when": {
-    "$fn": "s => s.quests.done.includes('m6') && s.story.route === 'redeem'"
+    "$fn": "s => s.quests.done.includes('m6') && s.story.route === 'redeem'",
+    "$at": "SCENES.10.when"
    },
    "place": "VILLAGE",
    "lines": [
@@ -561,7 +572,8 @@
    "stage": 1,
    "hp": 160,
    "needs": {
-    "$fn": "(s) => s.story.lessons.length >= 1"
+    "$fn": "(s) => s.story.lessons.length >= 1",
+    "$at": "TRIALS.0.needs"
    },
    "why": "아직 한 수도 안 배웠다. 수련부터 하고 와라.",
    "intro": "날개가 근질거리는 모양이구나. 좋다, [어린 용] 소리를 들을 만한지 어디 한번 보자."
@@ -570,7 +582,8 @@
    "stage": 2,
    "hp": 300,
    "needs": {
-    "$fn": "(s) => s.story.lessons.length >= 2 && s.quests.done.includes('m3')"
+    "$fn": "(s) => s.story.lessons.length >= 2 && s.quests.done.includes('m3')",
+    "$at": "TRIALS.1.needs"
    },
    "why": "몸만 크다고 어른이냐. 수련 둘은 마치고, 마을 일도 하나 네 손으로 끝내고 와라.",
    "intro": "[성체] 시험이다. 오늘은 봐주는 거 없으니까 단단히 마음먹고 덤벼라."

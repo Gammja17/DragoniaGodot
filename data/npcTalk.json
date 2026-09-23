@@ -1943,42 +1943,48 @@
   "Kairon": {
    "dateAt": 55,
    "gate": {
-    "$fn": "s => s.story.lessons.length >= 5"
+    "$fn": "s => s.story.lessons.length >= 5",
+    "$at": "ROMANCE_GATES.Kairon.gate"
    },
    "locked": "(스승님이다. 적어도 배울 것을 다 배운 뒤에 생각할 일이다.)"
   },
   "Seiran": {
    "dateAt": 55,
    "gate": {
-    "$fn": "s => (s.story.events || []).includes('ev_gathering')"
+    "$fn": "s => (s.story.events || []).includes('ev_gathering')",
+    "$at": "ROMANCE_GATES.Seiran.gate"
    },
    "locked": "(폭포 건너의 용이다. 두 마을이 서로를 모른 척하는 한 꺼낼 말이 아니다.)"
   },
   "Ignar": {
    "dateAt": 50,
    "gate": {
-    "$fn": "s => s.story.route === 'redeem' || s.story.route === 'dark'"
+    "$fn": "s => s.story.route === 'redeem' || s.story.route === 'dark'",
+    "$at": "ROMANCE_GATES.Ignar.gate"
    },
    "locked": "(아직은 그런 말을 꺼낼 사이가 아니다.)"
   },
   "Haru": {
    "dateAt": 45,
    "gate": {
-    "$fn": "s => (s.story.events || []).includes('ev_gathering')"
+    "$fn": "s => (s.story.events || []).includes('ev_gathering')",
+    "$at": "ROMANCE_GATES.Haru.gate"
    },
    "locked": "(경계 너머의 또래다. 먼저 그 경계를 한 번은 넘어야 한다.)"
   },
   "Elder": {
    "dateAt": 60,
    "gate": {
-    "$fn": "s => s.quests.done.includes('m3')"
+    "$fn": "s => s.quests.done.includes('m3')",
+    "$at": "ROMANCE_GATES.Elder.gate"
    },
    "locked": "(촌장님이다. 마을을 지켜 내기 전에는 꺼낼 말이 아니다.)"
   },
   "Gron": {
    "dateAt": 50,
    "gate": {
-    "$fn": "s => s.quests.done.includes('g1')"
+    "$fn": "s => s.quests.done.includes('g1')",
+    "$at": "ROMANCE_GATES.Gron.gate"
    },
    "locked": "(아직 이 영감의 속을 하나도 모른다.)"
   }
@@ -1986,7 +1992,8 @@
  "SITUATION_LINES": [
   {
    "when": {
-    "$fn": "(s) => s.story.route === 'dark' && s.quests.done.includes('m7d')"
+    "$fn": "(s) => s.story.route === 'dark' && s.quests.done.includes('m7d')",
+    "$at": "SITUATION_LINES.0.when"
    },
    "always": true,
    "lines": {
@@ -2023,7 +2030,8 @@
   },
   {
    "when": {
-    "$fn": "(s) => afterGron(s) && s.day - ((s.story.deathDay || {}).Gron || 0) < 6"
+    "$fn": "(s) => afterGron(s) && s.day - ((s.story.deathDay || {}).Gron || 0) < 6",
+    "$at": "SITUATION_LINES.1.when"
    },
    "lines": {
     "Elder": "…대장간이 조용하니 마을이 다 조용하구나. 그 망치 소리가 시끄럽다고 타박한 게 엊그제 같은데.",
@@ -2037,7 +2045,8 @@
   },
   {
    "when": {
-    "$fn": "s => afterGron(s) && !mourning(s)"
+    "$fn": "s => afterGron(s) && !mourning(s)",
+    "$at": "SITUATION_LINES.2.when"
    },
    "lines": {
     "Poco": "나 이제 나팔 불어도 안 숨어. 다리는 아직 떨리는데, 그래도 안 숨어.",
@@ -2046,7 +2055,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.weather.type !== 'CLEAR'"
+    "$fn": "s => s.weather.type !== 'CLEAR'",
+    "$at": "SITUATION_LINES.3.when"
    },
    "lines": {
     "Elder": "비가 오는구나. 무릎이 쑤시는 걸 보니 오래 오겠어.",
@@ -2057,7 +2067,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.dayTime < 0.22 || s.dayTime > 0.84"
+    "$fn": "s => s.dayTime < 0.22 || s.dayTime > 0.84",
+    "$at": "SITUATION_LINES.4.when"
    },
    "lines": {
     "Elder": "이 시간에 웬일이냐. 밤 숲은 위험하다.",
@@ -2068,7 +2079,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.event === 'BLOOD_MOON'"
+    "$fn": "s => s.event === 'BLOOD_MOON'",
+    "$at": "SITUATION_LINES.5.when"
    },
    "lines": {
     "Elder": "붉은 달이다. 오늘 밤은 마을 밖에 나가지 마라.",
@@ -2079,7 +2091,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.raid.active"
+    "$fn": "s => s.raid.active",
+    "$at": "SITUATION_LINES.6.when"
    },
    "lines": {
     "Elder": "사냥꾼이다! 이야기는 나중에 하자!",
@@ -2090,7 +2103,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.raid.count >= 3 && !s.raid.active"
+    "$fn": "s => s.raid.count >= 3 && !s.raid.active",
+    "$at": "SITUATION_LINES.7.when"
    },
    "lines": {
     "Elder": "습격을 여러 번 막았다지. 마을이 네 덕을 본다.",
@@ -2100,7 +2114,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.kids.length > 0"
+    "$fn": "s => s.kids.length > 0",
+    "$at": "SITUATION_LINES.8.when"
    },
    "lines": {
     "Elder": "네 아이들은 잘 크느냐. 마을에 애 울음소리가 나니 좋구나.",
@@ -2111,7 +2126,8 @@
   },
   {
    "when": {
-    "$fn": "s => (s.story.flags || {}).couple_egg && !(s.story.flags || {}).couple_hatched"
+    "$fn": "s => (s.story.flags || {}).couple_egg && !(s.story.flags || {}).couple_hatched",
+    "$at": "SITUATION_LINES.9.when"
    },
    "always": true,
    "lines": {
@@ -2127,7 +2143,8 @@
   },
   {
    "when": {
-    "$fn": "s => !!(s.story.flags || {}).couple_hatched"
+    "$fn": "s => !!(s.story.flags || {}).couple_hatched",
+    "$at": "SITUATION_LINES.10.when"
    },
    "lines": {
     "Doran": "그 애가 오늘 내 낚싯대를 물어뜯었어. 낚시꾼 될 거여, 틀림없이.",
@@ -2136,7 +2153,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.partner && s.story.love && s.story.love.mood[s.partner.config.name] && s.story.love.mood[s.partner.config.name].kind === 'SULK'"
+    "$fn": "s => s.partner && s.story.love && s.story.love.mood[s.partner.config.name] && s.story.love.mood[s.partner.config.name].kind === 'SULK'",
+    "$at": "SITUATION_LINES.11.when"
    },
    "lines": {
     "Poco": "너네 싸웠지? 온 마을이 다 알아. …내가 소문낸 건 아니야, 진짜야.",
@@ -2147,7 +2165,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.partner && s.partner.config.name === 'Elder'"
+    "$fn": "s => s.partner && s.partner.config.name === 'Elder'",
+    "$at": "SITUATION_LINES.12.when"
    },
    "lines": {
     "Nara": "너를 뭐라고 부를지는 아직도 못 정했어. 일단은 계속 야라고 부를 거니까 그런 줄 알아."
@@ -2155,7 +2174,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.partner"
+    "$fn": "s => s.partner",
+    "$at": "SITUATION_LINES.13.when"
    },
    "lines": {
     "Poco": "너네 둘이 같이 다니는 거 보기 좋아! 에헤헤.",
@@ -2165,7 +2185,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.bossesDefeated.MORGATH"
+    "$fn": "s => s.bossesDefeated.MORGATH",
+    "$at": "SITUATION_LINES.14.when"
    },
    "lines": {
     "Elder": "모르가스를 보내 주었구나. 고맙다. 오랜 친구였다.",
@@ -2174,7 +2195,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.bossesDefeated.ZALGORA"
+    "$fn": "s => s.bossesDefeated.ZALGORA",
+    "$at": "SITUATION_LINES.15.when"
    },
    "lines": {
     "Poco": "머리 둘 달린 용을 이겼다고?! 너 진짜 영웅이다!",
@@ -2183,7 +2205,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.player.stageIndex >= 3"
+    "$fn": "s => s.player.stageIndex >= 3",
+    "$at": "SITUATION_LINES.16.when"
    },
    "lines": {
     "Elder": "많이 컸구나. 내 젊을 때만 하다.",
@@ -2193,7 +2216,8 @@
   },
   {
    "when": {
-    "$fn": "s => s.player.hp < s.player.maxHp * 0.4"
+    "$fn": "s => s.player.hp < s.player.maxHp * 0.4",
+    "$at": "SITUATION_LINES.17.when"
    },
    "lines": {
     "Elder": "저런, 많이 다쳤구나. 고기라도 먹고 쉬거라.",

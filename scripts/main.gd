@@ -5,31 +5,54 @@ extends Node2D
 @onready var terrain: Terrain = $Terrain
 @onready var world: Node2D = $World          # y 정렬: 아래쪽 개체가 앞에 온다
 @onready var camera: GameCamera = $Camera
+@onready var overlay: Overlay = $CrispLayer/Overlay
+@onready var hud: Hud = $Hud
 
 
 func _ready() -> void:
-	# 1단계: 시작 지도(웨스턴 마을)의 바닥만 깔고, 기본 외형의 해츨링을 세운다.
-	# 새 게임 설정 화면(customizer)을 옮기면 거기서 고른 설정이 들어온다
-	var maps: Dictionary = Data.get_module("maps")
-	var start: String = maps.START_MAP
-	var spec: Dictionary = maps.MAPS[start].duplicate()
-	spec.id = start
-	GameState.map_id = start
-	var m := GameMap.build(spec)
-	Terrain.set_active_map(m)
-	Collision.build_prop_grid([])
+	World.container = world
+	overlay.camera = camera
+	overlay.world = world
+	# 새 게임 설정 화면(customizer)을 옮기면 거기서 고른 설정이 들어온다. 지금은 기본 외형의 해츨링
+	World.init_world({ name = "용", species = "LOOK", look = 0 })
+	GameState.gameActive = true
+	var p = GameState.player
+	camera.cam_x = p.x - camera.w / 2
+	camera.cam_y = p.y - camera.h / 2
 
-	var player := Dragon.new().setup(m.w / 2.0, m.h * 0.62, { name = "용", species = "LOOK", look = 0 }, true)
-	world.add_child(player)
-	GameState.player = player
-	camera.cam_x = player.x - camera.w / 2
-	camera.cam_y = player.y - camera.h / 2
+
+func _exit_tree() -> void:
+	World.dispose()
 
 
 func _process(delta: float) -> void:
 	var dt := clampf(delta, 0, 0.1)
-	if GameInput.pressed("zoom"): print("시점: ", camera.cycle_zoom())
+	if GameInput.pressed("zoom"): hud.toast("시점: " + camera.cycle_zoom(), "🔍")
 	if GameInput.wheel: camera.step_zoom(GameInput.wheel)   # 휠은 조용히 (알림이 정신 사납다고 해서)
+	_update(dt)
+	camera.follow(GameState.player)
+	_mark_fade_targets()
+
+
+func _update(dt: float) -> void:
+	var E: Dictionary = GameState.entities
 	GameState.game_time += dt
 	GameState.player.update(dt)
-	camera.follow(GameState.player)
+	for e in E.npcs: e.update(dt)
+	World.update_portals(hud)
+
+
+## 나무 뒤에 가려지면 안 되는 것들 (Prop 이 이 목록을 보고 나무를 투명하게 한다).
+## 2D판은 그릴 때 화면 근처 것만 골라 이 목록을 만든다
+func _mark_fade_targets() -> void:
+	var E: Dictionary = GameState.entities
+	var list := []
+	var near := func(e) -> bool:
+		return e.x + 420 > camera.cam_x and e.x - 420 < camera.cam_x + camera.w \
+			and e.y + 420 > camera.cam_y and e.y - 420 < camera.cam_y + camera.h
+	for e in E.npcs + [GameState.player]:
+		if not e.is_hidden and near.call(e): list.append(e)
+	for p in E.props:
+		if (p.type == "CHEST" and not p.opened) or (p.type == "BERRY" and p.ripe):
+			if near.call(p): list.append(p)
+	GameState.fadeTargets = list

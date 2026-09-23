@@ -4,7 +4,8 @@
    "id": "ev_nara",
    "title": "수련장의 또래",
    "when": {
-    "$fn": "c => c.s.story.scenes.includes('ch1') && c.map === 'DOJO'"
+    "$fn": "c => c.s.story.scenes.includes('ch1') && c.map === 'DOJO'",
+    "$at": "CHRONICLE.0.when"
    },
    "lines": [
     {
@@ -31,7 +32,8 @@
    "id": "ev_first_night",
    "title": "첫 밤",
    "when": {
-    "$fn": "c => c.night && c.day >= 2 && c.lessons >= 1 && c.map === 'VILLAGE'"
+    "$fn": "c => c.night && c.day >= 2 && c.lessons >= 1 && c.map === 'VILLAGE'",
+    "$at": "CHRONICLE.1.when"
    },
    "lines": [
     {
@@ -60,7 +62,8 @@
    "id": "ev_board",
    "title": "광장의 게시판",
    "when": {
-    "$fn": "c => c.map === 'VILLAGE' && c.done('m1')"
+    "$fn": "c => c.map === 'VILLAGE' && c.done('m1')",
+    "$at": "CHRONICLE.2.when"
    },
    "lines": [
     {
@@ -86,7 +89,8 @@
    "title": "비늘 아래",
    "clue": "mark",
    "when": {
-    "$fn": "c => c.s.story.rites.includes(1) && c.night && (c.map === 'VILLAGE' || c.map === 'DEN_MINE')"
+    "$fn": "c => c.s.story.rites.includes(1) && c.night && (c.map === 'VILLAGE' || c.map === 'DEN_MINE')",
+    "$at": "CHRONICLE.3.when"
    },
    "lines": [
     {
@@ -110,7 +114,8 @@
    "title": "물이 읽은 것",
    "clue": "seiran",
    "when": {
-    "$fn": "c => c.map === 'FALLS' && c.s.story.clues.includes('mark') && (c.s.story.events || []).includes('ev_falls')"
+    "$fn": "c => c.map === 'FALLS' && c.s.story.clues.includes('mark') && (c.s.story.events || []).includes('ev_falls')",
+    "$at": "CHRONICLE.4.when"
    },
    "lines": [
     {
@@ -138,7 +143,8 @@
    "title": "골짜기의 울음",
    "grant": "m4",
    "when": {
-    "$fn": "c => c.done('m3') && !c.done('m4') && !c.active('m4') && c.map === 'HOLLOW'"
+    "$fn": "c => c.done('m3') && !c.done('m4') && !c.active('m4') && c.map === 'HOLLOW'",
+    "$at": "CHRONICLE.5.when"
    },
    "lines": [
     {
@@ -177,7 +183,8 @@
    "id": "ev_zalgora",
    "title": "밀림에서 본 것",
    "when": {
-    "$fn": "c => c.active('m5') && !c.boss('ZALGORA') && c.map === 'JUNGLE'"
+    "$fn": "c => c.active('m5') && !c.boss('ZALGORA') && c.map === 'JUNGLE'",
+    "$at": "CHRONICLE.6.when"
    },
    "lines": [
     {
@@ -199,7 +206,8 @@
    "title": "여름에 내린 눈",
    "grant": "m5a",
    "when": {
-    "$fn": "c => c.done('m5') && (c.done('m5g') || c.boss('GLACIA')) && !c.done('m5a') && !c.active('m5a') && c.map === 'VILLAGE'"
+    "$fn": "c => c.done('m5') && (c.done('m5g') || c.boss('GLACIA')) && !c.done('m5a') && !c.active('m5a') && c.map === 'VILLAGE'",
+    "$at": "CHRONICLE.7.when"
    },
    "lines": [
     {
@@ -239,7 +247,8 @@
    "title": "모래 속의 발자국",
    "grant": "m5b",
    "when": {
-    "$fn": "c => (c.done('m6w') || c.boss('BASIL')) && !c.done('m5b') && !c.active('m5b') && c.map === 'DESERT'"
+    "$fn": "c => (c.done('m6w') || c.boss('BASIL')) && !c.done('m5b') && !c.active('m5b') && c.map === 'DESERT'",
+    "$at": "CHRONICLE.8.when"
    },
    "lines": [
     {
@@ -271,7 +280,8 @@
    "title": "하늘이 붉던 날",
    "grant": "m6",
    "when": {
-    "$fn": "c => (c.done('m5c') || (c.done('m5b') && c.boss('IGNAR'))) && !c.done('m6') && !c.active('m6')"
+    "$fn": "c => (c.done('m5c') || (c.done('m5b') && c.boss('IGNAR'))) && !c.done('m6') && !c.active('m6')",
+    "$at": "CHRONICLE.9.when"
    },
    "lines": [
     {
@@ -306,7 +316,8 @@
    "id": "ev_den_moved",
    "title": "둥지를 옮긴 날",
    "when": {
-    "$fn": "c => c.map === 'VILLAGE' && c.s.den && c.s.den.built"
+    "$fn": "c => c.map === 'VILLAGE' && c.s.den && c.s.den.built",
+    "$at": "CHRONICLE.10.when"
    },
    "lines": [
     {
@@ -333,7 +344,8 @@
    "id": "ev_falls",
    "title": "구름 폭포",
    "when": {
-    "$fn": "c => c.map === 'FALLS'"
+    "$fn": "c => c.map === 'FALLS'",
+    "$at": "CHRONICLE.11.when"
    },
    "lines": [
     {
@@ -392,7 +404,8 @@
    "id": "ev_gathering",
    "title": "달이 가장 밝은 밤",
    "when": {
-    "$fn": "c => c.map === 'FALLS' && c.gathering"
+    "$fn": "c => c.map === 'FALLS' && c.gathering",
+    "$at": "CHRONICLE.12.when"
    },
    "lines": [
     {
@@ -443,7 +456,8 @@
    "id": "ev_cloudtop",
    "title": "구름마루 마을",
    "when": {
-    "$fn": "c => c.map === 'CLOUDTOP'"
+    "$fn": "c => c.map === 'CLOUDTOP'",
+    "$at": "CHRONICLE.13.when"
    },
    "lines": [
     {
@@ -467,7 +481,8 @@
    "title": "밤손님",
    "flag": "messenger",
    "when": {
-    "$fn": "c => c.done('m6w') && c.night && (c.map === 'VILLAGE' || c.map === 'DEN_MINE') && c.clueCount >= 3 && !c.s.raid.active"
+    "$fn": "c => c.done('m6w') && c.night && (c.map === 'VILLAGE' || c.map === 'DEN_MINE') && c.clueCount >= 3 && !c.s.raid.active",
+    "$at": "CHRONICLE.14.when"
    },
    "lines": [
     {
@@ -496,7 +511,8 @@
    "id": "ev_ignar_meet",
    "title": "삼백 년을 기다린 용",
    "when": {
-    "$fn": "c => c.map === 'IGNAR_LAIR' && c.active('m6') && !c.boss('IGNAR')"
+    "$fn": "c => c.map === 'IGNAR_LAIR' && c.active('m6') && !c.boss('IGNAR')",
+    "$at": "CHRONICLE.15.when"
    },
    "lines": [
     {
@@ -538,7 +554,8 @@
       "id": "join",
       "label": "…계속 말해 보라고 한다",
       "when": {
-       "$fn": "c => c.flag('messenger')"
+       "$fn": "c => c.flag('messenger')",
+       "$at": "CHRONICLE.15.choice.options.1.when"
       },
       "flag": "route_dark",
       "grant": "m7d",
@@ -564,7 +581,8 @@
    "id": "ev_ignar_fall",
    "title": "무릎을 접은 용",
    "when": {
-    "$fn": "c => c.map === 'IGNAR_LAIR' && c.boss('IGNAR') && c.active('m6')"
+    "$fn": "c => c.map === 'IGNAR_LAIR' && c.boss('IGNAR') && c.active('m6')",
+    "$at": "CHRONICLE.16.when"
    },
    "lines": [
     {
@@ -598,7 +616,8 @@
       "id": "spare",
       "label": "같이 가자, 카이론이 기다리고 있다고 말하며 등을 내민다",
       "when": {
-       "$fn": "c => c.clueCount >= 4"
+       "$fn": "c => c.clueCount >= 4",
+       "$at": "CHRONICLE.16.choice.options.1.when"
       },
       "flag": "ignar_spared",
       "lines": [
@@ -628,7 +647,8 @@
    "title": "문을 여는 자",
    "flag": "dark_duel",
    "when": {
-    "$fn": "c => c.map === 'VILLAGE' && c.active('m7d') && c.route === 'dark'"
+    "$fn": "c => c.map === 'VILLAGE' && c.active('m7d') && c.route === 'dark'",
+    "$at": "CHRONICLE.17.when"
    },
    "lines": [
     {
@@ -662,7 +682,8 @@
    "title": "불탄 도시",
    "clue": "city",
    "when": {
-    "$fn": "c => c.map === 'ASH_CITY'"
+    "$fn": "c => c.map === 'ASH_CITY'",
+    "$at": "CHRONICLE.18.when"
    },
    "lines": [
     {
@@ -702,7 +723,8 @@
    "title": "폭포의 두 줄",
    "raid": "war",
    "when": {
-    "$fn": "c => c.map === 'FALLS' && c.active('m6w') && c.s.quests.active.m6w.step >= 1"
+    "$fn": "c => c.map === 'FALLS' && c.active('m6w') && c.s.quests.active.m6w.step >= 1",
+    "$at": "CHRONICLE.19.when"
    },
    "lines": [
     {
@@ -760,7 +782,8 @@
    "title": "폭포의 두 그림자",
    "grant": "s1",
    "when": {
-    "$fn": "c => c.map === 'FALLS' && c.hour >= 17 && c.hour < 20 && c.done('m5g') && !c.gathering && c.datesOf('Haru') === 0 && !c.s.story.events.includes('ev_tryst_mine')"
+    "$fn": "c => c.map === 'FALLS' && c.hour >= 17 && c.hour < 20 && c.done('m5g') && !c.gathering && c.datesOf('Haru') === 0 && !c.s.story.events.includes('ev_tryst_mine')",
+    "$at": "CHRONICLE.20.when"
    },
    "lines": [
     {
@@ -801,7 +824,8 @@
    "id": "ev_tryst_mine",
    "title": "들킬 뻔한 저녁",
    "when": {
-    "$fn": "c => c.map === 'FALLS' && c.hour >= 17 && c.hour < 20 && c.done('m5g') && !c.gathering && c.datesOf('Haru') >= 1 && !c.s.story.events.includes('ev_tryst')"
+    "$fn": "c => c.map === 'FALLS' && c.hour >= 17 && c.hour < 20 && c.done('m5g') && !c.gathering && c.datesOf('Haru') >= 1 && !c.s.story.events.includes('ev_tryst')",
+    "$at": "CHRONICLE.21.when"
    },
    "lines": [
     {
@@ -838,7 +862,8 @@
    "id": "ev_tower_night",
    "title": "망루의 밤",
    "when": {
-    "$fn": "c => c.map === 'VILLAGE' && c.night && c.active('t1') && !c.s.raid.active && Math.hypot(c.s.player.x - (17 * 96 + 48), c.s.player.y - (7 * 96 + 48)) < 300"
+    "$fn": "c => c.map === 'VILLAGE' && c.night && c.active('t1') && !c.s.raid.active && Math.hypot(c.s.player.x - (17 * 96 + 48), c.s.player.y - (7 * 96 + 48)) < 300",
+    "$at": "CHRONICLE.22.when"
    },
    "lines": [
     {
@@ -868,7 +893,8 @@
    "title": "도란과 미루의 알",
    "flag": "couple_egg",
    "when": {
-    "$fn": "c => c.map === 'VILLAGE' && c.done('m5g') && c.hour >= 7 && c.hour < 18 && !c.s.raid.active && !c.flag('couple_egg')"
+    "$fn": "c => c.map === 'VILLAGE' && c.done('m5g') && c.hour >= 7 && c.hour < 18 && !c.s.raid.active && !c.flag('couple_egg')",
+    "$at": "CHRONICLE.23.when"
    },
    "lines": [
     {
@@ -896,7 +922,8 @@
    "title": "깨어난 아침",
    "flag": "couple_hatched",
    "when": {
-    "$fn": "c => c.map === 'VILLAGE' && c.flag('couple_egg') && !c.flag('couple_hatched') && c.day - (c.s.story.coupleEggDay || 0) >= 6 && c.hour >= 7 && c.hour < 18 && !c.s.raid.active"
+    "$fn": "c => c.map === 'VILLAGE' && c.flag('couple_egg') && !c.flag('couple_hatched') && c.day - (c.s.story.coupleEggDay || 0) >= 6 && c.hour >= 7 && c.hour < 18 && !c.s.raid.active",
+    "$at": "CHRONICLE.24.when"
    },
    "lines": [
     {
@@ -924,7 +951,8 @@
    "title": "길을 막은 자",
    "ambush": true,
    "when": {
-    "$fn": "c => ['EAST_ROAD', 'SOUTH_ROAD', 'LAKE'].includes(c.map) && c.raids >= 2 && c.done('m4') && c.hour >= 7 && c.hour < 18 && !c.s.raid.active && !c.s.activity"
+    "$fn": "c => ['EAST_ROAD', 'SOUTH_ROAD', 'LAKE'].includes(c.map) && c.raids >= 2 && c.done('m4') && c.hour >= 7 && c.hour < 18 && !c.s.raid.active && !c.s.activity",
+    "$at": "CHRONICLE.25.when"
    },
    "lines": [
     {
@@ -953,7 +981,8 @@
    "id": "ev_yuan_torn",
    "title": "경계석에 기대앉은 용",
    "when": {
-    "$fn": "c => (c.map === 'FALLS' || c.map === 'CLOUDTOP') && c.done('s1') && !c.night && !c.gathering && !c.done('m6w')"
+    "$fn": "c => (c.map === 'FALLS' || c.map === 'CLOUDTOP') && c.done('s1') && !c.night && !c.gathering && !c.done('m6w')",
+    "$at": "CHRONICLE.26.when"
    },
    "lines": [
     {
@@ -982,7 +1011,8 @@
    "id": "ev_nara_stepparent",
    "title": "수련장의 심문",
    "when": {
-    "$fn": "c => c.map === 'DOJO' && c.hour >= 8 && c.hour < 12 && c.datesOf('Elder') >= 1 && !c.gathering"
+    "$fn": "c => c.map === 'DOJO' && c.hour >= 8 && c.hour < 12 && c.datesOf('Elder') >= 1 && !c.gathering",
+    "$at": "CHRONICLE.27.when"
    },
    "lines": [
     {
@@ -1015,7 +1045,8 @@
    "id": "ev_waystone",
    "title": "이동 석비",
    "when": {
-    "$fn": "c => c.s.entities.props.some(p => p.type === 'WAYSTONE' && Math.hypot(p.x - c.s.player.x, p.y - c.s.player.y) < 340) && c.map !== 'VILLAGE'"
+    "$fn": "c => c.s.entities.props.some(p => p.type === 'WAYSTONE' && Math.hypot(p.x - c.s.player.x, p.y - c.s.player.y) < 340) && c.map !== 'VILLAGE'",
+    "$at": "CHRONICLE.28.when"
    },
    "lines": [
     {
@@ -1038,7 +1069,8 @@
    "id": "ev_cave",
    "title": "땅 밑의 길",
    "when": {
-    "$fn": "c => c.s.entities.props.some(p => p.type === 'CAVE' && Math.hypot(p.x - c.s.player.x, p.y - c.s.player.y) < 360)"
+    "$fn": "c => c.s.entities.props.some(p => p.type === 'CAVE' && Math.hypot(p.x - c.s.player.x, p.y - c.s.player.y) < 360)",
+    "$at": "CHRONICLE.29.when"
    },
    "lines": [
     {
@@ -1061,7 +1093,8 @@
    "id": "ev_sky",
    "title": "구름 위",
    "when": {
-    "$fn": "c => c.map === 'SKY_RUINS'"
+    "$fn": "c => c.map === 'SKY_RUINS'",
+    "$at": "CHRONICLE.30.when"
    },
    "lines": [
     {
@@ -1084,7 +1117,8 @@
    "id": "ev_hollow_deep",
    "title": "옛 굴 터",
    "when": {
-    "$fn": "c => c.map === 'HOLLOW_DEEP'"
+    "$fn": "c => c.map === 'HOLLOW_DEEP'",
+    "$at": "CHRONICLE.31.when"
    },
    "lines": [
     {
@@ -1101,7 +1135,8 @@
    "id": "ev_snow_ridge",
    "title": "얼어붙은 망루",
    "when": {
-    "$fn": "c => c.map === 'SNOW_RIDGE'"
+    "$fn": "c => c.map === 'SNOW_RIDGE'",
+    "$at": "CHRONICLE.32.when"
    },
    "lines": [
     {
@@ -1118,7 +1153,8 @@
    "id": "ev_jungle_deep",
    "title": "묻힌 사당",
    "when": {
-    "$fn": "c => c.map === 'JUNGLE_DEEP'"
+    "$fn": "c => c.map === 'JUNGLE_DEEP'",
+    "$at": "CHRONICLE.33.when"
    },
    "lines": [
     {
@@ -1135,7 +1171,8 @@
    "id": "ev_desert_bones",
    "title": "세 개의 깃발",
    "when": {
-    "$fn": "c => c.map === 'DESERT_BONES'"
+    "$fn": "c => c.map === 'DESERT_BONES'",
+    "$at": "CHRONICLE.34.when"
    },
    "lines": [
     {
@@ -1152,7 +1189,8 @@
    "id": "ev_volcano_path",
    "title": "잿마루의 문",
    "when": {
-    "$fn": "c => c.map === 'VOLCANO_PATH'"
+    "$fn": "c => c.map === 'VOLCANO_PATH'",
+    "$at": "CHRONICLE.35.when"
    },
    "lines": [
     {
@@ -1169,7 +1207,8 @@
    "id": "ev_snowland",
    "title": "서리 봉우리",
    "when": {
-    "$fn": "c => c.map === 'SNOW_ROAD'"
+    "$fn": "c => c.map === 'SNOW_ROAD'",
+    "$at": "CHRONICLE.36.when"
    },
    "lines": [
     {
@@ -1183,7 +1222,8 @@
    "title": "벽에 새긴 것",
    "clue": "volcano",
    "when": {
-    "$fn": "c => c.map === 'VOLCANO' && (c.s.story.events || []).includes('ev_volcano') && c.s.story.rites.includes(3)"
+    "$fn": "c => c.map === 'VOLCANO' && (c.s.story.events || []).includes('ev_volcano') && c.s.story.rites.includes(3)",
+    "$at": "CHRONICLE.37.when"
    },
    "lines": [
     {
@@ -1210,7 +1250,8 @@
    "id": "ev_volcano",
    "title": "잿빛 화산",
    "when": {
-    "$fn": "c => c.map === 'VOLCANO'"
+    "$fn": "c => c.map === 'VOLCANO'",
+    "$at": "CHRONICLE.38.when"
    },
    "lines": [
     {

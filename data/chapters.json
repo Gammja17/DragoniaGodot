@@ -5,7 +5,8 @@
    "title": "1장",
    "name": "웨스턴 마을",
    "done": {
-    "$fn": "(s) => s.quests.done.includes(id)"
+    "$fn": "(s) => s.quests.done.includes(id)",
+    "$at": "CHAPTERS.0.done"
    },
    "maps": [
     "VILLAGE",
@@ -19,7 +20,8 @@
    "title": "2장",
    "name": "나팔 소리",
    "done": {
-    "$fn": "(s) => s.quests.done.includes(id)"
+    "$fn": "(s) => s.quests.done.includes(id)",
+    "$at": "CHAPTERS.1.done"
    },
    "maps": [
     "LAKE",
@@ -32,7 +34,8 @@
    "title": "3장",
    "name": "골짜기의 옛 수호룡",
    "done": {
-    "$fn": "s => !!s.bossesDefeated.MORGATH"
+    "$fn": "s => !!s.bossesDefeated.MORGATH",
+    "$at": "CHAPTERS.2.done"
    },
    "maps": [
     "HOLLOW",
@@ -46,7 +49,8 @@
    "title": "3장",
    "name": "골짜기의 옛 수호룡",
    "done": {
-    "$fn": "(s) => s.quests.done.includes(id)"
+    "$fn": "(s) => s.quests.done.includes(id)",
+    "$at": "CHAPTERS.3.done"
    },
    "maps": [
     "FALLS"
@@ -59,7 +63,8 @@
    "title": "4장",
    "name": "굶는 계절",
    "done": {
-    "$fn": "(s) => s.quests.done.includes(id)"
+    "$fn": "(s) => s.quests.done.includes(id)",
+    "$at": "CHAPTERS.4.done"
    },
    "maps": [
     "JUNGLE",
@@ -76,7 +81,8 @@
    "title": "5장",
    "name": "맡긴 알",
    "done": {
-    "$fn": "(s) => s.quests.done.includes(id)"
+    "$fn": "(s) => s.quests.done.includes(id)",
+    "$at": "CHAPTERS.5.done"
    },
    "maps": [
     "SNOW_ROAD",
@@ -90,7 +96,8 @@
    "title": "6장",
    "name": "전쟁",
    "done": {
-    "$fn": "(s) => s.quests.done.includes(id)"
+    "$fn": "(s) => s.quests.done.includes(id)",
+    "$at": "CHAPTERS.6.done"
    },
    "maps": [],
    "blocked": "지금 마을을 멀리 떠날 수는 없다."
@@ -100,7 +107,8 @@
    "title": "7장",
    "name": "사막 길",
    "done": {
-    "$fn": "(s) => s.quests.done.includes(id)"
+    "$fn": "(s) => s.quests.done.includes(id)",
+    "$at": "CHAPTERS.7.done"
    },
    "maps": [
     "DESERT",
@@ -117,7 +125,8 @@
    "title": "8장",
    "name": "잿마루",
    "done": {
-    "$fn": "s => s.quests.done.includes('m6') || s.quests.done.includes('m7d')"
+    "$fn": "s => s.quests.done.includes('m6') || s.quests.done.includes('m7d')",
+    "$at": "CHAPTERS.8.done"
    },
    "maps": [
     "VOLCANO",

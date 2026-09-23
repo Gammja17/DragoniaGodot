@@ -254,7 +254,8 @@
    "variants": [
     {
      "when": {
-      "$fn": "s => s.story.route === 'dark' && s.quests.done.includes('m7d')"
+      "$fn": "s => s.story.route === 'dark' && s.quests.done.includes('m7d')",
+      "$at": "ROUTINES.Nara.variants.0.when"
      },
      "day": [
       {
@@ -468,7 +469,8 @@
   "Ignar": {
    "job": "돌아온 용",
    "when": {
-    "$fn": "s => (s.story.route === 'redeem' && s.quests.done.includes('m6')) || (s.story.route === 'dark' && s.quests.done.includes('m7d'))"
+    "$fn": "s => (s.story.route === 'redeem' && s.quests.done.includes('m6')) || (s.story.route === 'dark' && s.quests.done.includes('m7d'))",
+    "$at": "ROUTINES.Ignar.when"
    },
    "day": [
     {
@@ -520,7 +522,8 @@
    "variants": [
     {
      "when": {
-      "$fn": "s => s.story.route === 'dark'"
+      "$fn": "s => s.story.route === 'dark'",
+      "$at": "ROUTINES.Ignar.variants.0.when"
      },
      "day": [
       {
@@ -631,7 +634,8 @@
    "variants": [
     {
      "when": {
-      "$fn": "s => (s.story.flags || {}).couple_egg && !(s.story.flags || {}).couple_hatched"
+      "$fn": "s => (s.story.flags || {}).couple_egg && !(s.story.flags || {}).couple_hatched",
+      "$at": "ROUTINES.Doran.variants.0.when"
      },
      "day": [
       {
@@ -751,7 +755,8 @@
    "variants": [
     {
      "when": {
-      "$fn": "s => (s.story.flags || {}).couple_egg && !(s.story.flags || {}).couple_hatched"
+      "$fn": "s => (s.story.flags || {}).couple_egg && !(s.story.flags || {}).couple_hatched",
+      "$at": "ROUTINES.Miru.variants.0.when"
      },
      "day": [
       {
@@ -788,7 +793,8 @@
   "Iseul": {
    "job": "아이",
    "when": {
-    "$fn": "s => !!(s.story.flags || {}).couple_hatched"
+    "$fn": "s => !!(s.story.flags || {}).couple_hatched",
+    "$at": "ROUTINES.Iseul.when"
    },
    "day": [
     {

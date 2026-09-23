@@ -153,7 +153,8 @@
    "act": "main",
    "requires": "m1",
    "needs": {
-    "$fn": "s => s.story.scenes.includes('ch1')"
+    "$fn": "s => s.story.scenes.includes('ch1')",
+    "$at": "QUESTS.2.needs"
    },
    "title": "자라나는 날개",
    "offer": "카이론한테 구르고 있다지? 허허… 그놈이 입은 험해도 가르치는 건 확실하단다.\n\n그런데 네 몸이 아직 작아서 숨결에 힘이 덜 실리는구나. 용이 어떻게 자라는지는 카이론이 잘 안단다. 가서 한번 물어보려무나.",
@@ -667,7 +668,8 @@
    "turnIn": "Seiran",
    "title": "달이 가장 밝은 밤",
    "needs": {
-    "$fn": "s => !s.quests.done.includes('m5a') && !('m5a' in s.quests.active)"
+    "$fn": "s => !s.quests.done.includes('m5a') && !('m5a' in s.quests.active)",
+    "$at": "QUESTS.6.needs"
    },
    "offer": "폭포 길이 열렸다는 소식이 저쪽에도 갔던 모양이다. 구름마루에서 기별이 왔단다. 스무 해 만에 달맞이 모임을 다시 열자고.\n\n달이 기울 때까지 밤마다 폭포 아래에 불을 피우기로 했단다. 해가 지거든 너도 오너라. 다들 너를 보고 싶어 한단다.",
    "summary": "두 마을은 스무 해 전까지 달이 밝은 밤마다 폭포 아래에 모였다고 한다. 그 모임이 다시 선다.",
@@ -1145,7 +1147,8 @@
    "requires": "m5b",
    "title": "불탄 도시",
    "needs": {
-    "$fn": "s => !s.bossesDefeated.IGNAR"
+    "$fn": "s => !s.bossesDefeated.IGNAR",
+    "$at": "QUESTS.10.needs"
    },
    "offer": "바실이 길을 비켰으니 이제 사막 너머까지 갈 수 있겠구나. 모래 폭군의 둥지에서 남쪽으로 더 내려가면 된단다.\n\n…가서 보고 오너라. 나는 예순 해 동안 한 번도 못 가 봤단다. 볼 자신이 없어서.",
    "summary": "사막 너머에는 예순 해 전 이그나르가 하룻밤에 태운 인간의 도시가 있다. 사냥꾼들은 거기서 온다.",
@@ -1769,7 +1772,8 @@
    "giver": "Gron",
    "act": "Gron",
    "needs": {
-    "$fn": "s => s.quests.done.includes('m3') && !(s.story.dead || []).includes('Gron')"
+    "$fn": "s => s.quests.done.includes('m3') && !(s.story.dead || []).includes('Gron')",
+    "$at": "QUESTS.17.needs"
    },
    "title": "벽에 걸린 못 세 개",
    "offer": "구경만 하는 놈은 손님이 아니다. 내 모루에서 [비늘을 한 번] 단련해라. 풀무는 네가 밟고. 그럼 말 상대는 해 주지.",
@@ -1916,7 +1920,8 @@
    "giver": "Nara",
    "act": "Nara",
    "needs": {
-    "$fn": "s => s.story.lessons.length >= 2"
+    "$fn": "s => s.story.lessons.length >= 2",
+    "$at": "QUESTS.18.needs"
    },
    "title": "언니한테 한 번만",
    "offer": "야, 너 입 무겁지? 무겁다고 해. 나 부탁 하나만 하자.\n\n나 티아맷 언니한테 백 번은 졌거든. 진짜 백 번. 근데 왜 지는지를 모르겠어. 네가 가서 슬쩍 물어봐 줘. 내가 시켰다고는 절대 말하지 말고!",
@@ -2291,7 +2296,8 @@
    "giver": "Riun",
    "act": "Gift",
    "needs": {
-    "$fn": "s => s.quests.done.includes('m5c')"
+    "$fn": "s => s.quests.done.includes('m5c')",
+    "$at": "QUESTS.23.needs"
    },
    "title": "물을 맡기다",
    "offer": "구름마루는 그대들과 나란히 서기로 했소. 말로만 하는 약속은 물에 쓴 글씨와 같으니, 우리 숨결을 그대에게 맡겨 두겠소.\n\n세이란이 샘에서 기다리고 있을 것이오.",
@@ -2332,7 +2338,8 @@
    "giver": "Kairon",
    "act": "Kairon",
    "needs": {
-    "$fn": "s => s.story.lessons.length >= 2"
+    "$fn": "s => s.story.lessons.length >= 2",
+    "$at": "QUESTS.24.needs"
    },
    "title": "금빛 사냥감",
    "offer": "숲에서 금빛으로 빛나는 [정예] 몬스터를 본 적 있냐. 무리를 이끄는 우두머리인데, 그런 놈을 하나 잡아 와 봐라. 잡는 걸 보려는 게 아니라 네가 거기서 뭘 보고 오는지가 궁금해서 그런다.",
@@ -2386,7 +2393,8 @@
    "act": "Kairon",
    "requires": "k1",
    "needs": {
-    "$fn": "s => s.story.lessons.length >= 4 && mapOpen(s, 'VOLCANO')"
+    "$fn": "s => s.story.lessons.length >= 4 && mapOpen(s, 'VOLCANO')",
+    "$at": "QUESTS.25.needs"
    },
    "title": "형의 발자취",
    "offer": "화산에 가거든 부탁이 하나 있다. 기슭 어딘가에 형이랑 내가 어릴 때 키를 재면서 금을 그어 놓은 바위가 있을 거다. 그게 아직 남아 있는지만 보고 와 다오.",

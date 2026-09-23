@@ -6,6 +6,16 @@ class_name TileImages
 const RECOLOR_NAMES := ["SNOW", "VOLCANO", "AUTUMN", "DESERT", "SKY"]
 
 static var _images := {}
+static var _textures := {}
+
+
+## 그릴 때 쓰는 텍스처 (시트마다 한 번만 만든다)
+static func get_texture(key: String) -> Texture2D:
+	if not _textures.has(key):
+		var img := get_image(key)
+		if img == null: return null
+		_textures[key] = ImageTexture.create_from_image(img)
+	return _textures[key]
 
 
 static func get_image(key: String) -> Image:

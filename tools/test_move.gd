@@ -21,6 +21,7 @@ func _ready() -> void:
 	var maps: Dictionary = Data.get_module("maps").MAPS
 	var spec: Dictionary = maps.LAKE.duplicate(); spec.id = "LAKE"
 	Terrain.set_active_map(GameMap.build(spec))
+	Collision.build_prop_grid([])   # 바닥만 본다 (마을 소품이 남아 있으면 엉뚱한 데서 막힌다)
 	p.x = GameMap.coarse_center(8); p.y = GameMap.coarse_center(4)
 	await _hold("down", 3.0)
 	print("연못 쪽으로 3초: y=", p.y, " 발밑 ", Terrain.ground_at(p.x, p.y), " (물에 들어가면 안 된다)")

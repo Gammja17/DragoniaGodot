@@ -229,7 +229,8 @@
    "place": "LAKE",
    "fade": "호숫가",
    "when": {
-    "$fn": "() => true"
+    "$fn": "() => true",
+    "$at": "RESTS.0.when"
    },
    "offer": [
     {
@@ -270,7 +271,8 @@
    "place": "VILLAGE",
    "fade": "엘더의 굴 앞",
    "when": {
-    "$fn": "s => s.story.lessons.length >= 2"
+    "$fn": "s => s.story.lessons.length >= 2",
+    "$at": "RESTS.1.when"
    },
    "offer": [
     {
@@ -323,7 +325,8 @@
    "place": "DOJO",
    "fade": "수련장 그늘",
    "when": {
-    "$fn": "s => s.story.lessons.length >= 4"
+    "$fn": "s => s.story.lessons.length >= 4",
+    "$at": "RESTS.2.when"
    },
    "offer": [
     {
@@ -361,7 +364,8 @@
    "map": "LAKE",
    "title": "호수까지 걷기",
    "when": {
-    "$fn": "() => true"
+    "$fn": "() => true",
+    "$at": "TRIPS.0.when"
    },
    "offer": [
     {
@@ -398,7 +402,8 @@
    "map": "FALLS",
    "title": "폭포 아래까지",
    "when": {
-    "$fn": "s => s.story.lessons.length >= 3"
+    "$fn": "s => s.story.lessons.length >= 3",
+    "$at": "TRIPS.1.when"
    },
    "offer": [
     {
@@ -439,7 +444,8 @@
    "map": "HOLLOW",
    "title": "스승님 계시던 자리",
    "when": {
-    "$fn": "s => !!s.bossesDefeated.MORGATH"
+    "$fn": "s => !!s.bossesDefeated.MORGATH",
+    "$at": "TRIPS.2.when"
    },
    "offer": [
     {

@@ -10,6 +10,12 @@ static func set_active_map(m: GameMap) -> void:
 	active = m
 
 
+## 지금 지도의 바이옴 (소품 색상판·등장 몬스터에 쓴다). 굴이면 그 굴의 바이옴
+static func active_biome() -> String:
+	if not active: return "FOREST"
+	return active.spec.get("biome", "FOREST")
+
+
 ## 지금 지도의 크기 (월드 px)
 static func current_map_bounds() -> Vector2:
 	return Vector2(active.w, active.h) if active else Vector2(1920, 1440)

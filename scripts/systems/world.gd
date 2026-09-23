@@ -1,0 +1,364 @@
+class_name World
+## 2D판 systems/world.js. 여러 장의 지도를 오가는 살림살이.
+##
+##  · 지도는 한 번 만들면 캐시해 둔다 (같은 씨앗이라 다시 와도 모양이 같다)
+##  · 들어갈 때마다 그 지도의 개체(소품·NPC·적)를 새로 깐다. 기억해야 하는 것만 따로 남긴다
+##      NPC      이름으로 캐시해 두고 다시 쓴다 (호감도·데이트 횟수가 살아 있어야 한다)
+##      보물상자 GameState.openedChests['지도id:번호'] 로 기억한다
+##  · 개체 노드는 container(y 정렬되는 World 노드) 아래에 붙는다
+##
+## 아직 옮기지 않은 것: 굴 안(방) 지도, 보스 자리, 둥지, 짝·아이들 데려오기, 길목 습격. 그 시스템과 함께 붙인다.
+
+const PORTAL_RANGE := 62
+const EDGE_WALL := 2          # 가장자리 몇 칸을 나무로 막을지 (큰 칸 수)
+const OPPOSITE := { "N": "S", "S": "N", "E": "W", "W": "E" }
+# 지역 이름 밑에 한 줄로 붙는 설명
+const BIOME_LABEL := {
+	"VILLAGE": "용들의 마을", "FOREST": "푸른 숲", "LAKE": "물가", "HOLLOW": "달빛이 고인 골짜기",
+	"JUNGLE": "무성한 밀림", "SNOW": "눈과 서리의 땅", "DESERT": "메마른 사구",
+	"AUTUMN": "단풍이 지는 골", "VOLCANO": "잿빛 화산 지대",
+}
+
+static var container: Node2D          # main 이 넣어 준다
+static var _map_cache := {}           # id → GameMap
+static var _npc_cache := {}           # 이름 → Dragon (호감도 유지)
+static var _travel_lock := 0          # 이 시각(ms)까지는 포탈을 다시 밟지 않는다
+static var _nag := 0.0                # 막힌 길 안내를 너무 자주 띄우지 않게
+
+
+static func maps() -> Dictionary: return Data.get_module("maps").MAPS
+static func dens() -> Dictionary: return Data.get_module("dens").DENS
+
+
+## 지도 인스턴스 (없으면 만들어 캐시)
+static func get_map(id: String) -> GameMap:
+	if not _map_cache.has(id):
+		if not maps().has(id):
+			push_error("알 수 없는 지도 (굴 안은 아직 안 옮겼다): " + id)
+			return null
+		var spec: Dictionary = maps()[id].duplicate()
+		spec.id = id
+		_map_cache[id] = GameMap.build(spec)
+	return _map_cache[id]
+
+
+## 큰 칸 좌표 → 월드 좌표
+static func at(c: Array) -> Vector2:
+	return Vector2(GameMap.coarse_center(c[0]), GameMap.coarse_center(c[1]))
+
+
+## 포탈이 놓이는 자리 (가장자리 가운데에서 한 칸 안쪽)
+static func portal_spot(m: GameMap, side: String) -> Vector2:
+	if side == "N": return at([floori(m.cw / 2.0), 1])
+	if side == "S": return at([floori(m.cw / 2.0), m.ch - 2])
+	if side == "W": return at([1, floori(m.ch / 2.0)])
+	return at([m.cw - 2, floori(m.ch / 2.0)])
+
+
+static func _prop(px: float, py: float, type: String) -> Prop:
+	return Prop.new().setup(px, py, type)
+
+
+# ---------------- 지도 채우기 ----------------
+
+## 가장자리를 나무로 둘러 막는다. 포탈 앞은 비워 둔다
+static func _edge_walls(m: GameMap, props: Array, rng: Util.Mulberry32, portals: Array) -> void:
+	var gaps := []
+	for p in portals: gaps.append(portal_spot(m, p.side))
+	var CP := GameMap.COARSE_PX
+	for cy in m.ch:
+		for cx in m.cw:
+			var edge := cx < EDGE_WALL or cy < EDGE_WALL or cx >= m.cw - EDGE_WALL or cy >= m.ch - EDGE_WALL
+			if not edge: continue
+			# 바깥 줄은 빈틈없이, 안쪽 줄은 셋 중 하나만. 두 줄을 다 채우면 캐노피(240px)가
+			# 겹쳐 화면 한쪽이 통째로 초록 벽이 되고, 길이며 굴 입구가 그 뒤에 묻힌다
+			var outer := cx == 0 or cy == 0 or cx == m.cw - 1 or cy == m.ch - 1
+			if (cx + cy) % 2 == 1 if outer else rng.next() > 0.34: continue
+			var p := at([cx, cy])
+			var open := false
+			for g in gaps:
+				if absf(g.x - p.x) < CP * 1.6 and absf(g.y - p.y) < CP * 1.6: open = true
+			if open: continue
+			if m.ground_at(p.x, p.y) == "WATER": continue
+			props.append(_prop(p.x + Util.rand_range(-20, 20), p.y + Util.rand_range(-20, 20), "TREE"))
+
+
+## 지도 하나의 개체를 전부 만든다
+static func _populate(id: String) -> Dictionary:
+	var m := get_map(id)
+	var spec: Dictionary = maps()[id]
+	var rng := Util.Mulberry32.new(int(spec.get("seed", 1) if spec.get("seed") else 1) * 31 + 7)
+	var pools := GameState.empty_pools()
+	var portals: Array = spec.get("portals", [])
+
+	# 1) 나무·덤불·열매·상자
+	# 나무 한 그루는 240x288px 이나 차지한다. 그루 수를 줄이고 서로 최소 간격을 두어 빈터와 길이 저절로 나게 한다
+	var trees: float = spec.get("trees", 0.4) if spec.get("trees") != null else 0.4
+	var area := m.cw * m.ch
+	# min_gap: 같은 종류끼리 이만큼(px)은 떨어뜨린다
+	var scatter := func(n: int, make: Callable, min_gap := 0.0) -> void:
+		var placed := []
+		var i := 0
+		var tries := 0
+		while i < n and tries < n * 24:
+			tries += 1
+			var x := rng.next() * m.w
+			var y := rng.next() * m.h
+			if m.ground_at(x, y) != "GRASS": continue
+			var near_portal := false
+			for p in portals:
+				if Vector2(x, y).distance_to(portal_spot(m, p.side)) < 150: near_portal = true
+			if near_portal: continue
+			var crowded := false
+			if min_gap:
+				for q in placed:
+					if Vector2(q.x - x, q.y - y).length() < min_gap: crowded = true
+			if crowded: continue
+			make.call(x, y)
+			placed.append(Vector2(x, y))
+			i += 1
+	# 나무는 길에서 떨어져 선다 — 캐노피(240px)가 길을 덮으면 어디가 길인지 안 보인다
+	var near_road := func(x: float, y: float) -> bool:
+		for d in [[0, 0], [95, 0], [-95, 0], [0, 80], [0, -80]]:
+			if m.ground_at(x + d[0], y + d[1]) == "DIRT": return true
+		return false
+	scatter.call(roundi(area * trees * 0.11), func(x, y):
+		if not near_road.call(x, y): pools.props.append(_prop(x, y, "TREE")), 220)
+	scatter.call(roundi(area * 0.22), func(x, y): pools.props.append(_prop(x, y, ["BUSH", "BUSH", "FERN", "ROCK", "STUMP"].pick_random())), 70)
+	scatter.call(roundi(area * 0.06), func(x, y): pools.props.append(_prop(x, y, "BERRY")), 90)
+
+	# 바이옴마다 다른 잡동사니와 랜드마크. 이게 없으면 색상판만 다른 같은 풀밭이 19장 나온다
+	var biomes: Dictionary = Data.get_module("world_biomes").BIOMES
+	var biome: Dictionary = biomes.get(spec.get("biome", ""), biomes.FOREST)
+	if biome.get("decor"):
+		scatter.call(roundi(area * 0.10), func(x, y): pools.props.append(_prop(x, y, biome.decor.pick_random())), 110)
+	if biome.get("landmarks"):
+		scatter.call(2 + floori(rng.next() * 2), func(x, y): pools.props.append(_prop(x, y, biome.landmarks.pick_random())), 520)
+
+	var chest_no := [0]
+	scatter.call(int(spec.get("chests", 3)) if spec.get("chests") != null else 3, func(x, y):
+		var chest := _prop(x, y, "CHEST")
+		chest.chest_id = "%s:%d" % [id, chest_no[0]]
+		chest_no[0] += 1
+		if GameState.openedChests.get(chest.chest_id):
+			chest.opened = true
+			chest.sprite = Data.get_module("tiles").PROP_SPRITES.CHEST_OPEN[0]
+		pools.props.append(chest))
+
+	_edge_walls(m, pools.props, rng, portals)
+
+	# 2) 포탈
+	for p in portals:
+		var s := portal_spot(m, p.side)
+		var gate := _prop(s.x, s.y, "PORTAL")
+		gate.portal = { side = p.side, to = p.to, name = p.get("name") if p.get("name") else Names.map(p.to), needsFlight = bool(p.get("needsFlight", false)) }
+		pools.props.append(gate)
+
+	# 3) 지도마다의 것들
+	for f in spec.get("fixtures", []):
+		var pos := at(f.at) if f.get("at") else Vector2(m.w / 2.0, m.h / 2.0)
+		match f.t:
+			"PROP": pools.props.append(_prop(pos.x, pos.y, f.type))
+			"WAYSTONE":
+				var stone := _prop(pos.x, pos.y, "WAYSTONE")
+				stone.stone_id = id
+				pools.props.append(stone)
+			"CAVE":
+				var cave := _prop(pos.x, pos.y, "CAVE")
+				cave.cave_id = f.id
+				pools.props.append(cave)
+			"DUMMY_SPOT": GameState.dojoSpot = pos
+			"NPC":
+				if Routine.has_routine(f.name): continue    # 일과가 있는 용은 Routine 이 놓는다
+				var npc := get_npc(f.name, pos)
+				npc.x = pos.x; npc.y = pos.y
+				npc.home_x = pos.x; npc.home_y = pos.y
+				npc.is_hidden = false; npc.remove = false
+				pools.npcs.append(npc)
+			# "BOSS", "NEST" 는 보스·둥지를 옮길 때
+
+	# 3-2) 이 지도에 입구가 있는 굴들
+	for den_id in dens():
+		if dens()[den_id].outer != id: continue
+		var pos := at(dens()[den_id].at)
+		var mouth := _prop(pos.x, pos.y, "DEN_MOUTH")
+		mouth.den_id = den_id
+		pools.props.append(mouth)
+
+	# 4) 일과대로 지금 이 지도에 있어야 하는 용들
+	Routine.place_by_routine(id, pools, get_npc)
+
+	# 5) 떠돌이 용 (마을과 숲길에만 한둘). 광장 한복판에 불쑥 서 있으면 "쟤 어디서 났어" 소리가 나서,
+	#    지도 가장자리(문 근처)에 놓고 마을에는 드물게만 온다
+	if not spec.get("clearings") and spec.get("wanderer") != false and rng.next() < (0.35 if id == "VILLAGE" else 0.7):
+		var npcs: Dictionary = Data.get_module("npcs")
+		var species: String = "LOOK" if rng.next() < 0.8 else npcs.WANDER_SPECIES.pick_random()
+		var side := 0.16 + rng.next() * 0.1 if rng.next() < 0.5 else 0.74 + rng.next() * 0.1
+		var wx := rng.next() < 0.5
+		var x0 := m.w * (side if wx else 0.25 + rng.next() * 0.5)
+		var y0 := m.h * (0.25 + rng.next() * 0.5 if wx else side)
+		var spot := clear_spot(x0, y0, m)
+		pools.npcs.append(Dragon.new().setup(spot.x, spot.y, {
+			name = npcs.WANDER_NAMES.pick_random(), personality = npcs.WANDER_PERSONALITIES.pick_random(), species = species,
+			colors = npcs.SPECIES_COLORS.get(species, npcs.SPECIES_COLORS.WESTERN),
+			look = npcs.WANDER_LOOKS.pick_random(), accessory = npcs.WANDER_ACCESSORIES.pick_random(),
+			scale = Util.rand_range(0.85, 1.1), canPartner = false,
+		}))
+
+	return { map = m, pools = pools }
+
+
+## 고정 NPC 는 한 번 만들고 계속 쓴다 (호감도·데이트가 그 안에 들어 있다)
+static func get_npc(name: String, pos: Vector2) -> Dragon:
+	if not _npc_cache.has(name):
+		var def := {}
+		for d in Data.get_module("npcs").FIXED_NPCS:
+			if d.name == name: def = d.duplicate()
+		def.fixed = true
+		_npc_cache[name] = Dragon.new().setup(pos.x, pos.y, def)
+	return _npc_cache[name]
+
+
+## 고정 NPC 를 모두 미리 만들어 둔다. 세이브 복원이 이름으로 찾을 수 있어야 한다
+static func _prime_npcs() -> void:
+	# 일과가 있는 용은 어느 지도의 fixtures 에도 없을 수 있다. 먼저 만들어 둔다
+	for name in Routine.routine_names():
+		var plan = Routine.plan_for(name, 12)
+		if plan: get_npc(name, Vector2(plan.x, plan.y)).home_map = plan.map
+	for id in maps():
+		for f in maps()[id].get("fixtures", []):
+			if f.t != "NPC": continue
+			get_npc(f.name, at(f.at)).home_map = id
+
+
+# ---------------- 드나들기 ----------------
+
+## 물·바위 위로 떨어지지 않게, 가까운 설 수 있는 자리로 밀어 준다
+static func clear_spot(x: float, y: float, m: GameMap) -> Vector2:
+	var inside := func(px: float, py: float) -> bool: return px > 40 and py > 40 and px < m.w - 40 and py < m.h - 40
+	if inside.call(x, y) and not Collision.solid_at(x, y, 20): return Vector2(x, y)
+	for r in range(48, 901, 48):
+		for i in 16:
+			var a := (i / 16.0) * TAU
+			var px := x + cos(a) * r
+			var py := y + sin(a) * r
+			if inside.call(px, py) and not Collision.solid_at(px, py, 20): return Vector2(px, py)
+	return Vector2(x, y)   # 온통 막혀 있으면 어쩔 수 없다
+
+
+## 지도를 바꾼다. from: 어느 쪽에서 들어왔는지 ('N'|'S'|'E'|'W'). 그 반대편 포탈 앞에 선다. spot: 자리를 콕 집을 때
+static func enter_map(id: String, from = null, spot = null) -> GameMap:
+	# 소품(나무·덤불)은 만들어질 때 바이옴으로 색상판을 고른다. 지도를 먼저 활성화하지 않으면
+	# 설원·화산·구름 위의 나무가 직전 지도의 초록 시트로 나온다
+	Terrain.set_active_map(get_map(id))
+	var made := _populate(id)
+	var m: GameMap = made.map
+	var pools: Dictionary = made.pools
+	GameState.map_id = id
+	GameState.indoors = dens().has(id)
+
+	# 설 자리를 고르기 전에 소품 격자를 먼저 깔아야 solid_at() 이 제대로 답한다
+	Collision.build_prop_grid(pools.props)
+
+	var p := Vector2.ZERO
+	if spot != null: p = spot
+	elif from != null:
+		var s := portal_spot(m, from)
+		# 포탈 바로 위에 서면 곧장 되돌아가 버린다. 안쪽으로 한 칸 밀어 놓는다
+		var push: Array = { "N": [0, 1], "S": [0, -1], "E": [-1, 0], "W": [1, 0] }[from]
+		p = Vector2(s.x + push[0] * GameMap.COARSE_PX * 1.3, s.y + push[1] * GameMap.COARSE_PX * 1.3)
+	else:
+		var stone = null
+		for pr in pools.props:
+			if pr.type == "WAYSTONE": stone = pr; break
+		p = Vector2(stone.x, stone.y + 70) if stone else Vector2(m.w / 2.0, m.h / 2.0)
+	p = clear_spot(p.x, p.y, m)
+	GameState.player.x = p.x; GameState.player.y = p.y
+
+	_swap_nodes(pools)
+	GameState.entities = pools
+	if not GameState.visited.has(id): GameState.visited.append(id)
+	return m
+
+
+## 떠나는 지도의 노드를 걷고 새 지도의 노드를 붙인다. 캐시한 마을 용과 나는 지우지 않고 떼어만 둔다
+static func _swap_nodes(pools: Dictionary) -> void:
+	for c in container.get_children():
+		container.remove_child(c)
+		if c != GameState.player and not _npc_cache.values().has(c): c.queue_free()
+	container.add_child(GameState.player)
+	for group in ["props", "npcs"]:
+		for e in pools[group]: container.add_child(e)
+
+
+## 판을 접을 때: 떼어 둔(지금 지도에 없는) 마을 용 노드를 치운다
+static func dispose() -> void:
+	for n in _npc_cache.values():
+		if is_instance_valid(n) and not n.is_inside_tree(): n.free()
+	_npc_cache.clear()
+	_map_cache.clear()
+
+
+## 새 게임: 플레이어를 만들고 첫 지도에 놓는다. 튜토리얼용 엘더를 돌려준다
+static func init_world(config: Dictionary):
+	_map_cache.clear()
+	_npc_cache.clear()
+	GameState.player = Dragon.new().setup(0, 0, {
+		name = config.get("name"), species = config.get("species"), colors = config.get("colors", {}),
+		accessory = config.get("accessory"), look = config.get("look", 0),
+	}, true)
+	_prime_npcs()
+	# 첫 잠자리 한 벌은 마을에서 챙겨서 굴에 깔아 놓아 준다 (빈 굴에 혼자 들어서면 휑하다)
+	GameState.furniture = {}
+	GameState.denDecor = [{ id = "BED", tx = 9, ty = 5 }, { id = "STRAW", tx = 2, ty = 4 }]
+	var start: String = Data.get_module("maps").START_MAP
+	enter_map(start)
+	var v := get_map(start)
+	GameState.player.x = v.w / 2.0; GameState.player.y = v.h * 0.62
+	for n in GameState.entities.npcs:
+		if n.config.get("role") == "ELDER": return n
+	return null
+
+
+## 매 프레임: 포탈을 밟았으면 넘어간다
+static func update_portals(hud) -> void:
+	if Time.get_ticks_msec() < _travel_lock or GameState.isDialogueOpen or GameState.activity or GameState.dungeon: return
+	var p = GameState.player
+	var gate = null
+	for x in GameState.entities.props:
+		if x.portal and Util.dist(p, x) < PORTAL_RANGE:
+			gate = x
+			break
+	if gate == null: return
+	var nag := func(text: String, icon: String) -> void:
+		if GameState.game_time - _nag > 4:
+			_nag = GameState.game_time
+			hud.toast(text, icon)
+	if GameState.raid.active:
+		hud.toast("사냥꾼이 마을을 치고 있다. 지금 떠날 수는 없다.", "⚔️")
+		return
+	# 세상은 이야기만큼만 열린다
+	if not Chapters.map_open(GameState, gate.portal.to):
+		nag.call(Chapters.blocked_text(GameState, gate.portal.to), "🚧")
+		return
+	# 폭포 위는 남의 마을이다. 모임에 한 번 나가 봐야 올라갈 수 있다
+	# (2D판은 유안이 대화창으로 막아선다. 대화창을 옮기면 그리로 바꾼다)
+	if gate.portal.to == "CLOUDTOP" and not Gathering.invited_up():
+		nag.call("거기까지다. 이 위는 구름마루의 땅이다.", "🐉")
+		return
+	# 하늘길. 날고 있어야 건넌다 (Z)
+	if gate.portal.get("needsFlight") and not p.flying:
+		nag.call("여기서부터는 하늘이다. 날아야 건넌다." if p.stage_index >= 2 else "여기서부터는 하늘이다. 성체가 되어야 날 수 있다.", "☁️")
+		return
+	var spot = null
+	if gate.portal.get("spot"): spot = Vector2(gate.portal.spot.x, gate.portal.spot.y + 84)   # 굴에서 나올 때는 들어갔던 입구 앞에 선다
+	travel_to(gate.portal.to, hud, OPPOSITE[gate.portal.side] if gate.portal.get("side") else null, spot)
+
+
+## 포탈·이동 석비로 지도를 옮긴다. 화면을 까맣게 덮지 않는다 — 곧바로 옮기고, 지역 이름만 위쪽에 잠깐 띄웠다 지운다
+static func travel_to(id: String, hud, from = null, spot = null) -> void:
+	if Time.get_ticks_msec() < _travel_lock: return
+	enter_map(id, from, spot)
+	hud.show_region_banner(Names.map(id), BIOME_LABEL.get(maps()[id].biome, "") if maps().has(id) else "")
+	# 도착하자마자 뒤돌아 다시 포탈을 밟는 일이 없게 아주 짧게만 잠근다
+	_travel_lock = Time.get_ticks_msec() + 350

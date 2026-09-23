@@ -1,7 +1,7 @@
 class_name SettingsPanel
 extends GamePanel
 ## 2D판 ui/settings.js. 설정 창. [Esc] 로 연다 (열려 있는 다른 창이 있으면 Esc 는 그것부터 닫는다).
-##   소리: 배경음·효과음 손잡이, 전체 끄기 (소리 자체는 6단계에서 붙는다. 값은 지금부터 기억해 둔다)
+##   소리: 배경음·효과음 손잡이, 전체 끄기 (systems/audio · sfx 가 매 프레임 따른다)
 ##   화면: 시점 단계, 좌우 판 접기, 대사 글자 크기, 화면 효과 판 · 길잡이 · 테스트 · 조작법 · 처음 화면으로
 
 signal help_pressed
@@ -28,7 +28,7 @@ func _ready() -> void:
 		s.add_theme_icon_override("grabber_highlight", slider_knob)
 		s.max_value = 100
 		var pref := "music" if key == "Music" else "sfx"
-		s.value = roundi(float(Prefs.get_value("sound", pref, 0.6)) * 100)
+		s.value = roundi((Audio.music_volume() if key == "Music" else Sfx.volume()) * 100)
 		s.value_changed.connect(func(v):
 			Prefs.set_value("sound", pref, v / 100.0)
 			_rows.get_node("%s/Num" % key).text = str(roundi(v)))

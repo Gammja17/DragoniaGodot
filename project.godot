@@ -19,6 +19,7 @@ config/features=PackedStringArray("4.7")
 Data="*res://scripts/core/data.gd"
 GameInput="*res://scripts/core/game_input.gd"
 GameState="*res://scripts/core/game_state.gd"
+Audio="*res://scripts/systems/audio.gd"
 
 [display]
 

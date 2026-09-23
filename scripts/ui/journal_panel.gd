@@ -184,8 +184,8 @@ func _render_record() -> void:
 
 func _render_sound() -> void:
 	_section("음량", [
-		["배경음", "%d" % roundi(float(Prefs.get_value("sound", "music", 0.6)) * 100)],
-		["효과음", "%d" % roundi(float(Prefs.get_value("sound", "sfx", 0.6)) * 100)],
+		["배경음", "%d" % roundi(Audio.music_volume() * 100)],
+		["효과음", "%d" % roundi(Sfx.volume() * 100)],
 		["소리 끄기 (O 키)", "꺼짐" if Prefs.get_value("sound", "muted", false) else "켜짐"],
 	])
 	_note("음량은 [Esc] 설정 창에서 바꾼다.")

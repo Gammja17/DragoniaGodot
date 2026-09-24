@@ -347,7 +347,7 @@ func toggle_flight() -> void:
 	invuln = maxf(invuln, 0.3)
 	Vfx.spawn_effect("PUFF", x, y - 6, { size = 1.4 })
 	Sfx.play("dash")
-	Hud.pop("날아오른다. 같은 키로 내려앉는다.", "🪽")
+	Hud.pop("날아오른다. [Z]로 다시 내려앉는다.", "🪽")
 
 
 ## 발밑이 땅이고 비어 있어야 내려앉는다
@@ -378,7 +378,7 @@ func cycle_element(step := 1) -> void:
 	var have: Array = Data.get_module("elements").ELEMENTS.keys().filter(func(el): return elements.has(el))
 	if have.size() < 2: return
 	element = have[(have.find(element) + step + have.size()) % have.size()]
-	Hud.pop("숨결: %s" % Data.get_module("elements").ELEMENTS[element].name, "🔥")
+	Hud.pop("속성: %s" % Data.get_module("elements").ELEMENTS[element].name, "🔥")
 
 
 ## 새 숨결을 품는다
@@ -387,11 +387,13 @@ func unlock_element(id: String) -> void:
 	elements.append(id)
 	element = id
 	var el: Dictionary = Data.get_module("elements").ELEMENTS[id]
-	Hud.pop("새 숨결 [%s] 획득! %s ([%s]번 키)" % [el.name, el.desc, el.key], "✨")
+	# 숫자 키는 GameInput.words 가 바꾸지 못한다. 패드·터치에서는 그 기기에서 속성을 바꾸는 단추로 적는다
+	var how := "십자 ←→로" if GameInput.pad else "[속성] 단추로" if GameInput.touch and not GameInput.mouse_inside else "숫자 [%s] 키로" % el.key
+	Hud.pop("새 속성 [%s] 획득! %s (%s 바꾼다)" % [el.name, el.desc, how], "✨")
 	var gift = Data.get_module("skills").ELEMENT_SKILLS.get(id)
 	if is_player and gift: Skills.learn(gift)   # 맡겨 받은 숨결은 기술도 같이 온다
 	# 숨결이 셋이 되는 순간 필살기가 열린다
-	if elements.size() == 3: Hud.pop("품은 숨결이 셋이 되었다. 적을 맞혀 게이지를 채우면 [X]로 융합 브레스를 쓸 수 있다.", "🌈")
+	if elements.size() == 3: Hud.pop("속성이 셋이 되었다. 적을 맞혀 필살기 게이지를 채우면 [X]로 융합 브레스를 쓸 수 있다.", "🌈")
 
 
 ## 필살기: 삼원 융합 브레스. 세 숨결을 하나로 뭉쳐 2.6초 동안 앞을 쓸어버린다
@@ -493,8 +495,8 @@ func evolve(idx: int) -> void:
 	max_hp += 30
 	hp = max_hp
 	_outline = null
-	Growth.grant_points(Growth.POINTS_PER_STAGE, "%s 단계로 진화" % stage.name)
-	Hud.pop("진화! [%s] 단계에 올랐습니다" % stage.name + (". %s" % stage.unlock if stage.get("unlock") else ""), "🐲")
+	Growth.grant_points(Growth.POINTS_PER_STAGE, "%s 단계로 승급" % stage.name)
+	Hud.pop("승급! [%s] 단계에 올랐습니다" % stage.name + (". %s" % stage.unlock if stage.get("unlock") else ""), "🐲")
 	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 3, color = "#ffe9a0" })
 	Vfx.spawn_effect("RING", x, y - 40, { size = 2.6 })
 	Particles.burst(x, y - 30, func():
@@ -696,7 +698,7 @@ func _update_talk() -> bool:
 	# 말 걸기는 [Space]. T 도 그대로 쓸 수 있다. 왼쪽 버튼은 브레스라, 탭으로 말 걸기는 터치에서만 (mouse_inside 가 false)
 	var tapped: bool = GameInput.mouse_clicked and not GameInput.mouse_inside
 	var want_talk: bool = not flying and (GameInput.pressed("confirm") or GameInput.pressed("talk") or (tapped and pointed != null and pointed == target))
-	if tapped and pointed and pointed != target: Hud.pop("너무 멀어요. 가까이 가서 말을 거세요.", "💬")
+	if tapped and pointed and pointed != target: Hud.pop("너무 멀다. 가까이 가서 말을 걸자.", "💬")
 	# [T] 는 물건이 앞에 있어도 곁의 용에게 말을 건다 (따라오는 짝에게 말을 걸 길)
 	if GameInput.pressed("talk") and not target and not GameState.activity and not flying:
 		var n = near.call(E0.npcs, INTERACT_RANGE)
@@ -752,13 +754,13 @@ func _put_egg_in_nest() -> bool:
 		if Util.dist(self, n) < 110: nest = n
 	if not nest: return false
 	if not GameState.den.get("built"):
-		Hud.pop("아직 둥지가 없습니다. 둥지 앞에서 [E]로 먼저 지으세요. (나뭇가지 8, 30G)", "🪹")
+		Hud.pop("아직 알을 품을 둥지가 없습니다. 굴 안 잠자리 앞에서 [Space]로 먼저 지으세요. (나뭇가지 8개, 30G)", "🪹")
 		return true
 	if nest.has_egg:
 		Hud.pop("둥지에 이미 알이 있습니다.", "🥚")
 		return true
 	if GameState.kids.size() >= Data.get_module("core_config").MAX_KIDS:
-		Hud.pop("둥지가 꽉 찼습니다! 더 이상 알을 둘 수 없어요.", "😅")
+		Hud.pop("식구가 꽉 찼습니다. 더는 알을 품을 수 없습니다.", "😅")
 		return true
 	# 제 알을 품으려면 다 자라야 한다. 아직 어리면 엘더에게 맡기는 길이 있다
 	var adult := 0
@@ -770,7 +772,7 @@ func _put_egg_in_nest() -> bool:
 		return true
 	carrying = null
 	nest.lay_egg(self, GameState.partner)
-	Hud.pop("알을 둥지에 안착시켰습니다. 곁에 있어 주면 빨리 자랍니다.", "🏠")
+	Hud.pop("알을 둥지에 놓았습니다. 곁에 있어 주면 더 빨리 깹니다.", "🏠")
 	return true
 
 
@@ -827,7 +829,7 @@ func interact() -> void:
 		if fishing.bite > 0:
 			var n := 2 if randf() < 0.25 else 1
 			inventory.meat += n
-			Vfx.spawn_text(x, y - 100 * stage.scale, "물고기 +%d" % n, "#9fe3ff", 16)
+			Vfx.spawn_text(x, y - 100 * stage.scale, "고기 +%d (물고기)" % n, "#9fe3ff", 16)
 			Particles.burst(fishing.x, fishing.y, "#bfe9ff", 0.7, 10)
 			gain_xp(6)
 		else:
@@ -848,7 +850,7 @@ func interact() -> void:
 			carrying = "EGG"
 			item.remove = true
 			picked = true
-			Hud.pop("알을 들었습니다.", "🥚")
+			Hud.pop("알을 들었습니다. 내 굴 둥지에 놓거나 엘더에게 맡기세요.", "🥚")
 	if picked: return
 	# 2) 그루터기에서 나뭇가지 줍기 (둥지 재료)
 	for s in E.props:
@@ -881,7 +883,7 @@ func eat() -> void:
 		Hud.pop("가진 고기가 없습니다.", "🍖")
 		return
 	if hunger >= 95:
-		Hud.pop("배가 너무 불러요!", "✋")
+		Hud.pop("배가 불러서 더는 못 먹겠다.", "✋")
 		return
 	inventory.meat -= 1
 	hunger = minf(100, hunger + 40)
@@ -968,7 +970,7 @@ func _update_npc(dt: float) -> void:
 	if down_timer > 0:               # 쓰러져 쉬는 중
 		down_timer -= dt
 		if down_timer <= 0:
-			hp = max_hp; say("다시 싸울 수 있어!")
+			hp = max_hp; say("(툭툭 털고 일어난다.)")
 		return
 	if hp < max_hp: hp = minf(max_hp, hp + 4 * dt)
 

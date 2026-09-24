@@ -417,13 +417,13 @@ func _records() -> void:
 	Party.sync()   # 티아맷이 이야기 동료로 곁에 온다
 	Party.on_boss_down("GLACIA")
 	_check("글라시아: 곁에서 싸운 용 둘", GameState.story.party.fought.GLACIA.has("Nara") and GameState.story.party.fought.GLACIA.has("Tiamat"), true)
-	_check("끝까지 곁에서 싸운 용 (두 번)", GameState.story.party.closest, "Nara")
+	_check("끝까지 곁에서 싸운 용 (두 번)", GameState.story.ally, "Nara")
 	GameState.quests.active.erase("m5")
 	Party.sync()
 	GameState.companion = null
 	nara.state = "WANDER"
 	GameState.story.party.erase("fought")
-	GameState.story.party.erase("closest")
+	GameState.story.erase("ally")
 
 
 ## 이야기 동료 대사: 곁에 누가 왔는지에 따라 줄이 갈린다. 가람은 사막 입구에서 길잡이로 나섰다가 불탄 도시 뒤에 돌아간다

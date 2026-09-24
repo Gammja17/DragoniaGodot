@@ -319,7 +319,7 @@ static func note_alone(was: String) -> void:
 
 # ---------- 같이 싸운 기록 ----------
 # 보스를 쓰러뜨린 순간 곁에서 싸운 용을 적는다 (story.party.fought[보스] = [이름들]).
-# 가장 많이 같이 싸운 용이 "끝까지 곁에서 싸운 용"이다 (story.party.closest. 에필로그가 읽는다)
+# 가장 많이 같이 싸운 용이 "끝까지 곁에서 싸운 용"이다 (story.ally. 에필로그가 읽는다)
 
 ## 보스가 쓰러졌을 때 (Boss). 곁에서 싸운 용을 적고, 그 용들의 호감이 조금 오른다 (BOND)
 static func on_boss_down(boss_id: String) -> void:
@@ -332,7 +332,7 @@ static func on_boss_down(boss_id: String) -> void:
 		names.append(str(n.config.name))
 		NpcActions.add_relation(n, float(_d().BOND))   # 같이 넘긴 싸움만큼 가까워진다
 	P.fought[boss_id] = names
-	P.closest = _closest(P.fought)
+	GameState.story.ally = _closest(P.fought)
 
 
 ## 가장 여러 번 같이 싸운 용 (같으면 호감이 높은 쪽). 없으면 ""

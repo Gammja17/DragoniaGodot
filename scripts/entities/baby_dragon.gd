@@ -45,7 +45,7 @@ static func make(px: float, py: float, g) -> BabyDragon:
 	var b := BabyDragon.new()
 	b.x = px; b.y = py
 	var p = GameState.player
-	b.genes = g if g else { species = p.species, colors = p.colors.duplicate(), look = p.look }
+	b.genes = g if g else { species = p.species, colors = p.colors.duplicate(), look = (p.preset * 3 if p.species == "HERO" else p.look) }
 	b.sheet = DragonSprites.get_sheet(b.genes.species, b.genes.get("colors", {}), int(b.genes.get("look", 0)))
 	b.animator = SpriteSheet.Animator.new(b.sheet)
 	b.name = "Baby_%d" % b.get_instance_id()

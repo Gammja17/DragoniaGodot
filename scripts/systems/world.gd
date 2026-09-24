@@ -239,7 +239,7 @@ static func _populate(id: String) -> Dictionary:
 	#    지도 가장자리(문 근처)에 놓고 마을에는 드물게만 온다
 	if not spec.get("clearings") and spec.get("wanderer") != false and rng.next() < (0.35 if id == "VILLAGE" else 0.7):
 		var npcs: Dictionary = Data.get_module("npcs")
-		var species: String = "LOOK" if rng.next() < 0.8 else npcs.WANDER_SPECIES.pick_random()
+		var species: String = "CAST"   # 떠돌이도 마을 인물 시트의 전용 그림을 쓴다
 		var side := 0.16 + rng.next() * 0.1 if rng.next() < 0.5 else 0.74 + rng.next() * 0.1
 		var wx := rng.next() < 0.5
 		var x0 := m.w * (side if wx else 0.25 + rng.next() * 0.5)

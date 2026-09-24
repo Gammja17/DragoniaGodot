@@ -74,7 +74,7 @@ static func make(boss_id: String) -> Boss:
 	b.x = b.def.x; b.y = b.def.y
 	b.home = Vector2(b.def.x, b.def.y)
 	b.hp = b.def.hp; b.max_hp = b.def.hp
-	b.sheet = DragonSprites.get_sheet(b.def.species, b.def.colors)
+	b.sheet = DragonSprites.get_sheet(b.def.species, b.def.colors, int(b.def.get("look", 0)))
 	b.animator = SpriteSheet.Animator.new(b.sheet)
 	b.name = "Boss_" + boss_id
 	return b

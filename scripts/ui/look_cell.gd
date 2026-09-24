@@ -17,7 +17,7 @@ func setup(v: Dictionary, nm: String, colors: Dictionary) -> void:
 	look_name = nm
 	tooltip_text = nm
 	var portrait: Control = $Portrait
-	portrait.sheet = DragonSprites.get_sheet(v.species, colors, int(v.look))
+	portrait.sheet = DragonSprites.get_sheet(v.species, colors, int(v.look) * 3 + 2 if v.species == "HERO" else int(v.look))   # HERO 는 성체 칸으로 보여 준다
 	portrait.queue_redraw()
 
 

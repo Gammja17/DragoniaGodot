@@ -22,10 +22,11 @@ const ACCESSORIES := [null, "PLUME", "FLOWER", "LEAF", "HELM", "HAT", "CROWN"]
 @onready var _colors: Control = $Center/Column/Create/Lines/Body/Left/Colors
 @onready var _body: ColorPickerButton = $Center/Column/Create/Lines/Body/Left/Colors/Body/Pick
 @onready var _wing: ColorPickerButton = $Center/Column/Create/Lines/Body/Left/Colors/Wing/Pick
+@onready var _mark: ColorPickerButton = $Center/Column/Create/Lines/Body/Left/Colors/Mark/Pick
 @onready var _name: LineEdit = $Center/Column/Create/Lines/Body/Left/Name
 
 var _slot := 1
-var _choice := { species = "LOOK", look = 0 }
+var _choice := { species = "HERO", look = 0 }
 var _cells := []
 var _on_yes: Callable
 
@@ -42,6 +43,7 @@ func _ready() -> void:
 	$Center/Column/Confirm/Lines/Buttons/No.pressed.connect(func(): _show(_slots))
 	_body.color_changed.connect(func(_c): _recolor())
 	_wing.color_changed.connect(func(_c): _recolor())
+	_mark.color_changed.connect(func(_c): _recolor())
 	_build_gallery()
 	_show(_slots)
 
@@ -94,9 +96,9 @@ func _delete(n: int) -> void:
 # ---------- 새 용 ----------
 
 func _build_gallery() -> void:
-	var names: Array = Data.get_module("sprites").LOOK_NAMES
-	for i in names.size(): _add_cell({ species = "LOOK", look = i }, names[i])
-	for c in CLASSIC: _add_cell({ species = c[0], look = 0 }, c[1])
+	# 주인공 프리셋 다섯 (data/sprites.json HERO). 옛 종족·26종 외형은 마을 용과 아이들만 쓴다
+	var presets: Array = Data.get_module("sprites").HERO_PRESETS
+	for i in presets.size(): _add_cell({ species = "HERO", look = i }, presets[i].name)
 	_select(_cells[0])
 
 
@@ -112,13 +114,18 @@ func _select(cell: LookCell) -> void:
 	_choice = cell.value
 	for c in _cells: c.set_selected(c == cell)
 	_look_name.text = cell.look_name
-	_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), int(_choice.look))
+	_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), _preview_look(_choice))
 	_preview.queue_redraw()
 	_colors.visible = _choice.species != "LOOK"   # 한 장짜리 외형은 색을 바꿀 수 없다
 
 
 func _colors_now() -> Dictionary:
-	return { body = "#" + _body.color.to_html(false), wing = "#" + _wing.color.to_html(false) }
+	return { body = "#" + _body.color.to_html(false), wing = "#" + _wing.color.to_html(false), mark = "#" + _mark.color.to_html(false) }
+
+
+## HERO 는 성체 칸으로 미리 보여 준다 (칸 번호 = 프리셋 × 3 + 2)
+func _preview_look(v: Dictionary) -> int:
+	return int(v.look) * 3 + 2 if v.species == "HERO" else int(v.look)
 
 
 ## 색을 바꾸면 옛 종족 칸들의 그림을 다시 칠한다
@@ -126,7 +133,7 @@ func _recolor() -> void:
 	for c in _cells:
 		if c.value.species != "LOOK": c.setup(c.value, c.look_name, _colors_now())
 	if _choice.species != "LOOK":
-		_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), 0)
+		_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), _preview_look(_choice))
 		_preview.queue_redraw()
 
 

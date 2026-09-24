@@ -305,7 +305,7 @@ text = "몸 색"
 custom_minimum_size = Vector2(44, 24)
 layout_mode = 2
 focus_mode = 0
-color = Color(0.753, 0.224, 0.169, 1)
+color = Color(0.878, 0.188, 0.188, 1)
 edit_alpha = false
 
 [node name="Wing" type="HBoxContainer" parent="Center/Column/Create/Lines/Body/Left/Colors"]
@@ -315,13 +315,29 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "날개 · 배 색"
+text = "날개 · 지느러미 색"
 
 [node name="Pick" type="ColorPickerButton" parent="Center/Column/Create/Lines/Body/Left/Colors/Wing"]
 custom_minimum_size = Vector2(44, 24)
 layout_mode = 2
 focus_mode = 0
-color = Color(0.878, 0.627, 0.125, 1)
+color = Color(0.949, 0.761, 0.188, 1)
+edit_alpha = false
+
+[node name="Mark" type="HBoxContainer" parent="Center/Column/Create/Lines/Body/Left/Colors"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Center/Column/Create/Lines/Body/Left/Colors/Mark"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
+text = "문양 · 눈 색"
+
+[node name="Pick" type="ColorPickerButton" parent="Center/Column/Create/Lines/Body/Left/Colors/Mark"]
+custom_minimum_size = Vector2(44, 24)
+layout_mode = 2
+focus_mode = 0
+color = Color(0.247, 0.627, 1, 1)
 edit_alpha = false
 
 [node name="Right" type="VBoxContainer" parent="Center/Column/Create/Lines/Body"]

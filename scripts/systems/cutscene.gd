@@ -635,7 +635,7 @@ static func _start(spec: Dictionary) -> Dictionary:
 				if _shot: _shot = { from = _camera_subject(), to = _shot.to, t = 0.0, time = 0.45 }
 	elif spec.has("stay"):
 		var m = _cast_of(actor(spec.stay))
-		if m and m.get("guest"):
+		if m and not m.get("player"):   # 불러온 용이든 이미 곁에 있던 용이든 남아서 함께 싸운다
 			m.guest = false
 			BossShow.ally_joined(m.e)
 	elif spec.has("cry"):

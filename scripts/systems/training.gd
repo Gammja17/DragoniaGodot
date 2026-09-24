@@ -65,6 +65,7 @@ static func _choose():
 ## 오늘의 일과. 스승을 소개받기 전(ch1)이거나 어둠의 길 끝(m7d) 뒤면 null
 static func todays_plan():
 	if not GameState.story.scenes.has("ch1"): return null
+	if Party.is_story(_master()): return null   # 5장: 스승이 봉우리 일로 나서 있는 동안은 수련이 없다
 	# 스승을 쓰러뜨리고 마을 문을 열었다. 수련장 문은 아침마다 열려 있어도 더는 아무도 들어가지 않는다
 	# (그 뒤로도 매일 일과를 권하고, 떠난 나라를 불러와 허수아비 내기를 시키던 것)
 	if GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): return null
@@ -160,7 +161,7 @@ static func _begin(npc, plan: Dictionary) -> void:
 			_race(npc, plan, d)
 			return
 	# 나머지는 스승이 따라나선다
-	if GameState.companion and GameState.companion != npc: GameState.companion.state = "WANDER"
+	Party.take_slot(npc)   # 고른 칸은 스승이 쓴다. 따라오던 동료는 돌아가고, 짝은 기다린다
 	GameState.companion = npc
 	npc.state = "COMPANION_FOLLOW"
 	plan.lastHp = GameState.player.hp

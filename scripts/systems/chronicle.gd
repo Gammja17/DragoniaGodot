@@ -11,6 +11,7 @@ static var _playing := false
 # 지금 흐르는 장면. Esc 로 대화창만 닫아 버리면 장면의 끝(then)이 영영 안 불려서 _playing 이 굳는다
 static var _current = null    # { skip }  장면을 통째로 건너뛰는 손잡이
 static var _choosing := false  # 사건 끝의 선택지가 떠 있다 (건너뛸 수 없다)
+static var _party_cd := 0.0
 
 
 ## [Esc]: 장면이면 끝까지 건너뛰고 true. 선택지가 떠 있으면 아무것도 안 하고 true. 장면이 아니면 false
@@ -51,6 +52,8 @@ static func context() -> Dictionary:
 			for x in s.entities.npcs:
 				if x.config.get("name") == nm: return x.relation
 			return 0,
+		# 지금 곁에 따라와 있는 용 (원정대)
+		with = func(nm): return Party.is_with(nm),
 	}
 
 
@@ -80,6 +83,10 @@ static func _stamp_tryst() -> void:
 static func update(dt: float) -> void:
 	_stamp_bosses()
 	_stamp_tryst()
+	_party_cd -= dt
+	if _party_cd <= 0 and not _playing:
+		_party_cd = 0.5
+		Party.sync()   # 이야기 동료: 들어올 용은 따라나서고, 일을 마친 용은 장면이 다 흐른 뒤에 돌아간다
 	if _playing or Ending.playing or GameState.isDialogueOpen or GameState.dungeon or GameState.activity or GameState.raid.active: return
 	if GameState.bannerUntil and GameState.play_time < GameState.bannerUntil: return   # 지역 이름이 떠 있는 동안은 기다린다
 	if GameState.entities.bosses.any(func(b): return b.dying > 0): return   # 보스가 무너지는 동안은 기다린다 (작별은 그 뒤에)
@@ -176,6 +183,7 @@ static func _finish_event(ev: Dictionary) -> void:
 	if ev.get("grant"):
 		var q = Quests.by_id(ev.grant)
 		if q: Quests.accept(q)
+	Party.sync()   # 사건이 데려가는 동료는 장면에서 걸어 나가기 전에 붙잡는다
 	if ev.get("clue"): add_clue(ev.clue)
 	Quests.notify("event", ev.id)      # "그 자리에 가 있기"가 목표인 대목
 	if ev.get("raid"):   # 6장: 나팔 소리에 마을로 뛰어 돌아온다
@@ -213,7 +221,7 @@ static func _find(who):
 ## 여러 줄짜리 장면을 차례로 보여 준다. 아침 장면(Story)도 이걸 쓴다.
 ## line = { who: NPC 이름 | '나' | '???', text, look?, label?, do?, zoom?, auto? } — do·zoom·auto 는 Cutscene 의 연출 박자
 static func play_scene(title, lines: Array, then = null, cinematic := true, place = null) -> void:
-	lines = _split_directions(lines.filter(func(l): return _chosen(l)))
+	lines = _split_directions(lines.filter(func(l): return _chosen(l) and _with(l)))
 	# 장면이 벌어질 곳이 따로 있으면 먼저 그리로 간다
 	if place and place != GameState.map_id and not GameState.dungeon: World.travel_to(place)
 	# 말할 이들은 처음부터 무대에 올린다 — 제 차례에 불쑥 튀어나오지 않게
@@ -264,6 +272,13 @@ static func _chosen(l: Dictionary) -> bool:
 	if want == "!*": return picked == null
 	if want.begins_with("!"): return picked != want.substr(1)
 	return picked == want
+
+
+## 곁에 누가 따라와 있는지 읽는 줄. "with": "Tiamat" 은 티아맷이 곁에 있을 때만, "!Tiamat" 은 없을 때만, "*" 는 누구든 따라와 있을 때만
+static func _with(l: Dictionary) -> bool:
+	if not l.has("with"): return true
+	var w := str(l.with)
+	return not Party.is_with(w.substr(1)) if w.begins_with("!") else Party.is_with(w)
 
 
 ## "(티아맷이 날개로 어깨를 쳤다.) 축하해." 처럼 대사에 섞인 긴 무대 지시는 해설 줄로 떼어 낸다 —

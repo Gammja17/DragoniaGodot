@@ -107,6 +107,9 @@ var walk_to = null        # 일과대로 걸어가는 중이면 { x, y }
 var home_map = null
 var atk_timer := 0.0      # NPC 전투: 다음 사격까지
 var passive := false      # 오늘은 구경만 하기로 한 스승 (수련)
+var mending = null        # 살리기: 일으키러 가는 쓰러진 용
+var mend_t := 0.0         # 살리기: 일으키는 데 남은 시간
+var heal_cd := 0.0        # 살리기: 다음 돌봄까지
 # 사이 (NpcActions · Romance). 세이브가 이름으로 되살린다
 var dates := 0
 var last_gift_day = null
@@ -524,6 +527,7 @@ func take_damage(dmg: float, _silent := false, _from = null) -> void:
 		return
 	if not is_player and down_timer > 0: return
 	if is_player and invuln > 0: return
+	if not is_player: dmg *= Party.taken(self)   # 막기 동료는 덜 다친다
 	if is_player:
 		if guard > 0: dmg *= 0.3   # 강철 비늘
 		dmg *= 1 - minf(0.6, Growth.stat("armor"))   # 성장 트리 '단단한 등'
@@ -542,7 +546,8 @@ func take_damage(dmg: float, _silent := false, _from = null) -> void:
 	hp -= dmg
 	# 위기를 몇 번 넘겼는지는 '허물 벗기'를 스스로 깨우치는 조건이 된다
 	if was_safe and hp > 0 and hp <= max_hp * 0.2: GameState.stats.brinks = GameState.stats.get("brinks", 0) + 1
-	Particles.burst(x, y - 40, "#e74c3c", 0.8, 5)
+	var felt: bool = is_player or dmg >= 2   # 마을 용이 장판 · 몸통에 프레임마다 조금씩 깎일 때마다 피가 튀고 움찔하던 것
+	if felt: Particles.burst(x, y - 40, "#e74c3c", 0.8, 5)
 	if is_player and dmg >= 3:
 		Sfx.play("hurt")
 		GameCamera.current.shake(minf(14, 4 + dmg * 0.45))
@@ -551,13 +556,15 @@ func take_damage(dmg: float, _silent := false, _from = null) -> void:
 		hurt_flash = 0.35
 		Vfx.spawn_effect("SPARK", x, y - 44 * stage.scale, { size = 1.2, color = "#ff6b5e" })
 		Vfx.spawn_text(x, y - 90 * stage.scale, "-%d" % roundi(dmg), "#ff6b5e", 18)
-	animator.play("hit")
+	if felt: animator.play("hit")
 	if hp <= 0 and not is_player:           # 마을 용은 죽지 않고 잠시 쓰러진다
 		hp = 0
 		down_timer = 25
 		var talk = Data.get_module("npcTalk").NPC_TALK.get(config.get("name"))
 		say(talk.down if talk and talk.get("down") else "으윽…")
-		if config.get("fixed"): Hud.pop("%s 쓰러졌습니다! 잠시 후 일어납니다." % Util.josa(Names.npc(config.name), "이", "가"), "💫")
+		if config.get("fixed") and (self == GameState.companion or (self == GameState.partner and state == "PARTNER_FOLLOW")):
+			Hud.pop("%s 쓰러졌습니다! 살리기 동료가 일으키지 않으면 오늘은 마을로 돌아갑니다." % Util.josa(Names.npc(config.name), "이", "가"), "💫")
+		elif config.get("fixed"): Hud.pop("%s 쓰러졌습니다! 잠시 후 일어납니다." % Util.josa(Names.npc(config.name), "이", "가"), "💫")
 	if hp <= 0 and is_player:
 		# 유물 '마지막 불씨': 하루 한 번, 쓰러질 일격을 버티고 둘레를 불태운다
 		if Relics.has("LAST_EMBER") and GameState.emberDay != GameState.day:
@@ -574,7 +581,13 @@ func take_damage(dmg: float, _silent := false, _from = null) -> void:
 			Hud.pop("불사의 심장이 뛴다! 체력 1로 버텼습니다 (하루 한 번)", "💛")
 			Sfx.play("evolve")
 			return
-		Hud.pop("쓰러졌습니다... 마을에서 눈을 뜹니다.", "💀")
+		# 쓰러진 값: 가진 고기 절반. 따라오던 짝 · 동료는 나를 업어다 놓고 그날은 돌아간다
+		var lost := floori(inventory.meat / 2.0)
+		inventory.meat -= lost
+		var gone := Party.on_player_down()
+		if GameState.dungeon: Hud.pop("쓰러졌다가 겨우 일어났습니다." + (" 기운을 차리느라 고기 %d개를 먹었습니다." % lost if lost > 0 else ""), "💀")   # 굴에서는 그 자리에서 일어난다
+		else: Hud.pop("쓰러졌습니다… 마을 용들이 업어 와 " + ("고기를 먹여 살렸습니다. (고기 -%d)" % lost if lost > 0 else "돌봐 주었습니다."), "💀")
+		if not gone.is_empty(): Hud.pop("%s 오늘은 마을로 돌아갑니다." % Util.josa("·".join(gone), "은", "는"), "🏠")
 		hp = max_hp
 		hunger = maxf(hunger, 40)
 		World.revive_in_village()
@@ -956,7 +969,7 @@ func breathe(a: float, mult := 1.0, seek = null) -> void:
 	var damage: float = el.damage * damage_mult * breath_bonus * Weather.damage_mult(element) * mult
 	Projectile.add(Projectile.new(mx, my, a, { faction = "ALLY", element = element, damage = damage, scale = 0.7 + sc * 0.3,
 		pierce = el.get("pierce", false) and stage_index >= el.get("pierceFromStage", 0), fromPlayer = true,
-		homing = TOUCH_HOMING if seek else 0.0, homingTarget = seek }))
+		homing = TOUCH_HOMING if seek else 0.0, homingTarget = seek, by = self }))
 
 
 # ---------- NPC ----------
@@ -979,7 +992,8 @@ func _update_npc(dt: float) -> void:
 	if down_timer > 0:               # 쓰러져 쉬는 중
 		down_timer -= dt
 		if down_timer <= 0:
-			hp = max_hp; say("(툭툭 털고 일어난다.)")
+			if not Party.on_get_up(self):   # 따라오던 동료는 그날은 돌아간다
+				hp = max_hp; say("(툭툭 털고 일어난다.)")
 		return
 	if hp < max_hp: hp = minf(max_hp, hp + 4 * dt)
 
@@ -987,43 +1001,120 @@ func _update_npc(dt: float) -> void:
 		facing = facing_from_vector(walk_to.x - x, walk_to.y - y, facing)
 		return
 	var following := state != "WANDER"
-	var busy: bool = (config.get("fixed") or following) and _fight(dt, following)
-	if following: _update_partner(dt, busy)
+	var fights: bool = config.get("fixed") or following
+	var dodging: bool = fights and _dodge(dt)   # 발밑의 예고부터 비킨다. 비키는 동안에도 쏘기는 한다
+	if following and not dodging and Party.role_id(self) == "MEDIC" and _mend(dt): return   # 살리기: 쓰러진 용부터 일으킨다
+	var busy: bool = fights and _fight(dt, following, not dodging)
+	if dodging: pass
+	elif following: _update_partner(dt, busy)
 	elif not busy: _update_wander(dt)
 
 
 ## 마을 용·짝·동료의 전투. 싸우는 중이면 true
-func _fight(dt: float, following: bool) -> bool:
+func _fight(dt: float, following: bool, can_move := true) -> bool:
 	var E: Dictionary = GameState.entities
 	if passive: return false   # 오늘은 구경만 하기로 한 스승 (수련)
 	var foe = null
 	var best := 460.0
 	for e in E.humans + E.enemies + E.bosses:
-		if e.get("awake") == false or e.type == "DUMMY": continue   # 허수아비는 제자의 몫이다
+		if not Combat.hittable(e): continue   # 허수아비는 제자의 몫이다. 땅속의 적 · 쓰러지는 보스 · 무릎 꿇은 보스도 쏘지 않는다
 		var d := Util.dist(self, e)
 		if d < best:
 			best = d; foe = e
 	if foe == null: return false
+	var el: String = config.get("element", "FIRE") if config.get("element") else "FIRE"
+	var reach := Party.reach(el) * 0.9   # 브레스가 닿는 거리 안에서만 쏜다 (불은 360 남짓인데 400에서 쏴서 허공에서 사라졌다)
 	# 따라다니는 중이 아니면 적당한 거리를 유지하며 맞선다
-	if not following:
+	if not can_move: pass
+	elif not following:
 		var a := atan2(foe.y - y, foe.x - x)
 		var mv := a if best > 280 else a + PI if best < 170 else a + PI / 2
 		move_by(cos(mv), sin(mv), 130, dt)
+	elif best > reach * (0.55 if Party.guarding(self) else 0.9):   # 막기는 적 앞으로 더 나선다
+		# 동료: 브레스가 닿는 데까지 다가선다. 다만 내 곁(250px)을 벗어나지는 않는다
+		var to := Vector2(foe.x - x, foe.y - y).normalized()
+		if (Vector2(x, y) + to * 40).distance_to(Vector2(GameState.player.x, GameState.player.y)) < 250: move_by(to.x, to.y, 200, dt)
 	facing = facing_from_vector(foe.x - x, foe.y - y, facing)
 	atk_timer -= dt
-	if atk_timer <= 0 and best < 400:
-		var el: String = config.get("element", "FIRE") if config.get("element") else "FIRE"
+	if atk_timer <= 0 and best < reach:
 		var aim := atan2(foe.y - 20 - (y - 40), foe.x - x)
-		var dmg: float = config.get("power", 8) * (1.5 if GameState.rally > 0 else 1.0) \
-			* (1.5 if Relics.has("TWIN_SOUL") and (self == GameState.partner or self == GameState.companion) else 1.0) \
+		# 따라나선 용은 내 피해를 따라 큰다 (Party). 마을에 남은 용은 제 힘(power) 그대로
+		var dmg: float = (Party.shot_damage(self) if following else float(config.get("power", 8))) * (1.5 if GameState.rally > 0 else 1.0) \
+			* (1.5 if Relics.has("TWIN_SOUL") and following else 1.0) \
 			* (1.3 if Relics.has("VOW_RING") and self == GameState.partner else 1.0) \
 			* (1.3 if Relics.has("CAPTAIN_HORN") and GameState.raid.active else 1.0)
-		Projectile.add(Projectile.new(x, y - 40, aim, { faction = "ALLY", element = el, damage = dmg }))
+		Projectile.add(Projectile.new(x, y - 40, aim, { faction = "ALLY", element = el, damage = dmg, by = self }))
 		animator.play("attack")
-		atk_timer = 1.25
+		atk_timer = Party.interval() if following else 1.25
 		var talk = Data.get_module("npcTalk").NPC_TALK.get(config.get("name"))
 		if talk and talk.get("battle") and randf() < 0.18: say(talk.battle.pick_random())
 	return true
+
+
+## 발밑의 위험에서 비켜선다: 적의 장판 예고 · 남아서 타는 장판 · 번지는 고리 · 보스의 돌진 예고선과 광선 · 나를 노린 돌진 예고선.
+## 비켜서는 중이면 true
+func _dodge(dt: float) -> bool:
+	var me := Vector2(x, y)
+	var away := Vector2.ZERO
+	for h in GameState.entities.hazards:
+		if h.faction != "ENEMY" or (h.burst and not (h.linger > 0 and h.dps > 0)): continue   # 이미 터진 것은 남아서 타는 것만
+		var c := Vector2(h.x, h.y)
+		var d := me.distance_to(c)
+		var out := (me - c).normalized() if d > 1 else Vector2.RIGHT
+		if h.inner > 0:   # 번져 나가는 고리: 가까운 쪽 가장자리로 빠진다
+			if d > h.inner - 20 and d < h.r + 20: away += out if h.r - d < d - h.inner else -out
+		elif d < h.r + 24: away += out
+	for b in GameState.entities.bosses:
+		if b.charge and b.charge.windup > 0: away += _off_line(Vector2(b.x, b.y), b.charge.angle, 470, 60 * b.def.scale)
+		if b.beam:
+			for a in [b.beam.angle, b.beam.angle + PI]: away += _off_line(b._mouth(), a, 700, 70)
+	for e in GameState.entities.enemies:
+		if e.def.move == "charge" and e.ai.s == "tell" and EnemyAI.target_of(e) == self: away += _off_line(Vector2(e.x, e.y), e.ai.dir, 340, 50)
+	if away == Vector2.ZERO: return false
+	move_by(away.x, away.y, 300, dt)
+	return true
+
+
+## from 에서 angle 쪽으로 뻗은 선(길이 length, 폭 width) 위에 서 있으면 선에서 벗어나는 쪽. 아니면 0
+func _off_line(from: Vector2, angle: float, length: float, width: float) -> Vector2:
+	var dir := Vector2.from_angle(angle)
+	var rel := Vector2(x, y) - from
+	var along := rel.dot(dir)
+	var side := rel - dir * along
+	if along < -width or along > length or side.length() > width: return Vector2.ZERO
+	return side.normalized() if side.length() > 1 else dir.orthogonal()
+
+
+## 살리기: 쓰러진 용(동료 · 마을 용)에게 달려가 일으키고, 다친 나를 곁에서 조금씩 돌본다. 일으키러 가는 중이면 true
+func _mend(dt: float) -> bool:
+	var r: Dictionary = Party._d().ROLES.MEDIC
+	var p = GameState.player
+	heal_cd -= dt
+	if heal_cd <= 0 and p.hp < p.max_hp * float(r.healBelow) and Util.dist(self, p) < float(r.healRange):
+		heal_cd = float(r.healEvery)
+		var amount: float = p.max_hp * float(r.heal)
+		p.hp = minf(p.max_hp, p.hp + amount)
+		Vfx.spawn_text(p.x, p.y - 100 * p.stage.scale, "+%d" % roundi(amount), "#9fe08a", 14)
+	if mending == null or not is_instance_valid(mending) or mending.down_timer <= 0 or not GameState.entities.npcs.has(mending):
+		mending = null
+		for n in GameState.entities.npcs:   # 장면이 눕혀 둔 용(999)은 빼고
+			if n != self and n.down_timer > 0 and n.down_timer < 900 and (n.config.get("fixed") or n.state != "WANDER") and Util.dist(self, n) < float(r.reach):
+				mending = n
+				mend_t = float(r.mend)
+				break
+	if mending == null: return false
+	if Util.dist(self, mending) > 60:
+		move_by(mending.x - x, mending.y - y, 260, dt)
+		return true
+	mend_t -= dt
+	if randf() < 0.3: Particles.burst(mending.x, mending.y - 30, "#9fe08a", 0.4, 3)
+	if mend_t > 0: return true
+	mending.down_timer = 0.0
+	mending.hp = mending.max_hp * 0.5
+	Vfx.spawn_effect("RING", mending.x, mending.y - 20, { size = 1.0, color = "#9fe08a" })
+	Hud.pop("%s %s 일으켰습니다." % [Util.josa(Names.npc(config.name), "이", "가"), Util.josa(Names.npc(mending.config.name), "을", "를")], "💚")
+	mending = null
+	return false
 
 
 ## 짝·동료: 플레이어를 따라다닌다. 싸우는 중엔 조금 더 떨어져도 봐준다

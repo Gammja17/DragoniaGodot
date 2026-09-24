@@ -14,6 +14,8 @@ class_name EnemyAI
 ##   flee    사냥감. 도망만 다닌다
 ##
 ## 각 행동은 fsm 하나: e.ai = { s: 상태, t: 남은 시간, ... }
+##
+## 노리는 용은 나만이 아니다: 가까운 쪽, 방금 나를 친 쪽을 고른다 (따라나선 동료 · 마을 용도). 덤비는 도중에는 바꾸지 않는다
 
 const RING := 120             # flank: 링 반지름 (150 이면 달려들어도 몸에 안 닿았다)
 const LUNGE_RANGE := 78       # chase/flank: 덤비는 거리
@@ -21,24 +23,27 @@ const REACH := 46             # 맞았다고 치는 거리
 const LEASH := 1100           # 이보다 멀어지면 쫓기를 그만두고 제자리로 돌아간다
 # 어그로 반경. 이 안에 들어가거나 먼저 때려야 덤빈다. 그 전엔 제 자리 근처를 어슬렁거린다
 const AGGRO := { "chase": 300, "charge": 380, "flank": 320, "kite": 380, "ranged": 380, "burrow": 240, "guard": 270, "summon": 320, "swarm": 290, "erratic": 290, "flee": 0 }
+const RETARGET := 1.5         # 누구를 노릴지 이만큼(초)마다 다시 고른다
+const GRUDGE := 4.0           # 나를 친 용을 이만큼(초) 기억한다
+const GRUDGE_PULL := 180.0    # 나를 친 용은 이만큼(px) 더 가까이 있는 셈 친다
 
 
 static func init_ai(e) -> void:
-	e.ai = { s = "idle", t = 0.0, dir = 0.0, cd = Util.rand_range(0.4, 1.4), wt = Util.rand_range(0.5, 2.5), wdir = Util.rand_range(0, TAU), wmove = false, hit = false, reach = 0.0, shots = 0, side = 0 }
+	e.ai = { s = "idle", t = 0.0, dir = 0.0, cd = Util.rand_range(0.4, 1.4), wt = Util.rand_range(0.5, 2.5), wdir = Util.rand_range(0, TAU), wmove = false, hit = false, reach = 0.0, shots = 0, side = 0, rt = 0.0 }
 	e.home = Vector2(e.x, e.y)
 	e.aggro = e.def.move == "flee"   # 사냥감은 늘 제 행동(도망)을 한다
 	if e.def.move == "burrow":
 		e.ai.s = "hidden"; e.is_hidden = true
 
 
-## 한 방. 예고 있는 공격만 피해를 준다
+## 한 방. 예고 있는 공격만 피해를 준다. 노리는 용에게만 닿는다
 static func strike(e, mult := 1.0) -> bool:
-	var p = GameState.player
-	if p.flying and not e.def.get("flying"): return false   # 하늘에 있는 놈은 발톱이 안 닿는다
+	var t = target_of(e)
+	if t == GameState.player and t.flying and not e.def.get("flying"): return false   # 하늘에 있는 놈은 발톱이 안 닿는다
 	var base: float = e.def.hit if e.def.get("hit") != null else e.def.damage * 2
 	var dmg: float = base * float(e.power) * (1.5 if e.elite else 1.0) * (1.35 if e.frenzied else 1.0) * mult
-	if Util.dist(e, p) < REACH + (16 if e.elite else 0) + e.ai.reach:
-		p.take_damage(dmg)
+	if Util.dist(e, t) < REACH + (16 if e.elite else 0) + e.ai.reach:
+		t.take_damage(dmg)
 		return true
 	return false
 
@@ -57,7 +62,7 @@ static func move(e, a: float, speed: float, dt: float) -> void:
 # ---------- 행동들 ----------
 
 static func chase(e, dt: float, d: float, speed: float) -> void:
-	var p = GameState.player
+	var p = target_of(e)
 	var a: Dictionary = e.ai
 	match a.s:
 		"idle", "approach":
@@ -82,7 +87,7 @@ static func chase(e, dt: float, d: float, speed: float) -> void:
 
 
 static func swarm(e, dt: float, d: float, speed: float) -> void:
-	var p = GameState.player
+	var p = target_of(e)
 	var a: Dictionary = e.ai
 	face(e, p.x, p.y)
 	var wob := sin(GameState.game_time * 5 + e.phase) * 1.1
@@ -99,7 +104,7 @@ static func swarm(e, dt: float, d: float, speed: float) -> void:
 
 
 static func charge(e, dt: float, d: float, speed: float) -> void:
-	var p = GameState.player
+	var p = target_of(e)
 	var a: Dictionary = e.ai
 	match a.s:
 		"idle", "approach":
@@ -136,13 +141,13 @@ static func charge(e, dt: float, d: float, speed: float) -> void:
 			if a.t <= 0: a.s = "approach"
 
 
-## 같은 지도에서 나를 둘러싸는 무리 (포위 행동인 것들)
-static func packmates() -> Array:
-	return GameState.entities.enemies.filter(func(o): return not o.remove and o.def.move == "flank" and Util.dist(o, GameState.player) < 520)
+## 같은 용을 둘러싸는 무리 (포위 행동인 것들)
+static func packmates(t) -> Array:
+	return GameState.entities.enemies.filter(func(o): return not o.remove and o.def.move == "flank" and target_of(o) == t and Util.dist(o, t) < 520)
 
 
 static func flank(e, dt: float, d: float, speed: float) -> void:
-	var p = GameState.player
+	var p = target_of(e)
 	var a: Dictionary = e.ai
 	if a.s == "act":
 		a.t -= dt
@@ -162,7 +167,7 @@ static func flank(e, dt: float, d: float, speed: float) -> void:
 		if a.t <= 0: a.s = "ring"
 		return
 	# 링 위의 제 자리로 간다. 자리는 무리 안에서의 순번으로 정한다
-	var mates := packmates()
+	var mates := packmates(p)
 	var i := maxi(0, mates.find(e))
 	var n := maxi(1, mates.size())
 	var base := atan2(e.y - p.y, e.x - p.x)
@@ -181,7 +186,7 @@ static func flank(e, dt: float, d: float, speed: float) -> void:
 
 
 static func kite(e, dt: float, d: float, speed: float) -> void:
-	var p = GameState.player
+	var p = target_of(e)
 	var a: Dictionary = e.ai
 	face(e, p.x, p.y)
 	if a.s == "tell":
@@ -210,7 +215,7 @@ static func kite(e, dt: float, d: float, speed: float) -> void:
 
 
 static func burrow(e, dt: float, d: float, speed: float) -> void:
-	var p = GameState.player
+	var p = target_of(e)
 	var a: Dictionary = e.ai
 	match a.s:
 		"hidden":
@@ -245,7 +250,7 @@ static func burrow(e, dt: float, d: float, speed: float) -> void:
 
 
 static func guard(e, dt: float, d: float, speed: float) -> void:
-	var p = GameState.player
+	var p = target_of(e)
 	var a: Dictionary = e.ai
 	face(e, p.x, p.y)
 	e.guard_angle = e.angle       # 이쪽에서 오는 탄을 막는다 (Projectile 이 본다)
@@ -271,7 +276,7 @@ static func guard(e, dt: float, d: float, speed: float) -> void:
 
 
 static func summon(e, dt: float, d: float, speed: float) -> void:
-	var p = GameState.player
+	var p = target_of(e)
 	var a: Dictionary = e.ai
 	face(e, p.x, p.y)
 	if a.s == "tell":
@@ -297,7 +302,7 @@ static func summon(e, dt: float, d: float, speed: float) -> void:
 
 
 static func flee(e, dt: float, d: float, speed: float) -> void:
-	var p = GameState.player
+	var p = target_of(e)
 	if d < 300: e.angle = atan2(e.y - p.y, e.x - p.x) + sin(GameState.game_time * 3 + e.phase) * 0.6
 	elif randf() < dt * 0.5: e.angle = randf() * 6.28
 	move(e, e.angle, speed if d < 300 else speed * 0.25, dt)
@@ -306,19 +311,21 @@ static func flee(e, dt: float, d: float, speed: float) -> void:
 ## 매 프레임. 상태별로 알맞은 행동을 돌린다
 static func update(e, dt: float, speed: float) -> void:
 	if e.ai.cd > 0: e.ai.cd -= dt
-	var d := Util.dist(e, GameState.player)
-	# 어그로가 없으면 덤비지 않는다. 반경 안에 들어오면 알아채고, 멀어지면 잊는다
+	# 어그로가 없으면 덤비지 않는다. 나나 곁의 용이 반경 안에 들어오면 알아채고, 나한테서 멀어지면 잊는다
 	if not e.aggro:
 		var range: float = AGGRO.get(e.def.move, 240) * (1.15 if e.elite else 1.0)
-		if range and d < range and not GameState.player.invisible: alert(e)
+		if range and _noticed(e, range): alert(e)
 		else:
 			_wander(e, dt, speed)
 			return
-	elif d > LEASH:
+	elif Util.dist(e, GameState.player) > LEASH:
 		e.aggro = false
+		e.target = null
 		e.ai.s = "hidden" if e.def.move == "burrow" else "idle"
 		if e.def.move == "burrow": e.is_hidden = true
 		return
+	_retarget(e, dt)
+	var d := Util.dist(e, target_of(e))
 	match e.def.move:
 		"erratic", "swarm": swarm(e, dt, d, speed)
 		"charge": charge(e, dt, d, speed)
@@ -329,6 +336,40 @@ static func update(e, dt: float, speed: float) -> void:
 		"summon": summon(e, dt, d, speed)
 		"flee": flee(e, dt, d, speed)
 		_: chase(e, dt, d, speed)
+
+
+## 이 적이 노리는 용. 고른 용이 쓰러졌거나 이 지도에 없으면 나
+static func target_of(e):
+	return e.target if Combat.alive_ally(e.target) else GameState.player
+
+
+## 누구를 노릴지 다시 고른다: 가까운 쪽. 방금 나를 친 용은 조금 더 가까이 있는 셈 친다.
+## 하늘에 뜬 나는 날지 못하는 놈이 노리지 못한다. 덤비는 도중(예고 · 발동)에는 바꾸지 않는다
+static func _retarget(e, dt: float) -> void:
+	var a: Dictionary = e.ai
+	a.rt = float(a.get("rt", 0.0)) - dt
+	var lost: bool = e.target != null and not Combat.alive_ally(e.target)
+	if (a.rt > 0 and not lost) or a.s == "tell" or a.s == "tell2" or a.s == "act": return
+	a.rt = RETARGET * Util.rand_range(0.8, 1.2)
+	var p = GameState.player
+	var best = null
+	var best_score := INF
+	for c in [p] + Combat.allies():
+		if c == p and p.flying and not e.def.get("flying"): continue
+		var score := Util.dist(e, c)
+		if c == e.hit_by and GameState.game_time - e.hit_at < GRUDGE: score -= GRUDGE_PULL
+		if c != p: score -= Party.taunt_pull(c, e)   # 막기 동료가 곁에 있으면 그쪽으로 끌려간다
+		if score < best_score:
+			best = c; best_score = score
+	e.target = null if best == p else best
+
+
+## 나나 곁의 용(동료 · 마을 용)이 반경 안에 들어왔나
+static func _noticed(e, range: float) -> bool:
+	if Util.dist(e, GameState.player) < range and not GameState.player.invisible: return true
+	for n in Combat.allies():
+		if Util.dist(e, n) < range: return true
+	return false
 
 
 ## 알아챘다. 같은 무리(가까이 있는 놈들)도 같이 돌아본다
@@ -387,7 +428,7 @@ static func draw_tell(ci: CanvasItem, e) -> void:
 				ci.draw_rect(Rect2(e.x + cos(q) * 14 * k - 2, e.y - 4 - absf(sin(q)) * 14 * k, 4, 4), Color(70 / 255.0, 45 / 255.0, 20 / 255.0, 0.6))
 		elif mv == "kite" or mv == "ranged":
 			# 조준선
-			var p = GameState.player
+			var p = target_of(e)
 			ci.draw_dashed_line(Vector2(e.x, e.y - 16), Vector2(p.x, p.y - 30), Color(1, 220 / 255.0, 120 / 255.0, 0.25 + k * 0.45), 2, 6)
 		else:
 			# 덤빔: 발밑 고리가 조여든다

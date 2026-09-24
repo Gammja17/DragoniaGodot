@@ -163,11 +163,17 @@ static func _own_menu(npc, nm: String):
 			sub.append({ label = "🎾 술래잡기하자!", on_select = func(): _start_tag(npc) })
 	if nm == "Gron": sub.append({ label = "🔨 모루 앞에 선다", on_select = func(): _open_forge(npc) })
 	if nm == "Ember" and Routine.is_dead("Gron"): sub.append({ label = "🔨 모루 앞에 선다", on_select = func(): _ember_forge(npc) })
-	# 동행. 짝도 오늘은 혼자 다녀오겠다고 할 수 있다. 토라진 짝은 사과가 먼저다 (마음 메뉴)
-	if npc == GameState.partner and Romance.is_sulking(npc):
+	# 동행. 짝도 오늘은 혼자 다녀오겠다고 할 수 있다. 토라진 짝은 사과가 먼저다 (마음 메뉴).
+	# 고른 칸은 하나다: 짝이 따라오면 그 자리, 아니면 고른 동료. 이야기가 데려가는 동료는 따로
+	var stay := Party.stays_home(npc)
+	if Party.is_story(npc):
+		sub.append({ label = "(이 일이 끝날 때까지 함께 간다)", on_select = back })
+	elif npc == GameState.partner and Romance.is_sulking(npc):
 		pass
 	elif npc == GameState.partner:
-		if npc.state == "WANDER": sub.append({ label = "🤝 같이 가자", on_select = func(): _set_following(npc, true) })
+		if npc.state == "WANDER" and Party.went_home(npc): sub.append({ label = "(오늘은 쓰러져서 쉬어야 한다. 내일 다시 청하자)", on_select = back })
+		elif npc.state == "WANDER" and stay != "": sub.append({ label = "🤝 같이 가자", on_select = func(): show(npc, stay, [{ label = "(고개를 끄덕인다)", on_select = back }]) })
+		elif npc.state == "WANDER": sub.append({ label = "🤝 같이 가자", on_select = func(): _set_following(npc, true) })
 		else: sub.append({ label = "👋 여기서 기다려 줄래?", on_select = func(): _set_following(npc, false) })
 		# 가족 나들이: 짝이 곁에 있고 아이가 있을 때, 사흘에 한 번
 		if Family.can_outing(): sub.append({ label = "🧺 다 같이 호숫가로 나들이를 간다", on_select = func():
@@ -176,8 +182,12 @@ static func _own_menu(npc, nm: String):
 		elif GameState.kids.size() > 0 and Family.outing_wait() > 0: sub.append({ label = "(나들이는 %d일 뒤에 또 갈 수 있다)" % Family.outing_wait(), on_select = back })
 	elif GameState.companion == npc:
 		sub.append({ label = "이제 마을로 돌아가도 돼", on_select = func(): _set_companion(npc, false) })
-	elif relation_tier(npc.relation) >= 2:
-		sub.append({ label = "🤝 같이 모험을 떠나자", on_select = func(): _set_companion(npc, true) })
+	elif Party.went_home(npc):
+		sub.append({ label = "(오늘은 쓰러져서 쉬어야 한다. 내일 다시 청하자)", on_select = back })
+	elif Party.can_pick(npc):
+		sub.append({ label = "🤝 같이 모험을 떠나자 (%s)" % Party.role(npc).get("name", ""), on_select = func(): _set_companion(npc, true) })
+	elif not Party.member(nm).is_empty() and not Routine.is_dead(nm) and stay == "" and not Party.away(npc):
+		sub.append({ label = "(같이 먼 길을 가자고 하기엔 아직 서먹하다. 호감 %d/%d)" % [floori(npc.relation), Party.join_at(nm)], on_select = back })
 	if sub.is_empty(): return null
 	if sub.size() == 1: return sub[0]
 	return { label = "🤝 함께하자고 한다", on_select = func(): show(npc, "(무엇을 함께할까.)", sub + [{ label = "돌아간다", on_select = back }]) }
@@ -268,6 +278,7 @@ static func _ask_quest(npc, q: Dictionary) -> void:
 
 ## 말을 걸거나 건네주는 대목이 끝난 뒤. 그게 마지막 대목이고 보고받을 용도 이 용이면 곧바로 마무리 말로 이어진다
 static func _after_step(npc) -> void:
+	Party.sync()   # 말을 걸어 넘긴 대목이 이야기 동료를 데려갈 수 있다 (4장 티아맷)
 	var report = Quests.reportable_for(npc)
 	if report: _report_quest(npc, report)
 	else: open_hub(npc, true)
@@ -435,6 +446,7 @@ static func _confess(npc) -> void:
 	play_lines(npc, _talk().CONFESSION[npc.config.name], func():
 		if GameState.partner: GameState.partner.state = "WANDER"
 		if GameState.companion == npc: GameState.companion = null
+		Party.take_slot(npc)   # 새 짝이 고른 칸에 선다. 따라오던 다른 동료는 돌아간다
 		GameState.partner = npc
 		npc.state = "PARTNER_FOLLOW"
 		Romance.on_partnered(npc)
@@ -494,6 +506,7 @@ static func _entrust_egg(npc) -> void:
 ## 짝을 데리고 다닐지 정한다. 짝인 것은 그대로고 따라다니기만 끈다
 static func _set_following(npc, on: bool) -> void:
 	close()
+	if on: Party.take_slot(npc)   # 고른 칸은 하나: 따라오던 동료는 돌아간다
 	npc.state = "PARTNER_FOLLOW" if on else "WANDER"
 	if on: Hud.pop("%s 다시 따라나섭니다." % Util.josa(Names.npc(npc.config.name), "이", "가"), "🤝")
 	else: Hud.pop("%s 마을에 남습니다. 다시 부르려면 말을 거세요." % Util.josa(Names.npc(npc.config.name), "이", "가"), "👋")
@@ -501,10 +514,10 @@ static func _set_following(npc, on: bool) -> void:
 
 static func _set_companion(npc, join: bool) -> void:
 	if join:
-		if GameState.companion: GameState.companion.state = "WANDER"
+		Party.take_slot(npc)   # 고른 칸은 하나: 먼저 따라오던 동료는 돌아가고, 따라오던 짝은 마을에서 기다린다
 		GameState.companion = npc
 		npc.state = "COMPANION_FOLLOW"
-		Hud.pop("%s 동료로 합류했습니다!" % Util.josa(Names.npc(npc.config.name), "이", "가"), "🤝")
+		Hud.pop("%s 동료로 합류했습니다!%s" % [Util.josa(Names.npc(npc.config.name), "이", "가"), Party.role_note(npc)], "🤝")
 	else:
 		GameState.companion = null
 		npc.state = "WANDER"

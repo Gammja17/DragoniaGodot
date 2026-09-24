@@ -10,6 +10,8 @@ extends Node2D
 ##  이그나르: METEOR_RAIN, FLAME_WALL(틈이 있는 불의 벽). 마지막 판 전에 카이론이 합류한다(phases.scene),
 ##            마지막 판에는 내 속성을 따라 쓴다(mirror)
 ## 때리는 힘은 결투장의 세기를 따른다 (_hit: 잡몹과 같은 셈)
+## 노리는 것은 주로 나다. 조준하는 패턴 넷 중 하나쯤은 곁에서 싸우는 동료 쪽으로 예고선 · 장판을 긋는다 (focus).
+## 몸통과 회전 광선에는 동료도 다친다
 ##
 ## 그리는 순서: [이 노드] 그림자·빛·돌진 예고선 → [BeamFx] 회전 광선(더하기) → [Body] 몸(맞으면 밝게) → [Top] z z z
 
@@ -59,8 +61,12 @@ var vanishing := 0.0         # 빛가루로 흩어지는 남은 시간
 var _linger_until := 0
 var tell = null              # 탄막을 뿜기 직전의 예고 { pat, t } — 몸이 번쩍이고 경고음이 난다. 이 동안 피할 자리를 찾는다
 var threat := 0.0            # 큰 공격이 날아오는 중인 남은 시간 (간발 판정 창)
+var focus = null             # 이번 패턴이 노리는 동료 (null 이면 나)
+var _heads_split := false    # def.twin: 한쪽 머리가 막기 동료에게 끌려갔다 (다른 머리가 "비켜" 하고 들이받는다)
 const TELL_PATTERNS := ["RING", "AIMED", "SPIRAL", "HOMING"]
 const GROUND_PATTERNS := ["BONE_RAIN", "ICE_FIELD", "METEOR_RAIN", "QUAKE", "FLAME_WALL"]
+const AIMABLE := ["AIMED", "CHARGE", "HOMING", "SPIRAL", "BONE_RAIN", "ICE_FIELD", "METEOR_RAIN", "FLAME_WALL", "BURROW"]
+const ALLY_FOCUS := 0.25     # 조준 패턴이 동료 쪽으로 가는 몫
 const DYING_TIME := 1.8
 const VANISH_TIME := 1.6
 const RISE_TIME := 1.8       # 흩어진 뼈가 맞춰져 일어서는 데 걸리는 시간 (def.rise)
@@ -82,6 +88,7 @@ var yielding := false        # 싸움을 멈추고 장면을 기다린다 (phase
 var wrap_to = null           # 장면 속에서 옮겨 가는 자리 (Vector2)
 var ally = null              # 싸움 도중 합류한 용 (이그나르: 카이론). 쓰러지면 공격을 멈추게 하고, 결투장을 떠나면 되돌린다
 var _ally_home := Vector2.ZERO
+var _ally_state := "WANDER"   # 합류하기 전 그 용의 상태 (짝으로 따라다니던 용이면 되돌려 준다)
 var _mirror_i := 0           # def.mirror: 마지막 판에 내 속성을 번갈아 따라 쓴다 (이그나르의 세 빛깔 불)
 var _spear_hinted := false   # def.spears: 창끝이 빛나는 빈틈을 처음 한 번 알려 준다 (바실)
 var _dmg_k := -1.0           # 때리는 힘의 배율: 지도 세기(Enemy.MAP_POWER)의 절반만큼 (잡몹과 같은 셈)
@@ -130,9 +137,14 @@ func _ready() -> void:
 ## 결투장을 떠날 때 (지도가 바뀌거나 흩어져 사라질 때): 합류했던 용을 제 모습으로
 func _exit_tree() -> void:
 	if awake and dying <= 0 and Hud.current: Hud.current.set_boss_bar(null)   # 싸우다 떠나거나 쓰러져 지도가 바뀌어도 막대가 남지 않게
+	release_ally()
+
+
+## 합류했던 용을 제 모습으로 (결투장을 떠날 때). 짝으로 따라다니던 용이면 다시 따라다닌다
+func release_ally() -> void:
 	if ally and is_instance_valid(ally):
 		ally.passive = false
-		ally.state = "WANDER"
+		ally.state = _ally_state
 		ally.home_x = _ally_home.x; ally.home_y = _ally_home.y
 	ally = null
 
@@ -231,7 +243,11 @@ func update(dt: float) -> void:
 	if spiral: _update_spiral(dt)
 	if blizzard: _update_blizzard(dt)
 
-	if not is_hidden and d < 60 * def.scale: player.take_damage(_hit(def.contact) * dt * (2 if charge and not charge.windup > 0 else 1))
+	if not is_hidden:   # 몸에 부딪히면 다친다. 곁에서 싸우는 동료도
+		var bump: float = _hit(def.contact) * dt * (2 if charge and not charge.windup > 0 else 1)
+		if d < 60 * def.scale: player.take_damage(bump)
+		for n in Combat.allies():
+			if Util.dist(self, n) < 60 * def.scale: n.take_damage(bump)
 
 	animator.play_base("move" if moving else "idle")
 	animator.update(dt)
@@ -358,7 +374,7 @@ func reset() -> void:
 	if def.get("rise"):        # 다시 뼈 무더기로 눕고, 서리도 옅어진다
 		risen = 0.0; rising = false; frost_at = -1.0
 	charge = null; spiral = null; beam = null; burrow = null; blizzard = null
-	tell = null; threat = 0.0
+	tell = null; threat = 0.0; focus = null; _heads_split = false
 	Hud.current.set_boss_bar(null)
 
 
@@ -444,10 +460,18 @@ func _summon(types: Array) -> void:
 ## 다음 패턴을 고른다. 탄을 곧바로 쏟는 패턴은 짧게 예고한 뒤에 쏜다 (몸이 번쩍이고 경고음) —
 ## 예전에는 고르는 그 프레임에 열여섯 발이 한꺼번에 나와서 읽을 틈이 없었다
 func _start_pattern() -> void:
+	# 쌍두룡: 한쪽 머리가 동료에게 끌려갔으면, 둘에 하나는 다른 머리가 들이받아 휘청인다 (빈틈)
+	if _heads_split:
+		_heads_split = false
+		if randf() < 0.5:
+			pattern_timer = 1.9 if rage else 2.9
+			_fire("BUMP")
+			return
 	var patterns: Array = def.phases[phase].patterns if def.get("phases") else def.patterns
 	var pat: String = patterns[pattern_index % patterns.size()]
 	pattern_index += 1
 	pattern_timer = 1.9 if rage else 2.9
+	focus = _pick_focus(pat)
 	if TELL_PATTERNS.has(pat):
 		tell = { pat = pat, t = 0.35 if rage else 0.5 }
 		Sfx.play("warn")
@@ -455,13 +479,36 @@ func _start_pattern() -> void:
 	_fire(pat)
 
 
+## 이번 패턴이 노릴 동료. 주로 나(null). 가끔(ALLY_FOCUS)은 곁에서 싸우는 동료 쪽으로 예고선 · 장판을 긋는다
+func _pick_focus(pat: String):
+	if not AIMABLE.has(pat): return null
+	var near: Array = Combat.allies().filter(func(n): return Util.dist(self, n) < 700)
+	var guards: Array = near.filter(func(n): return Party.guarding(n))   # 막기 동료가 곁에 있으면 조금 더 자주, 그쪽을 본다
+	if randf() >= (float(Party._d().ROLES.GUARD.bossFocus) if not guards.is_empty() else ALLY_FOCUS): return null
+	return (guards if not guards.is_empty() else near).pick_random() if not near.is_empty() else null
+
+
+## 쌍두룡: 곁에서 버티는 막기 동료가 한쪽 머리를 끌어간다 (없으면 null)
+func _pulled_head():
+	var best = null
+	for n in Combat.allies():
+		if Party.guarding(n) and Util.dist(self, n) < 520 and (best == null or Util.dist(self, n) < Util.dist(self, best)): best = n
+	return best
+
+
+## 이번 패턴이 노리는 용. 고른 동료가 쓰러졌거나 없으면 나
+func _focus():
+	return focus if Combat.alive_ally(focus) else GameState.player
+
+
 func _fire(pat: String) -> void:
 	var r := rage
 	threat = 2.0 if GROUND_PATTERNS.has(pat) else 0.9
 	animator.play("attack")
 	var player = GameState.player
+	var tg = _focus()   # 이번 패턴이 노리는 용 (주로 나)
 	var m := _mouth()
-	var aim := atan2(player.y - 40 - m.y, player.x - m.x)
+	var aim := atan2(tg.y - 40 - m.y, tg.x - m.x)
 	match pat:
 		"RING":
 			var n := 22 if r else 16
@@ -469,15 +516,18 @@ func _fire(pat: String) -> void:
 			for i in n: _orb(off + (i / float(n)) * TAU)
 			Sfx.play("flame")
 		"AIMED":
-			# 잘고라는 두 머리가 불과 번개를 번갈아 뱉는다
+			# 잘고라는 두 머리가 불과 번개를 번갈아 뱉는다. 곁에 막기 동료가 있으면 번개 머리가 그쪽으로 끌려간다
+			var pulled = _pulled_head() if def.get("twin") else null
 			var spreads := [-0.4, -0.2, 0.0, 0.2, 0.4] if r else [-0.22, 0.0, 0.22]
 			for i in spreads.size():
-				_orb(aim + spreads[i], 13, { element = "FIRE" if i % 2 else "THUNDER" } if def.get("twin") else {})
+				var at: float = aim if not pulled or i % 2 else atan2(pulled.y - 40 - m.y, pulled.x - m.x)
+				_orb(at + spreads[i], 13, { element = "FIRE" if i % 2 else "THUNDER" } if def.get("twin") else {})
+			if pulled: _heads_split = true
 			Sfx.play("shoot")
 		"SPIRAL":
 			spiral = { left = 36 if r else 24, angle = aim, timer = 0.0 }
 		"CHARGE":
-			charge = { windup = 0.7, time = 0.75, angle = aim, chain = (3 if r else 2) if def.get("chargeChain") else 1 }
+			charge = { windup = 0.7, time = 0.75, angle = aim, chain = (3 if r else 2) if def.get("chargeChain") else 1, target = tg }
 			Sfx.play("warn")
 		"BUMP":   # 잘고라: 두 머리가 같은 곳을 노리다 서로 들이받는다. 휘청이는 동안은 두 배로 맞는다
 			stagger = 1.6
@@ -490,18 +540,18 @@ func _fire(pat: String) -> void:
 			_summon(["GHOST", "GHOST", "BAT", "BAT"] if r else ["GHOST", "BAT", "BAT"])
 		"BONE_RAIN":
 			for i in (9 if r else 6):
-				_hazard(player.x + Util.rand_range(-260, 260), player.y + Util.rand_range(-200, 200), { r = 80, delay = 0.8 + i * 0.12, damage = 16, color = "#bfe9ff",
+				_hazard(tg.x + Util.rand_range(-260, 260), tg.y + Util.rand_range(-200, 200), { r = 80, delay = 0.8 + i * 0.12, damage = 16, color = "#bfe9ff",
 					effect = "ICE_SPIKE", effectSize = 1.5, sound = null if i % 3 else "freeze", status = { type = "SLOW", duration = 1.5 } })
 		"TWIN_BEAM":
 			beam = { warm = 0.9, time = 4.0 if r else 3.0, angle = aim + 0.9, spin = (-1 if randf() < 0.5 else 1) * (1.1 if r else 0.85) }
 			Sfx.play("warn")
 		"HOMING":
-			for i in (7 if r else 5): _orb(aim + (i - 2) * 0.5, 10, { homing = 1.6, speed = 230, life = 4.5 })
+			for i in (7 if r else 5): _orb(aim + (i - 2) * 0.5, 10, { homing = 1.6, speed = 230, life = 4.5, homingTarget = null if tg == player else tg })
 			Sfx.play("ice")
 		"ICE_FIELD":
 			for i in (5 if r else 3):
-				var hx: float = player.x + Util.rand_range(-220, 220)
-				var hy: float = player.y + Util.rand_range(-160, 160)
+				var hx: float = tg.x + Util.rand_range(-220, 220)
+				var hy: float = tg.y + Util.rand_range(-160, 160)
 				if _guard() != null and Vector2(hx, hy).distance_to(guard) < 240: continue   # 알 벽 둘레에는 깔지 않는다
 				_hazard(hx, hy, { r = 130, delay = 0.7, linger = 6, damage = 8, dps = 5, slow = true, color = "#7fd4ff", effect = "ICE_SPIKE", effectSize = 2, sound = "freeze" })
 		"BLIZZARD":
@@ -511,7 +561,7 @@ func _fire(pat: String) -> void:
 			Hud.pop("눈보라가 몰아칩니다! 바람을 거슬러 버티세요.", "🌨️")
 			Sfx.play("gust")
 		"BURROW":
-			burrow = { time = 1.6 if r else 2.2, erupting = false }
+			burrow = { time = 1.6 if r else 2.2, erupting = false, target = tg }
 			is_hidden = true
 			Vfx.spawn_effect("DUST", x, y, { size = 3, color = "#c9a24a" })
 			Sfx.play("gust")
@@ -521,18 +571,18 @@ func _fire(pat: String) -> void:
 			Sfx.play("warn")
 		"METEOR_RAIN":
 			for i in (11 if r else 7):
-				var px: float = player.x + Util.rand_range(-320, 320)
-				var py: float = player.y + Util.rand_range(-240, 240)
+				var px: float = tg.x + Util.rand_range(-320, 320)
+				var py: float = tg.y + Util.rand_range(-240, 240)
 				_hazard(px, py, { r = 110, delay = 0.9 + i * 0.16, linger = 2, damage = 24, dps = 8, color = "#ff5a1f", effect = "FIRE_HIT", effectSize = 2.2, sound = "boom", shake = 6 })
 			Sfx.play("warn")
 		"FLAME_WALL":
-			# 플레이어를 가로지르는 불의 벽. 한 군데 틈이 있다
+			# 노리는 용을 가로지르는 불의 벽. 한 군데 틈이 있다
 			var across := aim + PI / 2
 			var gap := floori(Util.rand_range(2, 9))
 			for i in 11:
 				if i == gap or i == gap + 1: continue
 				var k := (i - 5) * 95
-				_hazard(player.x + cos(across) * k + cos(aim) * 40, player.y + sin(across) * k + sin(aim) * 40,
+				_hazard(tg.x + cos(across) * k + cos(aim) * 40, tg.y + sin(across) * k + sin(aim) * 40,
 					{ r = 60, delay = 1.0, linger = 3.5, damage = 18, dps = 14, color = "#ff7a2a", effect = "FLAMES", effectSize = 1.4, sound = "flame" if i == 0 else null })
 			Sfx.play("warn")
 
@@ -553,7 +603,8 @@ func _update_charge(dt: float, speed_mult: float) -> bool:
 	var player = GameState.player
 	if c.windup > 0:               # 돌진 전 움찔 (피할 시간)
 		c.windup -= dt
-		c.angle = atan2(player.y - y, player.x - x)
+		var tg = c.target if Combat.alive_ally(c.get("target")) else player   # 동료를 노린 돌진은 그 동료를 끝까지 겨눈다
+		c.angle = atan2(tg.y - y, tg.x - x)
 		return false
 	c.time -= dt
 	x += cos(c.angle) * 620 * speed_mult * dt
@@ -583,9 +634,10 @@ func _update_beam(dt: float) -> void:
 	b.angle += b.spin * dt
 	var m := _mouth()
 	for a in [b.angle, b.angle + PI]:
-		# 광선(선분)과 플레이어 사이 거리
-		var t := clampf((player.x - m.x) * cos(a) + (player.y - 30 - m.y) * sin(a), 0, 700)
-		if Vector2(player.x - (m.x + cos(a) * t), player.y - 30 - (m.y + sin(a) * t)).length() < 30: player.take_damage(_hit(45) * dt)
+		# 광선(선분)과 용 사이 거리. 곁의 동료도 맞는다
+		for who in [player] + Combat.allies():
+			var t := clampf((who.x - m.x) * cos(a) + (who.y - 30 - m.y) * sin(a), 0, 700)
+			if Vector2(who.x - (m.x + cos(a) * t), who.y - 30 - (m.y + sin(a) * t)).length() < 30: who.take_damage(_hit(45) * dt)
 	if b.time <= 0: beam = null
 
 
@@ -594,7 +646,8 @@ func _update_burrow(dt: float) -> void:
 	var b: Dictionary = burrow
 	var player = GameState.player
 	b.time -= dt
-	var a := atan2(player.y - y, player.x - x)
+	var tg = b.target if Combat.alive_ally(b.get("target")) else player
+	var a := atan2(tg.y - y, tg.x - x)
 	x += cos(a) * 330 * dt
 	y += sin(a) * 330 * dt
 	if randf() < 0.4: Vfx.spawn_effect("DUST", x + Util.rand_range(-20, 20), y + Util.rand_range(-10, 10), { size = 0.9, color = "#c9a24a" })
@@ -741,6 +794,7 @@ func _grant() -> void:
 	var relic = Relics.boss_relic(id)
 	if relic: Relics.grant(relic, x, y)
 	player.gain_xp(def.xp)
+	Party.on_boss_down(id)   # 곁에서 싸운 용을 적는다 (끝까지 곁에서 싸운 용 · 같이 넘긴 만큼 가까워진다)
 	RelicOffer.offer("%s의 둥지에서" % def.name)   # 셋 중 하나 고르는 유물 (조용해지면 뜬다)
 	Quests.notify("boss", id)
 

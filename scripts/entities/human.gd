@@ -28,6 +28,8 @@ var charge = null           # { windup, t, dir, speed, hit } 베르단의 포위
 var hold_back := false      # 뒤에서 지휘만 하는 대장
 var fleeing := false
 var hunts = null            # 이 습격에서 노리기로 한 용의 이름
+var hit_by = null           # 마지막으로 나를 친 용 (그쪽을 먼저 노린다)
+var hit_at := -99.0
 var status := {}
 var status_immune := false
 var remove := false
@@ -66,7 +68,7 @@ func say(text: String) -> void:
 	if type == "CAPTAIN": Hud.pop(text, "📣")
 
 
-## 알이 있는 둥지가 가까우면 둥지, 아니면 가장 가까운 용(플레이어·마을 용·동료)
+## 알이 있는 둥지가 가까우면 둥지, 아니면 가장 가까운 용(플레이어·마을 용·동료). 방금 나를 친 용은 조금 더 가까이 있는 셈 친다
 func _pick_target():
 	var nests: Array = GameState.entities.nests
 	if not nests.is_empty() and nests[0].has_egg and Util.dist(self, nests[0]) < 320: return nests[0]
@@ -75,12 +77,17 @@ func _pick_target():
 		for n in GameState.entities.npcs:
 			if n.config.get("name") == hunts and not (n.down_timer > 0): return n
 	var best = GameState.player
-	var best_d := Util.dist(self, best)
+	var best_d := _score(best)
 	for a in Combat.allies():
-		var d := Util.dist(self, a)
+		var d := _score(a)
 		if d < best_d:
 			best = a; best_d = d
 	return best
+
+
+func _score(dragon) -> float:
+	var d := Util.dist(self, dragon) - Party.taunt_pull(dragon, self)   # 막기 동료에게 끌려간다
+	return d - EnemyAI.GRUDGE_PULL if dragon == hit_by and GameState.game_time - hit_at < EnemyAI.GRUDGE else d
 
 
 func update(dt: float) -> void:
@@ -166,9 +173,12 @@ func _update_charge(dt: float) -> void:
 		cooldown = 1.0
 
 
-func take_damage(dmg: float, silent := false, _from = null) -> void:
+func take_damage(dmg: float, silent := false, from = null) -> void:
 	if stagger > 0: dmg *= 2   # 빈틈
 	hp -= dmg
+	var who = Combat.attacker_of(from)
+	if who != null and not silent:
+		hit_by = who; hit_at = GameState.game_time
 	if not silent: hit_flash = 1.0
 	if hp <= 0 and not remove: die()
 

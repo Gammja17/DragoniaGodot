@@ -345,9 +345,8 @@ static func sleep() -> void:
 		for n in GameState.entities.npcs:
 			if n.config.get("fixed"):
 				n.x = n.home_x; n.y = n.home_y; n.hp = n.max_hp; n.down_timer = 0
-		for n in [GameState.partner, GameState.companion]:
-			if n and n.state != "WANDER":
-				n.x = p.x + 70; n.y = p.y + 20
+		for n in Party.followers():
+			n.x = p.x + 70; n.y = p.y + 20
 		# 알은 밤에 곁에서 품는 게 제일 빠르다. 아이들은 자고 나면 조금 자라 있다
 		if not GameState.entities.nests.is_empty():
 			var nest = GameState.entities.nests[0]

@@ -70,6 +70,7 @@ static func _build() -> void:
 	_build_chronicle()
 	_build_fix()   # [세션 B]
 	_build_c()
+	_build_g()   # [세션 G]
 
 
 # ---- 자주 쓰는 것들 ----
@@ -343,3 +344,12 @@ const NEWS_DAYS := 5   # 소식이 소식인 동안 (날)
 ## 그 일이 있은 날(day)로부터 며칠 안 됐는가. 적힌 날이 없으면 아니다
 static func _fresh(day, s) -> bool:
 	return day != null and s.day - int(day) < NEWS_DAYS
+
+
+# ---- [세션 G] 원정대 ----
+## 이야기 동료가 들고 나는 자리. 새 항목의 경로는 id 로 짓는다
+static func _build_g() -> void:
+	_table.merge({
+		# 7장: 바실을 보낸 뒤 불탄 도시로 가는 길, 사막 입구에서 바윗골의 가람이 길잡이로 나선다 (party.json STORY 의 after)
+		"chronicle:CHRONICLE.ev_garam_guide.when": func(c): return c.map == "DESERT" and c.active.call("m5c") and int(c.s.quests.active.m5c.step) == 0,
+	})

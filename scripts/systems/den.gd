@@ -274,7 +274,7 @@ static func _pick_guest() -> String:
 static func _can_visit(nm: String) -> bool:
 	if Routine.is_dead(nm) or Romance.mood_of(nm) != null: return false
 	var npc = World.any_npc(nm)
-	if not npc or npc.relation < GUEST.liking or npc == GameState.partner or npc == GameState.companion: return false
+	if not npc or npc.relation < GUEST.liking or npc == GameState.partner or Party.followers().has(npc): return false
 	if Gathering.invited_up(): return true
 	for d in Data.get_module("npcs").FIXED_NPCS:
 		if d.name == nm: return not d.get("east", false)

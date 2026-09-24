@@ -1,0 +1,173 @@
+{
+ "SHARE": {
+  "low": 0.2,
+  "mid": 0.3,
+  "high": 0.4
+ },
+ "INTERVAL": 0.8,
+ "JOIN": 50,
+ "BOND": 5,
+ "ROLES": {
+  "GUARD": {
+   "name": "막기",
+   "desc": "곁의 적을 제 쪽으로 끌어 두고, 맞아도 덜 다친다",
+   "power": 0.85,
+   "taken": 0.6,
+   "taunt": 320,
+   "pull": 220,
+   "bossFocus": 0.35
+  },
+  "MEDIC": {
+   "name": "살리기",
+   "desc": "쓰러진 용을 일으키고, 다친 나를 조금씩 돌본다",
+   "power": 0.75,
+   "reach": 600,
+   "mend": 2.0,
+   "heal": 0.04,
+   "healEvery": 5.0,
+   "healBelow": 0.6,
+   "healRange": 220
+  },
+  "STRIKE": {
+   "name": "치기",
+   "desc": "브레스가 가장 세다",
+   "power": 1.2
+  }
+ },
+ "MEMBERS": {
+  "Elder": {
+   "role": "MEDIC"
+  },
+  "Kairon": {
+   "role": "STRIKE",
+   "stay": {
+    "after": "m6w",
+    "line": "그론을 묻던 날, 다시는 마을을 비우지 않겠다고 했다. 마을은 내가 지킬 테니 다녀와라."
+   }
+  },
+  "Tiamat": {
+   "role": "GUARD",
+   "away": {
+    "while": "envoys",
+    "note": "티아맷은 사절로 봉우리에 오릅니다."
+   }
+  },
+  "Nara": {
+   "role": "STRIKE"
+  },
+  "Poco": {
+   "role": "STRIKE"
+  },
+  "Ember": {
+   "role": "STRIKE"
+  },
+  "Mira": {
+   "role": "MEDIC"
+  },
+  "Dan": {
+   "role": "GUARD"
+  },
+  "Soi": {
+   "role": "MEDIC"
+  },
+  "Doran": {
+   "role": "GUARD"
+  },
+  "Miru": {
+   "role": "STRIKE"
+  },
+  "Vesna": {
+   "role": "GUARD"
+  },
+  "Heukdan": {
+   "role": "GUARD"
+  },
+  "Ignar": {
+   "role": "STRIKE"
+  },
+  "Moss": {
+   "role": "MEDIC"
+  },
+  "Beodeul": {
+   "role": "GUARD"
+  },
+  "Garam": {
+   "role": "GUARD"
+  },
+  "Jagal": {
+   "role": "STRIKE"
+  },
+  "Riun": {
+   "role": "GUARD"
+  },
+  "Seiran": {
+   "role": "MEDIC"
+  },
+  "Haru": {
+   "role": "STRIKE"
+  },
+  "On": {
+   "role": "MEDIC"
+  },
+  "Biryu": {
+   "role": "STRIKE"
+  },
+  "Yuan": {
+   "role": "GUARD",
+   "away": {
+    "while": "envoys",
+    "note": "유안은 사절로 봉우리에 오릅니다."
+   }
+  }
+ },
+ "STORY": [
+  {
+   "who": "Tiamat",
+   "quest": "m5",
+   "from": 1,
+   "to": 2
+  },
+  {
+   "who": "Kairon",
+   "quest": "m5a"
+  },
+  {
+   "who": "Ember",
+   "quest": "m5b",
+   "until": "BASIL"
+  },
+  {
+   "who": "Garam",
+   "quest": "m5c",
+   "to": 0,
+   "after": "ev_garam_guide"
+  }
+ ],
+ "ALONE": [
+  {
+   "maps": [
+    "HOLLOW",
+    "HOLLOW_DEEP",
+    "MORGATH_LAIR"
+   ],
+   "quests": [
+    "m4"
+   ],
+   "until": "MORGATH",
+   "note": "동료들은 단과 함께 호숫가를 찾고 있습니다. 골짜기에는 나 혼자 갑니다."
+  },
+  {
+   "maps": [
+    "VOLCANO",
+    "VOLCANO_PATH",
+    "IGNAR_LAIR"
+   ],
+   "quests": [
+    "m6",
+    "m7d"
+   ],
+   "until": "IGNAR",
+   "note": "이그나르가 부른 것은 나 혼자입니다. 동료들은 화산 밖에서 기다립니다."
+  }
+ ]
+}

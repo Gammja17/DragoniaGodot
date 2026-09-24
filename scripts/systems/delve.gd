@@ -69,7 +69,7 @@ static func _build_floor(depth: int) -> void:
 	# 개체 풀을 굴 전용으로 갈아 끼운다. 짝·동료·아이들은 따라 들어온다
 	var before: Dictionary = GameState.entities
 	var pools := GameState.empty_pools()
-	pools.npcs = before.npcs.filter(func(n): return n and n.state != "WANDER" and (n == GameState.partner or n == GameState.companion))
+	pools.npcs = before.npcs.filter(func(n): return n and Party.followers().has(n))
 	pools.babies = before.babies.filter(func(b): return GameState.kids.any(func(k): return k.get("entity") == b))
 
 	var rng := Util.Mulberry32.new(floor.seed + 1)

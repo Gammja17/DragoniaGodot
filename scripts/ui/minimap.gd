@@ -95,8 +95,10 @@ func _draw() -> void:
 			draw_string_outline(font, p + Vector2(-w / 2, 5), mark, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, 3, Color(0, 0, 0, 0.9))
 			draw_string(font, p + Vector2(-w / 2, 5), mark, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#7dd36a") if mark == "?" else Color("#ffd84a"))
 		else: ring.call(npc.x, npc.y, 2.5, Color("#7dd36a"))
-	if GameState.partner: ring.call(GameState.partner.x, GameState.partner.y, 2.5, Color("#ff7aa8"))
-	if GameState.companion: ring.call(GameState.companion.x, GameState.companion.y, 2.5, Color("#7dd3ff"))
+	# 짝은 분홍, 따라나선 동료는 하늘색. 이 지도에 있는 용만 (마을에서 기다리는 짝이 엉뚱한 자리에 찍히던 것)
+	for n in E.npcs:
+		if n == GameState.partner: ring.call(n.x, n.y, 2.5, Color("#ff7aa8"))
+		elif n.state != "WANDER": ring.call(n.x, n.y, 2.5, Color("#7dd3ff"))
 	# 길잡이 목표: 천천히 뛰는 금빛 테
 	var t = Guide.target()
 	if t:

@@ -47,6 +47,9 @@ var guard_angle = null
 var summoned_by = null
 var split_child := false
 var is_guardian := false
+var target = null             # 노리는 용 (EnemyAI 가 고른다. null 이면 나)
+var hit_by = null             # 마지막으로 나를 친 용
+var hit_at := -99.0
 
 var _body: Node2D
 var _top: Node2D
@@ -142,6 +145,9 @@ func take_damage(dmg: float, silent := false, from = null) -> void:
 				for k in ["BURN", "SLOW"]:
 					if status.get(k, 0) > 0: Status.apply(o, k, status[k] * 0.8)
 	hp -= dmg
+	var who = Combat.attacker_of(from)
+	if who != null and not silent:
+		hit_by = who; hit_at = GameState.game_time
 	if not silent: EnemyAI.alert(self)              # 먼저 때리면 그 무리가 돌아본다
 	if not silent:
 		hit_flash = 1.0

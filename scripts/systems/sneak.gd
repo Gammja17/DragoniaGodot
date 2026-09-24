@@ -136,8 +136,8 @@ static func _set_stage(view: SneakView) -> void:
 		r.watchers = [w]
 	# 따라오던 짝·동료는 석비 곁에서 기다린다 (같이 몰래 다가갈 수는 없다)
 	var wait := World.at(s.wait)
-	for n in [GameState.partner, GameState.companion]:
-		if n == null or n.state == "WANDER" or _in_run(r, n): continue
+	for n in Party.followers():
+		if _in_run(r, n): continue
 		n.x = wait.x; n.y = wait.y
 		wait.x += 70
 		_hold(r, n, "down")

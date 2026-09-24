@@ -2,7 +2,7 @@ class_name Projectile
 extends RefCounted
 ## 2D판 entities/Projectile.js. 모든 투사체. faction 'ALLY'(플레이어/짝/자식)는 적·사냥꾼·보스에게,
 ## 'ENEMY'는 플레이어(와 마을 용)에게만 맞는다. 노드가 아니라 FxLayer 가 그린다.
-## opts: { faction, element, kind: 'BREATH' | 'ARROW', damage, speed, life, scale, radius, pierce, fromPlayer, slow, homing, homingTarget }
+## opts: { faction, element, kind: 'BREATH' | 'ARROW', damage, speed, life, scale, radius, pierce, fromPlayer, slow, homing, homingTarget, by }
 
 const CRIT_CHANCE := 0.12   # 치명타: 피해 2배
 const ARROW := Rect2(176, 160, 16, 16)   # Tiny Dungeon 시트의 화살(위쪽을 향함)
@@ -25,6 +25,7 @@ var from_player: bool         # 플레이어가 쏜 탄만 필살기 게이지�
 var slow: float               # 맞은 용을 이만큼(초) 느리게 한다 (그물)
 var homing: float             # 초당 꺾을 수 있는 각도(rad)
 var homing_target = null      # 따라갈 상대. 없으면 플레이어 (사냥꾼의 그물)
+var by = null                 # 쏜 용. 적이 "나를 친 쪽"을 기억한다 (모르면 null)
 var speed: float
 var t := 0.0
 var remove := false
@@ -56,6 +57,7 @@ func _init(px: float, py: float, a: float, opts := {}) -> void:
 	slow = opts.get("slow", 0.0)
 	homing = opts.get("homing", 0.0)
 	homing_target = opts.get("homingTarget")
+	by = opts.get("by")
 
 
 ## 빛을 더해 그리는가 (빛나는 숨결). 물·독즙·바위는 밝은 풀밭 위에서 하얗게 날아가 버려 제 색 그대로

@@ -294,12 +294,13 @@ static func any_npc(nm: String):
 	return null
 
 
-## 짝·동료·아이들을 지금 지도로 데려온다
+## 짝·동료·아이들을 지금 지도로 데려온다. 나 혼자 가야 하는 곳(Party.alone_here)에는 동료가 밖에서 기다린다
 static func _bring_family(pools: Dictionary, x: float, y: float) -> void:
-	for n in [GameState.partner, GameState.companion]:
-		if not n or n.state == "WANDER": continue   # 기다리라고 한 짝은 두고 간다
-		if not pools.npcs.has(n): pools.npcs.append(n)
-		n.x = x + Util.rand_range(50, 90); n.y = y + Util.rand_range(-30, 40)
+	if not Party.alone_here():
+		for n in Party.followers():   # 기다리라고 한 짝은 두고 간다
+			if not pools.npcs.has(n): pools.npcs.append(n)
+			n.remove = false   # 문으로 걸어 나가던 중이었으면 표시가 남아 있다
+			n.x = x + Util.rand_range(50, 90); n.y = y + Util.rand_range(-30, 40)
 	# 따라오는 아이는 내 곁으로. 둥지를 지키는 아이(성체 · '둥지 지키기')는 따라오지 않고 내 굴 둥지 곁에만 있다
 	var nest = pools.nests[0] if not pools.nests.is_empty() else null
 	for k in GameState.kids:
@@ -333,6 +334,11 @@ static func clear_spot(x: float, y: float, m: GameMap) -> Vector2:
 ## 지도를 바꾼다. from: 어느 쪽에서 들어왔는지 ('N'|'S'|'E'|'W'). 그 반대편 포탈 앞에 선다. spot: 자리를 콕 집을 때
 static func enter_map(id: String, from = null, spot = null) -> GameMap:
 	Ambush.maybe(id)   # 베르단을 한 번 만난 뒤로는 길에서 또 마주칠 수 있다
+	for b in GameState.entities.get("bosses", []):   # 결투장에 합류했던 용은 제 모습으로 (짝이면 다시 따라나온다)
+		if is_instance_valid(b): b.release_ally()
+	Party.sync(true, false)   # 이야기 동료를 이야기에 맞춘다 (불러온 세이브에서도)
+	Party.ensure_panel()
+	var was := GameState.map_id
 	# 떠나기 전에 둥지 상태를 갈무리한다 (내 굴에만 있다)
 	if GameState.entities and not GameState.entities.get("nests", []).is_empty():
 		var leaving = GameState.entities.nests[0]
@@ -372,6 +378,7 @@ static func enter_map(id: String, from = null, spot = null) -> GameMap:
 	GameState.entities = pools
 	if not GameState.visited.has(id): GameState.visited.append(id)
 	if dens().has(id): Den.intro(id)
+	Party.note_alone(was)
 	return m
 
 

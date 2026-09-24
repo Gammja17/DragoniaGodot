@@ -82,6 +82,7 @@ static func phase(b, ph: Dictionary) -> void:
 static func say(b, lines) -> void:
 	var who: String = b.def.name.split(" ")[-1]
 	var list: Array = lines if lines is Array else [lines]
+	var wb: WeakRef = weakref(b)   # 두 번째 줄이 뜨기 전에 결투장을 떠나면 보스는 이미 사라지고 없다 (붙잡고 있으면 엔진이 오류를 찍는다)
 	for i in list.size():
 		var text: String = list[i]
 		var by := "" if text.begins_with("(") else who   # "(모래가 끓는다.)" 같은 서술에는 이름을 붙이지 않는다
@@ -89,7 +90,8 @@ static func say(b, lines) -> void:
 			Cutscene.say_over(by, text, SAY_SEC + 0.2)
 			continue
 		(Engine.get_main_loop() as SceneTree).create_timer(SAY_SEC * i, true, false, true).timeout.connect(func():
-			if is_instance_valid(b) and b.awake and b.dying <= 0 and not b.remove: Cutscene.say_over(by, text, SAY_SEC + 0.2))
+			var bb = wb.get_ref()
+			if bb and bb.awake and bb.dying <= 0 and not bb.remove: Cutscene.say_over(by, text, SAY_SEC + 0.2))
 
 
 ## 되살아나는 순간 (BOSSES[id].revive). 무너진 몸이 다시 맞춰지는 동안은 맞지도 때리지도 않는다
@@ -136,6 +138,7 @@ static func ally_joined(e) -> void:
 	if b == null: return
 	b.ally = e
 	b._ally_home = Vector2(e.home_x, e.home_y)
+	b._ally_state = e.state if e.state != "ALLY" else "WANDER"   # 짝으로 따라다니던 용이면 떠날 때 되돌려 준다
 	e.home_x = e.x; e.home_y = e.y
 	e.walk_to = null
 	e.state = "ALLY"

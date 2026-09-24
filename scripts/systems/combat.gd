@@ -21,6 +21,26 @@ static func allies() -> Array:
 	return GameState.entities.npcs.filter(func(n): return n.down_timer <= 0 and (n.config.get("fixed") or n.state != "WANDER"))
 
 
+## 곁에서 싸우는 용(동료 · 마을 용)이 아직 설 수 있나: 쓰러지지 않았고 이 지도에 있다
+static func alive_ally(n) -> bool:
+	return is_instance_valid(n) and n is Dragon and not n.is_player and not n.remove and n.down_timer <= 0 and GameState.entities.npcs.has(n)
+
+
+## 맞힌 것(탄 · 용)을 쏜 용. 모르면 null
+static func attacker_of(from):
+	if from is Projectile: return from.by if from.by != null else (GameState.player if from.from_player else null)
+	if from is Dragon: return from
+	return null
+
+
+## 브레스를 맞힐 수 있는 상대인가: 허수아비, 땅속에 숨은 적,
+## 잠들었거나 쓰러지는 · 무릎 꿇은 · 장면을 기다리는 보스는 아니다
+static func hittable(e) -> bool:
+	if e.remove or e.get("is_hidden") or e.type == "DUMMY": return false
+	if e is Boss: return e.awake and e.dying <= 0 and not e.lingering and e.vanishing <= 0 and not e.yielding and not e.rising and e.risen >= 1.0
+	return true
+
+
 ## 총알 충돌. ALLY 총알은 적/인간에게, ENEMY 총알은 플레이어(와 마을 용)에게만 맞는다
 static func resolve() -> void:
 	var E: Dictionary = GameState.entities

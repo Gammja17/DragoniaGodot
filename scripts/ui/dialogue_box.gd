@@ -15,11 +15,11 @@ const NARRATION_COLOR := Color("#cfc2a4")   # 해설(내 속말·장면 묘사)�
 static var current: DialogueBox
 ## 대사 글자 크기 단계 (설정의 --dlg-step, 1~4)
 static var step := 2
-## 단계마다 본문 · 이름 · 선택지 글자 크기 (px). 보통(2)의 본문은 18 — 판의 12px 글자보다 한 단계만 크게
-## (예전 24 는 화면이 540 기준으로 늘어난 뒤로 너무 크고 두꺼웠다. 18 도 1080p 에서는 원래 글꼴의 딱 3배라 또렷하다)
-const BODY_SIZES := [12, 18, 24, 36]
-const NAME_SIZES := [12, 18, 24, 24]
-const OPTION_SIZES := [12, 12, 18, 24]
+## 단계마다 본문 · 이름 · 선택지 글자 크기 (px). 보통(2)의 본문은 14 — 판의 12px 글자보다 조금만 크게
+## (예전 24 는 화면이 540 기준으로 늘어난 뒤로 너무 크고 두꺼웠다. 크게 보고 싶으면 설정에서 18 · 24)
+const BODY_SIZES := [12, 14, 18, 24]
+const NAME_SIZES := [12, 14, 18, 24]
+const OPTION_SIZES := [12, 12, 14, 18]
 ## 고를 줄이 셋 이상이고 모두 이만큼(글자)보다 짧으면 두 줄로 나란히 놓는다 (창 높이가 반으로 준다)
 const SHORT_LABEL := 22
 

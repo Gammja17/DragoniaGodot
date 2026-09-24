@@ -31,6 +31,7 @@ static func get_sheet(species: String, colors: Dictionary, look := 0) -> SpriteS
 		images[k] = tint_image(raw[k], desc.zones, colors) if not desc.zones.is_empty() else raw[k]
 	var sheet := SpriteSheet.build(desc, images, look)
 	if species == "CAST": sheet.portrait = Data.get_module("sprites").CAST_NAMES[look]
+	if species == "BOSS": sheet.portrait = Data.get_module("sprites").BOSS_NAMES[look]
 	_cache[key] = sheet
 	return sheet
 

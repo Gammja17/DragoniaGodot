@@ -26,6 +26,9 @@ class_name Cutscene
 ##   { card = "옛 수호룡 모르가스", sub = "달빛 골짜기의 주인", time? }   이름패 (보스·새 땅)
 ##   { hide = "Gron" } · { show = "Gron" } · { down = "Gron" } · { up = "Gron" }
 ##   { vanish = "IGNAR" }                            보스는 빛가루로 흩어지고, 용은 제자리에서 흐려진다
+##   { boss = "frost" | "rise" | "home" | "wrap" }   이 지도 보스의 연출 (BossShow.act): 서리가 번진다 · 뼈가 맞춰지며 일어선다 · 제자리로 · 지키던 것 앞으로 가 몸을 만다
+##   { cry = "MORGATH", kind? = "roar" | "far" | … }  보스의 울음 (BossVoice). 보스가 이 지도에 없어도 울린다 (멀리서 들리는 울음)
+##   { stay = "Kairon" }                             불러온 용을 장면이 끝나도 이 지도에 남긴다 (싸움에 합류. BossShow.ally_joined)
 ## 한 줄에는 그 밖에 zoom(그 줄만 당겨 본다) · auto(초. 다 찍히고 이만큼 뒤 저절로 넘어간다)를 달 수 있다.
 ## 대사(text) 없이 do 만 있는 줄은 연출만 하고 넘어간다.
 ## 세계 자체는 대화창이 떠 있는 동안 main 이 멈춰 둔다. 여기서는 "어떻게 보이는가"만 맡는다.
@@ -592,6 +595,17 @@ static func _start(spec: Dictionary) -> Dictionary:
 		show_card(str(spec.card), str(spec.get("sub", "")))
 		b.wait = 0.0 if async else float(spec.get("time", 2.2))
 		b.end = func(): _card_want = 0.0
+	elif spec.has("stay"):
+		var m = _cast_of(actor(spec.stay))
+		if m and m.get("guest"):
+			m.guest = false
+			BossShow.ally_joined(m.e)
+	elif spec.has("cry"):
+		BossVoice.cry(str(spec.cry), str(spec.get("kind", "roar")))
+	elif spec.has("boss"):
+		var r := BossShow.act(str(spec.boss))
+		b.wait = 0.0 if async else float(r.get("wait", 0.0))
+		b.rush = r.get("rush")
 	elif spec.has("vanish"):
 		# 보스는 빛가루로 흩어지고, 용은 걸어 나가며 흐려진다
 		var e = actor(spec.vanish)

@@ -430,6 +430,77 @@
     "oeBBo....oBBeo",
     ".oo........oo."
    ]
+  },
+  "DRAGON_SKULL": {
+   "palette": {
+    "o": "#2a2420",
+    "W": "#f2ecdc",
+    "w": "#d6ccb4",
+    "d": "#a39679",
+    "k": "#141012"
+   },
+   "rows": [
+    ".oo.......................",
+    ".oWo......................",
+    "..oWo.....................",
+    "..oWWoooooo...............",
+    "...oWWWWWWWoooo...........",
+    "...oWWWkkkWWWWWoooooo.....",
+    "..oWWWWkkkWWWWWWWWWWWoo...",
+    "..oWWWWWWWWWWWWWWWWWWkWo..",
+    "..owwWWWWWwwwwwwwwwwwwwo..",
+    "...owwwddoWoWoWoWoWoooo...",
+    "....oddo.oWWWWWWWWWWo.....",
+    ".....oo...oddddddddo......",
+    "...........oooooooo......."
+   ]
+  },
+  "BONES": {
+   "palette": {
+    "o": "#2a2420",
+    "W": "#f2ecdc",
+    "w": "#d6ccb4",
+    "d": "#a39679"
+   },
+   "rows": [
+    ".oo..........oo.",
+    "oWWo........oWWo",
+    "oWWWooooooooWWWo",
+    ".oWWWWWWWWWWWWo.",
+    ".owwwwwwwwwwwwo.",
+    "owwdoooooooodwwo",
+    "odwo........owdo",
+    ".oo..........oo."
+   ]
+  },
+  "RIB": {
+   "palette": {
+    "o": "#2a2420",
+    "W": "#f2ecdc",
+    "w": "#d6ccb4",
+    "d": "#a39679",
+    "f": "#cfeaff"
+   },
+   "rows": [
+    ".......ooo.",
+    "......oWWfo",
+    ".....oWWfo.",
+    ".....oWwo..",
+    "....oWwdo..",
+    "....oWwo...",
+    "...oWwdo...",
+    "...oWwdo...",
+    "...oWwdo...",
+    "..oWwdo....",
+    "..oWwdo....",
+    "..oWwdo....",
+    "..oWwdo....",
+    ".oWWwdo....",
+    ".oWwwdo....",
+    "ooWwddoo...",
+    "oddddddddo.",
+    ".oooooooo.."
+   ]
   }
  }
 }

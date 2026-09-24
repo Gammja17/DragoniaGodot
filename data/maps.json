@@ -1439,7 +1439,7 @@
    "cw": 18,
    "ch": 13,
    "seed": 107,
-   "trees": 0.25,
+   "trees": 0.12,
    "clearings": [
     [
      10,
@@ -1477,18 +1477,226 @@
     },
     {
      "t": "PROP",
-     "type": "CAMPFIRE",
+     "type": "TOMB",
      "at": [
-      5,
-      9
+      10,
+      3.9
      ]
     },
     {
      "t": "PROP",
-     "type": "CAMPFIRE",
+     "type": "RIB",
      "at": [
-      14,
-      9
+      7.2,
+      4.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "RIB",
+     "at": [
+      8.1,
+      4.1
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "RIB_L",
+     "at": [
+      11.9,
+      4.1
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "RIB_L",
+     "at": [
+      12.8,
+      4.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "RUIN",
+     "at": [
+      5.5,
+      3.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "RUIN",
+     "at": [
+      14.6,
+      3.9
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "BONES",
+     "at": [
+      6.4,
+      8.2
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "BONES",
+     "at": [
+      13.3,
+      7.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "BONES",
+     "at": [
+      3.6,
+      6.9
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "SKULL",
+     "at": [
+      8.6,
+      9.3
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "SKULL",
+     "at": [
+      12.4,
+      9.1
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "WISP",
+     "at": [
+      6.2,
+      5.2
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "WISP",
+     "at": [
+      13.8,
+      5.4
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "WISP",
+     "at": [
+      6.8,
+      8.9
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "WISP",
+     "at": [
+      13.2,
+      9.3
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      10,
+      5.2
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      8.4,
+      6.3
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      11.7,
+      6.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      9.2,
+      7.8
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      11.2,
+      8.4
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      7,
+      7.2
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      13,
+      5.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      6,
+      6.1
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      14.1,
+      7.4
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      10.2,
+      9.4
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      8.3,
+      4.9
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "FROST",
+     "at": [
+      12.1,
+      4.9
      ]
     }
    ]
@@ -1693,7 +1901,7 @@
    "cw": 18,
    "ch": 13,
    "seed": 109,
-   "trees": 0.2,
+   "trees": 0.12,
    "clearings": [
     [
      9,
@@ -1726,23 +1934,39 @@
      "id": "GLACIA",
      "at": [
       9,
-      6
+      6.3
      ]
     },
     {
      "t": "PROP",
-     "type": "CAMPFIRE",
+     "type": "EGG_WALL",
      "at": [
-      5,
-      10
+      9,
+      3.7
      ]
     },
     {
      "t": "PROP",
-     "type": "CAMPFIRE",
+     "type": "ROCK",
      "at": [
-      13,
-      10
+      4.5,
+      5
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "ROCK",
+     "at": [
+      13.6,
+      5.4
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "ROCK",
+     "at": [
+      3.8,
+      8.6
      ]
     }
    ]
@@ -2076,7 +2300,7 @@
    "cw": 18,
    "ch": 13,
    "seed": 112,
-   "trees": 0.25,
+   "trees": 0.12,
    "clearings": [
     [
      10,
@@ -2114,18 +2338,42 @@
     },
     {
      "t": "PROP",
-     "type": "CAMPFIRE",
+     "type": "TWIN_NEST",
      "at": [
-      5,
-      9
+      10,
+      3.4
      ]
     },
     {
      "t": "PROP",
-     "type": "CAMPFIRE",
+     "type": "VINE_PILLAR",
      "at": [
-      14,
-      9
+      6.6,
+      3.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "VINE_PILLAR",
+     "at": [
+      13.4,
+      3.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "VINE_PILLAR",
+     "at": [
+      5.6,
+      8.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "VINE_PILLAR",
+     "at": [
+      14.4,
+      8.6
      ]
     }
    ]
@@ -2357,7 +2605,7 @@
    "cw": 18,
    "ch": 13,
    "seed": 114,
-   "trees": 0.1,
+   "trees": 0.06,
    "clearings": [
     [
      9,
@@ -2400,18 +2648,66 @@
     },
     {
      "t": "PROP",
-     "type": "CAMPFIRE",
+     "type": "BEAST_BONES",
      "at": [
-      5,
-      10
+      13.2,
+      9.4
      ]
     },
     {
      "t": "PROP",
-     "type": "CAMPFIRE",
+     "type": "SAND_BOIL",
+     "at": [
+      7,
+      6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "SAND_BOIL",
+     "at": [
+      11,
+      6.5
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "SAND_BOIL",
+     "at": [
+      9,
+      9.2
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "SAND_BOIL",
+     "at": [
+      5.8,
+      7.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "SAND_BOIL",
+     "at": [
+      12.6,
+      7.4
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "SKULL",
+     "at": [
+      5.2,
+      9.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "SKULL",
      "at": [
       13,
-      10
+      5
      ]
     }
    ]
@@ -3128,17 +3424,65 @@
     },
     {
      "t": "PROP",
-     "type": "CAMPFIRE",
+     "type": "MARK_STONE",
      "at": [
-      5,
-      9
+      6,
+      3.3
      ]
     },
     {
      "t": "PROP",
-     "type": "CAMPFIRE",
+     "type": "MARK_STONE",
      "at": [
-      15,
+      8.3,
+      2.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "MARK_STONE",
+     "at": [
+      11.7,
+      2.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "MARK_STONE",
+     "at": [
+      14,
+      3.3
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "MARK_STONE",
+     "at": [
+      4.8,
+      5.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "MARK_STONE",
+     "at": [
+      15.2,
+      5.6
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "ROCK",
+     "at": [
+      4.2,
+      9.2
+     ]
+    },
+    {
+     "t": "PROP",
+     "type": "ROCK",
+     "at": [
+      15.6,
       9
      ]
     }

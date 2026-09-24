@@ -168,7 +168,8 @@ func _banner_top() -> float:
 # 토스트는 쌓이다 사라져서, 이야기가 시작되거나 끝난 걸 놓치기 쉬웠다. 알림 줄 맨 위에 큼직하게 한 번 띄운다.
 # 대화·컷씬 중이거나 지역 이름이 떠 있으면 기다렸다가 조용해진 뒤에 띄운다
 
-## kind: '새 이야기' | '다음 할 일' | '이야기 완료' | '다음에 할 만한 일'
+## kind: '새 퀘스트' | '다음 할 일' | '퀘스트 완료' | '다음에 할 만한 일'
+## (quests.gd 가 아직 '새 이야기' · '이야기 완료' 로 부르는 동안은 옛 이름도 받는다)
 static func quest_banner(kind: String, title: String, goal := "") -> void:
 	if current: current._qb_queue.append({ kind = kind, title = title, goal = goal })
 
@@ -190,7 +191,7 @@ func _flush_quest_banner() -> void:
 	kind.text = b.kind
 	title.text = b.title
 	qb.get_node("Bg/Lines/Goal").text = b.goal
-	var done: bool = b.kind == "이야기 완료"
+	var done: bool = b.kind in ["퀘스트 완료", "이야기 완료"]
 	var line_col := Color("#7dd36a") if done else Color("#d8b25a")
 	kind.label_settings.font_color = Color("#7dd36a") if done else Color("#ffd84a")
 	qb.get_node("Bg/RuleTop").color = Color(line_col, 0.8)

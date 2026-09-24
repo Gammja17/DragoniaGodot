@@ -224,3 +224,24 @@ static func _build_chronicle() -> void:
 	for i in w: _table["chronicle:CHRONICLE.%d.when" % i] = w[i]
 	_table["chronicle:CHRONICLE.15.choice.options.1.when"] = func(c): return c.flag.call("messenger")
 	_table["chronicle:CHRONICLE.16.choice.options.1.when"] = func(c): return c.clueCount >= 4
+
+	# ---- [세션 D] 해 질 녘 폭포 ----
+	# 누구나 한 번은 보는 밀회 (설정집 5-0). 포코의 귓속말(하루와 사귀는 중이면 하루의 초대)로 s1 이 걸리고,
+	# 해 질 녘 폭포에서 몰래 다가가기(Sneak)가 열린다. 성공 장면(ev_tryst · ev_tryst_mine)은 놀이가 직접 연다.
+	# 여기서는 Sneak 을 부르지 않는다: 이 파일은 Data 가 뜨기 전에 컴파일되어, Sneak 을 거쳐 World · GameMap 이 먼저 불리면 깨진다.
+	# 거는 자리는 tryst_hook 한 곳이다: 달맞이 모임 다음 날 아침의 마을. 5장을 다시 짜면 여기만 옮긴다
+	var tryst_hook := func(c): return c.map == "VILLAGE" and c.hour >= 7 and c.hour < 13 and not c.s.raid.active \
+		and ev.call(c, "ev_gathering") and int(c.s.story.get("eventDay", {}).get("ev_gathering", -1)) < c.day \
+		and not A.call(c, "s1") and not D.call(c, "s1")
+	# 하루와 사귀는 중: 짝이거나 데이트를 한 번 이상 했다 (마음을 접거나 헤어지면 데이트 수가 0 으로 돌아간다)
+	var with_haru := func(c): return c.datesOf.call("Haru") >= 1 or (c.s.partner != null and c.s.partner.config.get("name") == "Haru")
+	# 해 질 녘(18~20시) 폭포, s1 첫 대목, 하루에 한 판. 하루가 불렀으면(ev_tryst_invite) 하루 판
+	var tryst_dusk := func(c, mine: bool): return c.map == "FALLS" and c.hour >= 18 and c.hour < 20 and not c.gathering \
+		and A.call(c, "s1") and int(c.s.quests.active.s1.step) == 0 \
+		and int(c.s.story.get("tryst", {}).get("day", -1)) != c.day and ev.call(c, "ev_tryst_invite") == mine
+	_table["chronicle:CHRONICLE.ev_tryst_rumor.when"] = func(c): return tryst_hook.call(c) and not with_haru.call(c)
+	_table["chronicle:CHRONICLE.ev_tryst_invite.when"] = func(c): return tryst_hook.call(c) and with_haru.call(c)
+	_table["chronicle:CHRONICLE.ev_tryst_dusk.when"] = func(c): return tryst_dusk.call(c, false)
+	_table["chronicle:CHRONICLE.ev_tryst_mine_dusk.when"] = func(c): return tryst_dusk.call(c, true)
+	_table["chronicle:CHRONICLE.ev_tryst.when"] = func(_c): return false        # 엿들을 자리에 닿으면 Sneak 이 연다
+	_table["chronicle:CHRONICLE.ev_tryst_mine.when"] = func(_c): return false

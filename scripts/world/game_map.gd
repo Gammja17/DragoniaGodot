@@ -63,6 +63,7 @@ func ground_at(x: float, y: float) -> String:
 ##   spec.cw, spec.ch   큰 칸 수 (한 칸 96px)
 ##   spec.biome         색상판과 등장 몬스터를 고른다 (world_biomes.json)
 ##   spec.plaza         [cx, cy, cw, ch] 흙으로 깔 네모 (마을 광장)
+##   spec.yards         [[cx, cy, cw, ch], ...] 집 앞마당 (광장과 달리 가장자리를 들쭉날쭉 빼지 않는다)
 ##   spec.clearings     [[cx, cy, r], ...] 흙 공터 (결투장·수련장, r 은 큰 칸 수)
 ##   spec.ponds         [[cx, cy, r], ...] 물웅덩이
 ##   spec.roads         [[[cx,cy],[cx,cy], ...], ...] 이어 걷는 흙길
@@ -106,6 +107,11 @@ static func build(map_spec: Dictionary) -> GameMap:
 				var edge := cx == px or cy == py or cx == px + pw - 1 or cy == py + ph - 1
 				var corner := (cx == px or cx == px + pw - 1) and (cy == py or cy == py + ph - 1)
 				if corner or (edge and rng.next() < 0.35): continue
+				m._fill(cx, cy, DIRT_ID)
+	# 3-2) 집 앞마당: 흙으로 깐 작은 네모. 풀밭에 흩뿌리는 나무·잡동사니가 집과 문 앞을 덮지 않게 한다
+	for yd in map_spec.get("yards", []):
+		for cy in range(int(yd[1]), int(yd[1]) + int(yd[3])):
+			for cx in range(int(yd[0]), int(yd[0]) + int(yd[2])):
 				m._fill(cx, cy, DIRT_ID)
 	# 4) 흙길: 점을 가로세로로 번갈아 이어 간다. 물은 건너뛴다
 	for road in map_spec.get("roads", []):

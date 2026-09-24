@@ -202,7 +202,7 @@ static func _build_chronicle() -> void:
 		20: func(c): return c.map == "FALLS" and c.hour >= 17 and c.hour < 20 and D.call(c, "m5g") and not c.gathering and c.datesOf.call("Haru") == 0 and not ev.call(c, "ev_tryst_mine"),
 		21: func(c): return c.map == "FALLS" and c.hour >= 17 and c.hour < 20 and D.call(c, "m5g") and not c.gathering and c.datesOf.call("Haru") >= 1 and not ev.call(c, "ev_tryst"),
 		22: func(c): return c.map == "VILLAGE" and c.night and A.call(c, "t1") and not c.s.raid.active \
-			and Vector2(c.s.player.x - (17 * 96 + 48), c.s.player.y - (7 * 96 + 48)).length() < 300,
+			and Vector2(c.s.player.x - (30 * 96 + 48), c.s.player.y - (8 * 96 + 48)).length() < 300,
 		23: func(c): return c.map == "VILLAGE" and D.call(c, "m5g") and c.hour >= 7 and c.hour < 18 and not c.s.raid.active and not c.flag.call("couple_egg"),
 		24: func(c): return c.map == "VILLAGE" and c.flag.call("couple_egg") and not c.flag.call("couple_hatched") \
 			and c.day - int(c.s.story.get("coupleEggDay", 0)) >= 6 and c.hour >= 7 and c.hour < 18 and not c.s.raid.active,

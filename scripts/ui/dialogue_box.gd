@@ -13,19 +13,26 @@ const PAUSES := { ".": 0.2, "…": 0.28, "!": 0.18, "?": 0.2, ",": 0.08, "—": 
 const NARRATION_COLOR := Color("#cfc2a4")   # 해설(내 속말·장면 묘사)은 이름표 없이 바랜 금빛으로
 
 static var current: DialogueBox
-## 대사 글자 크기 단계 (설정의 --dlg-step, 1~4. 12px 의 배수라야 픽셀 글꼴이 안 뭉개진다)
+## 대사 글자 크기 단계 (설정의 --dlg-step, 1~4)
 static var step := 2
+## 단계마다 본문 · 이름 · 선택지 글자 크기 (px). 보통(2)의 본문은 18 — 판의 12px 글자보다 한 단계만 크게
+## (예전 24 는 화면이 540 기준으로 늘어난 뒤로 너무 크고 두꺼웠다. 18 도 1080p 에서는 원래 글꼴의 딱 3배라 또렷하다)
+const BODY_SIZES := [12, 18, 24, 36]
+const NAME_SIZES := [12, 18, 24, 24]
+const OPTION_SIZES := [12, 12, 18, 24]
+## 고를 줄이 셋 이상이고 모두 이만큼(글자)보다 짧으면 두 줄로 나란히 놓는다 (창 높이가 반으로 준다)
+const SHORT_LABEL := 22
 
 @onready var _pad: MarginContainer = $Pad
-@onready var _header: Control = $Pad/Body/Header
 @onready var _portrait: Control = $Pad/Body/Header/Portrait
-@onready var _name: Label = $Pad/Body/Header/Who/Name
-@onready var _job: Label = $Pad/Body/Header/Who/Meta/Job
-@onready var _tier: Label = $Pad/Body/Header/Who/Meta/Tier
+@onready var _title: Control = $Pad/Body/Header/Who/Title      # 이름 · 맡은 일 · 사이 한 줄
+@onready var _name: Label = $Pad/Body/Header/Who/Title/Name
+@onready var _job: Label = $Pad/Body/Header/Who/Title/Meta/Job
+@onready var _tier: Label = $Pad/Body/Header/Who/Title/Meta/Tier
 @onready var _rel: Control = $Pad/Body/Header/Who/Rel
 @onready var _rel_fill: Control = $Pad/Body/Header/Who/Rel/Fill
-@onready var _text: Label = $Pad/Body/Text
-@onready var _options: VBoxContainer = $Pad/Body/Options
+@onready var _text: Label = $Pad/Body/Header/Who/Text        # 초상화 옆 칸 (예전에는 머리줄 밑에 따로 한 층이었다)
+@onready var _options: GridContainer = $Pad/Body/Options
 @onready var _next: Label = $Next          # 컷씬의 '다음' 표시 (넘길 것이 하나뿐이면 단추 대신 모서리의 ▼)
 
 var _selected := 0
@@ -83,10 +90,11 @@ func show_dialogue(opts: Dictionary) -> void:
 	var rel = npc.relation if npc and npc.config.get("fixed") else null
 	_job.text = job
 	_tier.text = "" if rel == null else ("· " if job != "" else "") + TIERS[_tier_of(rel)]
-	_rel.visible = rel != null
-	_portrait.visible = true
 	var narration: bool = opts.get("narration", false)
-	_header.visible = not narration
+	# 해설이면 초상화와 이름 줄만 감춘다 (글은 초상화 옆 칸에 있어서 머리줄째 감추면 글도 사라진다)
+	_portrait.visible = not narration
+	_title.visible = not narration
+	_rel.visible = rel != null and not narration
 	_text.label_settings.font_color = NARRATION_COLOR if narration else _body_color
 	if rel != null: _rel_fill.size.x = (_rel.size.x - 2) * minf(100, rel) / 100.0
 	_text.text = GameInput.words(fill_name(opts.get("text", "")))
@@ -99,10 +107,16 @@ func show_dialogue(opts: Dictionary) -> void:
 		_options.remove_child(c); c.queue_free()
 	_list = opts.get("options", [])
 	if _list.is_empty(): _list = [{ label = "닫기", on_select = opts.get("on_close", func(): pass) }]
+	var two: bool = _list.size() >= 3 and _list.all(func(o): return str(o.label).length() <= SHORT_LABEL)
+	_options.columns = 2 if two else 1
+	_options.size_flags_horizontal = SIZE_EXPAND_FILL if two else SIZE_SHRINK_BEGIN
 	for i in _list.size():
 		var b: Button = OPTION.instantiate()
 		b.text = _list[i].label                 # 번호는 붙이지 않는다 (방향키로 고른다)
-		b.add_theme_font_size_override("font_size", 12 * maxi(1, step - 1))
+		b.add_theme_font_size_override("font_size", OPTION_SIZES[step - 1])
+		if two:   # 두 줄이면 한 칸이 반씩 (한 줄일 때의 최소 너비 680 을 풀어 준다)
+			b.custom_minimum_size.x = 0
+			b.size_flags_horizontal = SIZE_EXPAND_FILL
 		b.pressed.connect(_choose.bind(i))
 		# 마우스를 '움직여' 얹으면 그 줄이 골라진다 (창이 열리는 순간 커서 밑에 깔린 줄이 멋대로 골라지지 않게)
 		b.gui_input.connect(func(ev): if ev is InputEventMouseMotion and _selected != i: _select(i))
@@ -113,7 +127,8 @@ func show_dialogue(opts: Dictionary) -> void:
 	_options.visible = not compact
 	_next.visible = false
 	_compact = compact
-	_text.label_settings.font_size = 12 * step
+	_text.label_settings.font_size = BODY_SIZES[step - 1]
+	_name.label_settings.font_size = NAME_SIZES[step - 1]
 	_select(0)
 	visible = true
 
@@ -217,16 +232,20 @@ func _choose(i: int) -> void:
 	_list[i].on_select.call()
 
 
-## 키보드로 고르기: 방향키(또는 W·S)로 옮기고 [Space]·Enter 로 고른다. main 이 대화 중에 부른다
+## 키보드로 고르기: 방향키(또는 W·S)로 옮기고 [Space]·Enter 로 고른다. main 이 대화 중에 부른다.
+## 두 줄로 놓였으면 ↑↓ 는 한 줄씩, ←→ 는 한 칸씩
 func handle_keys() -> void:
 	var n := _options.get_child_count()
 	if n == 0: return
 	if _compact and GameInput.mouse_clicked:   # 컷씬: 화면 아무 데나 눌러도 넘어간다
 		_choose(0)
 		return
-	if GameInput.pressed("down") or GameInput.pressed("right"):
-		_select((_selected + 1) % n); Sfx.play("ui")
-	if GameInput.pressed("up") or GameInput.pressed("left"):
-		_select((_selected + n - 1) % n); Sfx.play("ui")
+	var step_to := 0
+	if GameInput.pressed("down"): step_to = _options.columns
+	elif GameInput.pressed("up"): step_to = -_options.columns
+	elif GameInput.pressed("right"): step_to = 1
+	elif GameInput.pressed("left"): step_to = -1
+	if step_to:
+		_select(posmod(_selected + step_to, n)); Sfx.play("ui")
 	if GameInput.pressed("confirm") or GameInput.pressed("interact") or GameInput.pressed("talk"):
 		_choose(_selected)

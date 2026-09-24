@@ -12,14 +12,14 @@ texture_margin_left = 8.0
 texture_margin_top = 8.0
 texture_margin_right = 8.0
 texture_margin_bottom = 8.0
-content_margin_left = 18.0
-content_margin_top = 24.0
-content_margin_right = 18.0
-content_margin_bottom = 30.0
+content_margin_left = 16.0
+content_margin_top = 14.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
 
 [sub_resource type="LabelSettings" id="name_text"]
 font = ExtResource("3")
-font_size = 24
+font_size = 18
 font_color = Color(1, 0.847, 0.29, 1)
 
 [sub_resource type="LabelSettings" id="job_text"]
@@ -42,8 +42,8 @@ border_color = Color(0.847, 0.698, 0.353, 0.38)
 
 [sub_resource type="LabelSettings" id="body_text"]
 font = ExtResource("4")
-font_size = 24
-line_spacing = 6.0
+font_size = 18
+line_spacing = 4.0
 font_color = Color(0.925, 0.89, 0.812, 1)
 
 [node name="DialogueBox" type="PanelContainer"]
@@ -62,7 +62,7 @@ layout_mode = 2
 
 [node name="Body" type="VBoxContainer" parent="Pad"]
 layout_mode = 2
-theme_override_constants/separation = 9
+theme_override_constants/separation = 6
 
 [node name="Header" type="HBoxContainer" parent="Pad/Body"]
 layout_mode = 2
@@ -71,26 +71,32 @@ theme_override_constants/separation = 14
 [node name="Portrait" type="Control" parent="Pad/Body/Header"]
 custom_minimum_size = Vector2(84, 84)
 layout_mode = 2
+size_flags_vertical = 0
 script = ExtResource("5")
 
 [node name="Who" type="VBoxContainer" parent="Pad/Body/Header"]
 layout_mode = 2
-size_flags_vertical = 4
+size_flags_horizontal = 3
 theme_override_constants/separation = 3
 
-[node name="Name" type="Label" parent="Pad/Body/Header/Who"]
+[node name="Title" type="HBoxContainer" parent="Pad/Body/Header/Who"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Name" type="Label" parent="Pad/Body/Header/Who/Title"]
 layout_mode = 2
 label_settings = SubResource("name_text")
 
-[node name="Meta" type="HBoxContainer" parent="Pad/Body/Header/Who"]
+[node name="Meta" type="HBoxContainer" parent="Pad/Body/Header/Who/Title"]
 layout_mode = 2
+size_flags_vertical = 4
 theme_override_constants/separation = 8
 
-[node name="Job" type="Label" parent="Pad/Body/Header/Who/Meta"]
+[node name="Job" type="Label" parent="Pad/Body/Header/Who/Title/Meta"]
 layout_mode = 2
 label_settings = SubResource("job_text")
 
-[node name="Tier" type="Label" parent="Pad/Body/Header/Who/Meta"]
+[node name="Tier" type="Label" parent="Pad/Body/Header/Who/Title/Meta"]
 layout_mode = 2
 label_settings = SubResource("tier_text")
 
@@ -109,16 +115,17 @@ offset_top = 1.0
 offset_bottom = -1.0
 color = Color(1, 0.604, 0.706, 1)
 
-[node name="Text" type="Label" parent="Pad/Body"]
-custom_minimum_size = Vector2(0, 70)
+[node name="Text" type="Label" parent="Pad/Body/Header/Who"]
 layout_mode = 2
+size_flags_horizontal = 3
 label_settings = SubResource("body_text")
 autowrap_mode = 3
 
-[node name="Options" type="VBoxContainer" parent="Pad/Body"]
+[node name="Options" type="GridContainer" parent="Pad/Body"]
 layout_mode = 2
 size_flags_horizontal = 0
-theme_override_constants/separation = 4
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 4
 
 [node name="Next" type="Label" parent="."]
 visible = false

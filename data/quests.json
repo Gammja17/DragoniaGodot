@@ -1377,14 +1377,14 @@
         },
         {
          "place": "Gron",
-         "to": "at:15,8"
+         "to": "at:22,8"
         },
         {
          "down": "Gron"
         },
         {
          "place": "Poco",
-         "to": "at:14,8"
+         "to": "at:21,8"
         },
         {
          "hide": "Poco"
@@ -1509,7 +1509,7 @@
         },
         {
          "place": "나",
-         "to": "at:13,9"
+         "to": "at:20,9"
         },
         {
          "sfx": "bell"
@@ -2376,8 +2376,8 @@
      "where": {
       "map": "VILLAGE",
       "spot": [
-       17,
-       7
+       30,
+       8
       ],
       "label": "망루"
      }

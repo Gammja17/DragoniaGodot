@@ -32,7 +32,7 @@ static func update() -> void:
 	# 첫 퀘스트의 허수아비 대목: 광장에 허수아비 둘이 서 있어야 한다 (지도를 오가도 다시 선다)
 	var m0 = GameState.quests.active.get("m0")
 	if m0 and m0.step == 2 and GameState.map_id == "VILLAGE" and not GameState.entities.enemies.any(func(e): return e.type == "DUMMY"):
-		for c in [[10, 9], [13, 9]]:
+		for c in [[15, 13], [18, 13]]:
 			var d := Enemy.make(c[0] * 96 + 48, c[1] * 96 + 48, "DUMMY")
 			d.max_hp = 30; d.hp = 30
 			World.add_entity("enemies", d)

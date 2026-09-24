@@ -1,23 +1,23 @@
 {
  "SEQUENCES": {
   "guardian": [
-   { "fade": "그날 저녁", "place": "VILLAGE", "at": [12, 11], "time": 0.76, "evening": true },
+   { "fade": "그날 저녁", "place": "VILLAGE", "at": [17, 15], "time": 0.76, "evening": true },
    { "scene": "evening_guardian", "evening": true },
-   { "fade": "다음 날 아침", "place": "VILLAGE", "at": [12, 9], "time": 0.3, "nextDay": true },
+   { "fade": "다음 날 아침", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true },
    { "morning": "ending" },
    { "fade": "며칠 뒤 · 수련장", "place": "DOJO", "at": [9, 8], "time": 0.38, "nextDay": true },
    { "scene": "epi_dojo" },
    { "fade": "구름 폭포", "place": "FALLS", "at": [10, 11], "time": 0.8 },
    { "scene": "epi_falls" },
-   { "fade": "그날 밤 · 망루", "place": "VILLAGE", "at": [16, 8], "time": 0.9 },
+   { "fade": "그날 밤 · 망루", "place": "VILLAGE", "at": [29, 9], "time": 0.9 },
    { "scene": "epi_tower" },
    { "credits": "새 수호룡의 이야기 · 끝" },
-   { "fade": "", "place": "VILLAGE", "at": [12, 9], "time": 0.3, "nextDay": true }
+   { "fade": "", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true }
   ],
   "redeem": [
-   { "fade": "그날 저녁", "place": "VILLAGE", "at": [12, 11], "time": 0.76, "evening": true },
+   { "fade": "그날 저녁", "place": "VILLAGE", "at": [17, 15], "time": 0.76, "evening": true },
    { "scene": "evening_redeem", "evening": true },
-   { "fade": "다음 날 아침 · 마을 어귀", "place": "VILLAGE", "at": [19, 9], "time": 0.3, "nextDay": true },
+   { "fade": "다음 날 아침 · 마을 어귀", "place": "VILLAGE", "at": [26, 12], "time": 0.3, "nextDay": true },
    { "morning": "ending_redeem" },
    { "fade": "며칠 뒤 · 호숫가", "place": "LAKE", "at": [13, 10], "time": 0.36, "nextDay": true },
    { "scene": "epi_lake" },
@@ -26,15 +26,15 @@
    { "fade": "구름 폭포", "place": "FALLS", "at": [10, 11], "time": 0.8 },
    { "scene": "epi_falls" },
    { "credits": "돌아온 형의 이야기 · 끝" },
-   { "fade": "", "place": "VILLAGE", "at": [12, 9], "time": 0.3, "nextDay": true }
+   { "fade": "", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true }
   ],
   "dark": [
-   { "fade": "그날 밤", "place": "VILLAGE", "at": [12, 9], "time": 0.9 },
+   { "fade": "그날 밤", "place": "VILLAGE", "at": [17, 13], "time": 0.9 },
    { "quest": "m7d" },
    { "fade": "며칠 뒤 · 구름 폭포", "place": "FALLS", "at": [10, 11], "time": 0.5, "nextDay": true },
    { "scene": "epi_dark_falls" },
    { "credits": "잿빛 날개의 이야기 · 끝" },
-   { "fade": "", "place": "VILLAGE", "at": [12, 9], "time": 0.3, "nextDay": true }
+   { "fade": "", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true }
   ]
  },
  "SCENES": {

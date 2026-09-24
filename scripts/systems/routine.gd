@@ -150,7 +150,20 @@ static func update(dt: float, get_npc: Callable) -> void:
 			if npc.walk_to.get("leave"): npc.remove = true      # 문을 나섰다
 			npc.walk_to = null
 			continue
-		npc.move_by(dx, dy, WALK, dt)
+		var speed: float = npc.walk_to.get("speed", WALK)
+		var before := Vector2(npc.x, npc.y)
+		npc.move_by(dx, dy, speed, dt)
+		# 잡동사니에 걸려 제자리걸음이면 좌우로 번갈아 비켜 걷는다. 끝내 못 가면 그 자리에서 멈춘다
+		# (일과의 중심 home 은 이미 옮겨 두었으니 거기서부터 어슬렁댄다). 마을이 넓어져 걷는 길이 길어졌다
+		var stuck: float = npc.get_meta("walk_stuck", 0.0)
+		stuck = stuck + dt if Vector2(npc.x, npc.y).distance_to(before) < speed * dt * 0.2 else 0.0
+		npc.set_meta("walk_stuck", stuck)
+		if stuck > 0.8:
+			var side := 1.0 if fmod(stuck, 3.0) < 1.5 else -1.0
+			npc.move_by(-dy * side, dx * side, speed, dt)
+		if stuck > 4.0:
+			npc.walk_to = null
+			npc.set_meta("walk_stuck", 0.0)
 
 	_tick -= dt
 	if _tick > 0: return

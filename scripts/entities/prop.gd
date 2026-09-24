@@ -128,6 +128,7 @@ func light():
 	match type:
 		"CAMPFIRE": return { r = 340 + sin(t * 13 + seed * 9) * 22, color = "#ffab5c", dy = -30, emissive = true }
 		"HOUSE": return { r = 210, color = "#ffd38a", intensity = 0.85, dy = -50 }   # 창문 불빛
+		"HUT": return { r = 150, color = "#ffd38a", intensity = 0.7, dy = -34 }
 		"FOUNTAIN": return { r = 170, color = "#9fd8ff", intensity = 0.5, dy = -20 }
 		"BERRY": return { r = 70, color = "#ff7a9a", intensity = 0.4, dy = -20 } if ripe else null
 		"CHEST": return null if opened else { r = 110, color = "#ffd84a", intensity = 0.7, dy = -16 }

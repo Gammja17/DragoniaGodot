@@ -253,13 +253,15 @@ static func play_scene(title, lines: Array, then = null, cinematic := true, plac
 
 
 ## 앞에서 고른 것을 읽는 줄. "chose": "m1:ask" 는 m1 마무리에서 ask 를 고른 경우에만, "t1:!count" 는 count 를 고르지 않은 경우에만,
-## "p1:*" 는 무엇이든 고른 경우(그 퀘스트를 끝낸 경우)에만 나온다. 퀘스트 마무리의 선택(quests.choices)과 사건 끝의 선택(story.choices)을 같이 본다
+## "p1:*" 는 무엇이든 고른 경우(그 퀘스트를 끝낸 경우)에만, "p1:!*" 는 아직 아무것도 고르지 않은 경우에만 나온다.
+## 퀘스트 마무리의 선택(quests.choices)과 사건 끝의 선택(story.choices)을 같이 본다
 static func _chosen(l: Dictionary) -> bool:
 	if not l.has("chose"): return true
 	var at: PackedStringArray = str(l.chose).split(":")
 	var want := at[1]
 	var picked = GameState.quests.choices.get(at[0], GameState.story.get("choices", {}).get(at[0]))
 	if want == "*": return picked != null
+	if want == "!*": return picked == null
 	if want.begins_with("!"): return picked != want.substr(1)
 	return picked == want
 

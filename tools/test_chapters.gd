@@ -27,6 +27,7 @@ func _ready() -> void:
 	await _chapter4()
 	await _chapter5()
 	await _chapter6()
+	await _chapter7()
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit()
 
@@ -323,6 +324,41 @@ func _chapter6() -> void:
 	_check("6장", "엠버 이야기: '이제 그 소리 들을 일도 없네'", NpcActions._retold(ember, "나 언젠가 아저씨보다 잘 만들 거야. 비밀도 아니야, 맨날 대놓고 말하거든. 그럼 아저씨가 '백 년은 이르다' 그래.").contains("들을 일도 없네"))
 	G.story.dead = []
 	_check("6장", "밤손님: '여긴 하나도 안 변했군'", JSON.stringify(_event("ev_messenger").lines).contains("하나도 안 변했군"))
+
+
+func _chapter7() -> void:
+	var G := GameState
+	for id in ["m6w"]:
+		if not G.quests.done.has(id): G.quests.done.append(id)
+	# 바윗골·불탄 도시는 모래 폭군이 비킨 뒤에
+	_check("7장", "바실 전: 바윗골 막힘", not Chapters.map_open(G, "STONEBACK") and Chapters.blocked_text(G, "STONEBACK").contains("모래 폭군"))
+	_check("7장", "바실 전: 불탄 도시 막힘", not Chapters.map_open(G, "ASH_CITY"))
+	_check("7장", "사막은 열림", Chapters.map_open(G, "DESERT"))
+	# m5b: 그론한테 창을 찾아오겠다고 했으면(g1 ask) 그 약속을 떠올린다
+	G.quests.choices.g1 = "ask"
+	var m5b = Quests.by_id("m5b")
+	Quests.accept(m5b)
+	G.bossesDefeated.BASIL = true
+	Quests.complete_step(m5b)
+	await _play_until(_idle, 40)
+	_check("7장", "g1=ask: '찾아오겠다고 큰소리쳤던 창'", _saw("찾아오겠다고 큰소리쳤던 창") and not _saw("가져다줄 용은 이제 없는데"))
+	Quests.turn_in(m5b, World.any_npc("Ember"), "wall")
+	await _play_until(_idle, 30)
+	_check("7장", "바실 뒤: 바윗골·불탄 도시 열림", Chapters.map_open(G, "STONEBACK") and Chapters.map_open(G, "ASH_CITY"))
+	# m5c: 불탄 도시 → 카이론 → 리운 → (구름마루에서 이어서) 세이란의 물점 → 엘더의 사과
+	var m5c = Quests.by_id("m5c")
+	Quests.accept(m5c)
+	for i in 3: Quests.complete_step(m5c)
+	await _play_until(_idle, 60)
+	_check("7장", "리운이 세이란의 약속을 잇는다", _saw("세이란이 그대를 기다리고 있소"))
+	World.travel_to("CLOUDTOP")
+	await _play_until(func(): return G.story.events.has("ev_seiran_water") and _idle(), 40)
+	_check("7장", "물점: 빈 둥지와 알 껍데기 둘 · 단서 sky", _saw("알 껍데기가 하나, 아니 둘") and G.story.clues.has("sky"))
+	_check("7장", "하루는 반말 (구름 위)", _saw("날아야 된대!") and not _saw("날아야 된대요"))
+	_check("7장", "물점을 보면 보고만 남는다", Quests.is_complete(m5c))
+	Quests.turn_in(m5c, World.any_npc("Elder"), null)
+	await _play_until(_idle, 40)
+	_check("7장", "엘더의 사과가 그날 밤의 다짐을 받는다 (p1)", _saw("이번에는 다르게 기르겠다고 했었지"))
 
 
 # ---------- 도구 ----------

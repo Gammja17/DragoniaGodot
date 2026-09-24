@@ -127,6 +127,22 @@
     "ASH_CITY",
     "AUTUMN"
    ],
+   "hold": {
+    "STONEBACK": {
+     "when": {
+      "$fn": "s => !!s.bossesDefeated.BASIL",
+      "$at": "CHAPTERS.c7.hold.STONEBACK.when"
+     },
+     "text": "고원으로 오르는 길목의 모래가 끓고 있다. 모래 폭군이 버티는 한 저쪽으로는 못 간다."
+    },
+    "ASH_CITY": {
+     "when": {
+      "$fn": "s => !!s.bossesDefeated.BASIL",
+      "$at": "CHAPTERS.c7.hold.ASH_CITY.when"
+     },
+     "text": "모래 폭군이 둥지를 지키고 있는 한, 사막 너머로는 한 발짝도 못 간다."
+    }
+   },
    "blocked": "화산 쪽은 아직 아무도 보내 주지 않는다."
   },
   {

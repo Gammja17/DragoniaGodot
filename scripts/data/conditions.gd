@@ -270,6 +270,13 @@ static func _build_c() -> void:
 		"npcTalk:SITUATION_LINES.chill.when": func(s, _n = null): return s.quests.done.has("m5a") and not s.quests.done.has("m6w"),
 		# 그론을 보낸 뒤: 수군거림을 처음 꺼낸 이가 먼저 와서 사과한다
 		"npcTalk:SITUATION_LINES.family.when": func(s, _n = null): return s.quests.done.has("m6w") and not s.quests.done.has("m5c"),
+
+		# ---- 7장: 사막 길 ----
+		# 바윗골과 불탄 도시는 모래 폭군이 비킨 뒤에 (바실을 잡기 전에 가면 "모래 폭군을 네가 잡았다고 들었다"가 틀린 말이 되던 것)
+		"chapters:CHAPTERS.c7.hold.STONEBACK.when": func(s): return _boss(s, "BASIL"),
+		"chapters:CHAPTERS.c7.hold.ASH_CITY.when": func(s): return _boss(s, "BASIL"),
+		# 세이란의 물점: 리운과 이야기를 마치면 그 자리(구름마루)에서 이어진다
+		"chronicle:CHRONICLE.ev_seiran_water.when": func(c): return c.map == "CLOUDTOP" and c.active.call("m5c") and int(c.s.quests.active.m5c.step) >= 3,
 	}, true)
 
 

@@ -2,7 +2,7 @@ class_name Title
 extends Control
 ## 처음 화면. 2D판 ui/customizer.js + 세이브 칸 셋.
 ##   [기록]      칸 셋. 이어 하기 · 새로 시작 · 지우기
-##   [새 용]     이름 · 주인공 프리셋 다섯(자라는 모습 세 단계) · 장신구 · 몸 · 날개 · 문양 색 → 눈을 뜬다
+##   [새 용]     이름 · 주인공 프리셋 다섯(아기 모습으로 고른다) · 장신구 · 몸 · 날개 · 문양 색 → 눈을 뜬다
 ##   [되묻기]    차 있는 칸을 덮어쓰거나 지울 때 한 번 더 묻는다
 ## 고른 것은 Launch 에 담아 게임 씬(main.tscn)으로 넘긴다.
 
@@ -17,7 +17,6 @@ const ACCESSORIES := [null, "PLUME", "FLOWER", "LEAF", "HELM", "HAT", "CROWN"]
 @onready var _look_name: Label = $Center/Column/Create/Lines/Body/Left/LookName
 @onready var _preview: Control = $Center/Column/Create/Lines/Body/Left/Stage/Portrait
 @onready var _gallery: ScrollContainer = $Center/Column/Create/Lines/Body/Right/Gallery
-@onready var _grow: Control = $Center/Column/Create/Lines/Body/Right/Grow
 @onready var _colors: Control = $Center/Column/Create/Lines/Body/Left/Colors
 @onready var _body: ColorPickerButton = $Center/Column/Create/Lines/Body/Left/Colors/Body/Pick
 @onready var _wing: ColorPickerButton = $Center/Column/Create/Lines/Body/Left/Colors/Wing/Pick
@@ -28,6 +27,8 @@ var _slot := 1
 var _choice := { species = "HERO", look = 0 }
 var _cells := []
 var _on_yes: Callable
+var _recolor_at := -1.0    # 색을 끄는 동안에는 칠하지 않고, 손을 멈추면 이때 한 번 칠한다 (칠하기가 무겁다)
+var _repaint := []         # 아직 새 색으로 칠하지 않은 외형 칸 (한 프레임에 하나씩)
 
 
 func _ready() -> void:
@@ -40,11 +41,19 @@ func _ready() -> void:
 	$Center/Column/Create/Lines/Buttons/Back.pressed.connect(func(): _show(_slots))
 	$Center/Column/Confirm/Lines/Buttons/Yes.pressed.connect(func(): _on_yes.call())
 	$Center/Column/Confirm/Lines/Buttons/No.pressed.connect(func(): _show(_slots))
-	_body.color_changed.connect(func(_c): _recolor())
-	_wing.color_changed.connect(func(_c): _recolor())
-	_mark.color_changed.connect(func(_c): _recolor())
+	for pick in [_body, _wing, _mark]:
+		pick.color_changed.connect(func(_c): _recolor_at = Time.get_ticks_msec() / 1000.0 + 0.2)
 	_build_gallery()
 	_show(_slots)
+
+
+func _process(_dt: float) -> void:
+	if _recolor_at > 0 and Time.get_ticks_msec() / 1000.0 >= _recolor_at:
+		_recolor_at = -1.0
+		_recolor()
+	elif not _repaint.is_empty():
+		var c: LookCell = _repaint.pop_front()
+		c.setup(c.value, c.look_name, _colors_now())
 
 
 func _show(page: Control) -> void:
@@ -117,7 +126,7 @@ func _select(cell: LookCell) -> void:
 	_choice = cell.value
 	for c in _cells: c.set_selected(c == cell)
 	_look_name.text = cell.look_name
-	_show_growth()
+	_show_preview()
 	_colors.visible = _choice.species != "LOOK"   # 한 장짜리 외형은 색을 바꿀 수 없다
 
 
@@ -125,30 +134,21 @@ func _colors_now() -> Dictionary:
 	return { body = "#" + _body.color.to_html(false), wing = "#" + _wing.color.to_html(false), mark = "#" + _mark.color.to_html(false) }
 
 
-## HERO 는 성체 칸으로 미리 보여 준다 (칸 번호 = 프리셋 × 3 + 2)
-func _preview_look(v: Dictionary) -> int:
-	return int(v.look) * 3 + 2 if v.species == "HERO" else int(v.look)
+## HERO 는 아기 칸으로 보여 준다 (칸 번호 = 프리셋 × 3 + 단계, 아기는 0)
+static func preview_look(v: Dictionary) -> int:
+	return int(v.look) * 3 if v.species == "HERO" else int(v.look)
 
 
-## 색을 바꾸면 옛 종족 칸들의 그림을 다시 칠한다
+## 색을 바꾸면 큰 미리보기부터 다시 칠하고, 외형 칸들은 한 프레임에 하나씩 칠한다
 func _recolor() -> void:
-	for c in _cells:
-		if c.value.species != "LOOK": c.setup(c.value, c.look_name, _colors_now())
-	if _choice.species != "LOOK": _show_growth()
+	if _choice.species != "LOOK": _show_preview()
+	_repaint = _cells.filter(func(c): return c.value.species != "LOOK")
 
 
-## 큰 미리보기(성체)와 자라는 모습 세 칸 (HERO 는 프리셋 × 3 + 단계)
-func _show_growth() -> void:
-	_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), _preview_look(_choice))
+## 큰 미리보기 (아기 모습)
+func _show_preview() -> void:
+	_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), preview_look(_choice))
 	_preview.queue_redraw()
-	var hero: bool = _choice.species == "HERO"
-	_grow.visible = hero
-	$Center/Column/Create/Lines/Body/Right/GrowLabel.visible = hero
-	if not hero: return
-	for i in 3:
-		var p: Control = _grow.get_child(i).get_node("Portrait")
-		p.sheet = DragonSprites.get_sheet("HERO", _colors_now(), int(_choice.look) * 3 + i)
-		p.queue_redraw()
 
 
 func _start() -> void:

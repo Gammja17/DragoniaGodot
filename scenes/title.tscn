@@ -362,55 +362,6 @@ theme_override_constants/h_separation = 6
 theme_override_constants/v_separation = 6
 columns = 5
 
-[node name="GrowLabel" type="Label" parent="Center/Column/Create/Lines/Body/Right"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
-text = "자라는 모습 · 아기 → 청소년 → 성체"
-
-[node name="Grow" type="HBoxContainer" parent="Center/Column/Create/Lines/Body/Right"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 6
-
-[node name="Baby" type="PanelContainer" parent="Center/Column/Create/Lines/Body/Right/Grow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"Inset"
-
-[node name="Portrait" type="Control" parent="Center/Column/Create/Lines/Body/Right/Grow/Baby"]
-custom_minimum_size = Vector2(0, 96)
-layout_mode = 2
-mouse_filter = 2
-script = ExtResource("5")
-frame = false
-animate = true
-
-[node name="Teen" type="PanelContainer" parent="Center/Column/Create/Lines/Body/Right/Grow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"Inset"
-
-[node name="Portrait" type="Control" parent="Center/Column/Create/Lines/Body/Right/Grow/Teen"]
-custom_minimum_size = Vector2(0, 96)
-layout_mode = 2
-mouse_filter = 2
-script = ExtResource("5")
-frame = false
-animate = true
-
-[node name="Adult" type="PanelContainer" parent="Center/Column/Create/Lines/Body/Right/Grow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"Inset"
-
-[node name="Portrait" type="Control" parent="Center/Column/Create/Lines/Body/Right/Grow/Adult"]
-custom_minimum_size = Vector2(0, 96)
-layout_mode = 2
-mouse_filter = 2
-script = ExtResource("5")
-frame = false
-animate = true
-
 [node name="Buttons" type="HBoxContainer" parent="Center/Column/Create/Lines"]
 layout_mode = 2
 theme_override_constants/separation = 10

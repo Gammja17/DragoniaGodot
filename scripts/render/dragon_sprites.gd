@@ -26,10 +26,21 @@ static func get_sheet(species: String, colors: Dictionary, look := 0) -> SpriteS
 	var key := "%s|%s|%s|%d" % [species, colors.get("body"), colors.get("wing"), look]
 	if _cache.has(key): return _cache[key]
 	var raw := _raw_images(species)
-	var images := {}
-	for k in raw:
-		images[k] = tint_image(raw[k], desc.zones, colors) if not desc.zones.is_empty() else raw[k]
-	var sheet := SpriteSheet.build(desc, images, look)
+	var sheet: SpriteSheet
+	if desc.type == "static" and not desc.zones.is_empty():
+		# 한 칸짜리 그림(주인공 프리셋): 쓸 칸만 잘라서 칠한다. 한 장을 통째로 칠해 담아 두면
+		# 새 용 만들기에서 색을 고를 때마다 멈추고, 색마다 큰 그림이 쌓인다
+		var cols := int(desc.cols)
+		var cell := Rect2i((look % cols) * int(desc.fw), floori(look / float(cols)) * int(desc.fh), int(desc.fw), int(desc.fh))
+		var one: Dictionary = desc.duplicate()
+		one.cols = 1
+		if desc.get("boxes"): one.boxes = [desc.boxes[look]]
+		sheet = SpriteSheet.build(one, { sheet = tint_image(raw.sheet.get_region(cell), desc.zones, colors) }, 0)
+	else:
+		var images := {}
+		for k in raw:
+			images[k] = tint_image(raw[k], desc.zones, colors) if not desc.zones.is_empty() else raw[k]
+		sheet = SpriteSheet.build(desc, images, look)
 	if species == "CAST": sheet.portrait = Data.get_module("sprites").CAST_NAMES[look]
 	if species == "BOSS": sheet.portrait = Data.get_module("sprites").BOSS_NAMES[look]
 	_cache[key] = sheet

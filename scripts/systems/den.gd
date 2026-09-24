@@ -170,9 +170,9 @@ static func visit_line() -> String:
 static func locked_reason(map_id: String):
 	var spec = dens().get(map_id)
 	if not spec or spec.get("mine") or not spec.get("locked"): return null
-	var rel := 0.0
-	for n in GameState.entities.npcs:
-		if n.config.get("name") == spec.owner: rel = n.relation
+	# 주인이 딴 지도에 가 있어도 사이는 그대로다 (지금 지도에 있는 용만 보면, 주인이 집을 비운 굴은 호감 100 이어도 잠겼다)
+	var owner = World.any_npc(spec.owner)
+	var rel: float = owner.relation if owner else 0.0
 	if rel >= spec.locked: return null
 	return "아직 %s 그리 가까운 사이는 아니다. 함부로 들어갈 수는 없다." % Util.josa(spec.name.replace("의 굴", ""), "과는", "와는")
 

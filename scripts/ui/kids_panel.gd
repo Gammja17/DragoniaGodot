@@ -25,7 +25,9 @@ func refresh() -> void:
 		var row: Control = ROW.instantiate()
 		list.add_child(row)
 		row.get_node("Row/Info/Name").text = k.name
-		row.get_node("Row/Info/Stage").text = STAGE_NAMES.get(k.stage, k.stage)
+		# 짝이 바뀌어도 아이마다 제 부모가 따로 있다
+		var parent := Kids.parent_of(k)
+		row.get_node("Row/Info/Stage").text = STAGE_NAMES.get(k.stage, k.stage) + (" · %s 낳은 아이" % Util.josa(Names.npc(parent), "과", "와") if parent != "" else "")
 		row.get_node("Row/Hearts").text = "♥".repeat(mini(5, roundi(k.affection / 20.0)))
 		row.get_node("Row/Rename").pressed.connect(func():
 			NameInput.ask("아이의 새 이름 (12자까지)", k.name, func(n: String):

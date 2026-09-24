@@ -99,10 +99,7 @@ func open() -> void:
 	World.add_entity("items", Item.make(x, y + 30, "GOLD", gold))
 	if randf() < 0.6: World.add_entity("items", Item.make(x - 30, y + 20, "MEAT"))
 	for i in 1 + floori(randf() * 2): World.add_entity("items", Item.make(x - 50 - i * 24, y + 26, "MAT", "ORE"))
-	# 알은 귀하다. 성체가 된 뒤에만, 쉰에 하나
-	if GameState.player.stage_index >= 2 and randf() < 0.02:
-		World.add_entity("items", Item.make(x + 30, y + 20, "EGG"))
-		Hud.pop("상자 안에 용의 알이 있습니다!", "🥚")
+	# 상자에서 알은 나오지 않는다. 아이는 짝과 품은 알에서만 (주운 알은 부모를 알 수 없어 뺐다)
 	Vfx.spawn_effect("STAR", x, y - 20)
 	Sfx.play("pickup")
 	if randf() < 0.22:

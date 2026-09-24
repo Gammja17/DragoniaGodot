@@ -15,6 +15,8 @@ static func _fresh_name() -> String:
 
 
 static func register(baby) -> Dictionary:
+	# 부모를 적기 전의 옛 세이브에서 온 아이: 알 길이 없으니 불러올 때의 짝을 부모로 적어 둔다 (그 뒤로는 바뀌지 않는다)
+	if not baby.genes.has("parent"): baby.genes.parent = GameState.partner.config.name if GameState.partner else ""
 	var kid := { id = GameState.kids.size() + 1, name = _fresh_name(), stage = "BABY", affection = 0, mode = "FOLLOW",
 		personality = Data.get_module("npcTalk").KID_PERSONALITIES.keys().pick_random(), entity = baby }
 	GameState.kids.append(kid)
@@ -37,18 +39,28 @@ static func add_affection(baby, amount: float) -> void:
 	if kid: kid.affection = clampf(kid.affection + amount, 0, 100)
 
 
-## 부모 둘의 종족·색을 섞어 아이의 유전 정보를 만든다. b 가 없으면(주워 온 알) a 를 닮는다
+## 부모 둘의 종족·색을 섞어 아이의 유전 정보를 만든다. b 가 없으면(주워 온 알) a 를 닮는다.
+## 다른 부모 b 의 이름도 적어 둔다 (parent, 부모 없이 품은 알이면 ""). 유전 정보는 둥지 · 아기 · 세이브를
+## 그대로 따라다니므로, 짝이 바뀐 뒤에도 아이는 제 부모를 안다
 static func mix_genes(a, b) -> Dictionary:
-	if not b: return { species = a.species, colors = a.colors.duplicate(), look = a.look }
+	if not b: return { species = a.species, colors = a.colors.duplicate(), look = a.look, parent = "" }
+	var nm: String = b.config.get("name", "")
 	# 한 장짜리 외형(LOOK)은 섞을 수 없으니 부모 한쪽을 그대로 닮는다
 	if a.species == "LOOK" or b.species == "LOOK":
 		var p = a if randf() < 0.5 else b
-		return { species = p.species, colors = p.colors.duplicate(), look = p.look }
+		return { species = p.species, colors = p.colors.duplicate(), look = p.look, parent = nm }
 	var t := Util.rand_range(0.25, 0.75)
 	return {
 		species = a.species if randf() < 0.5 else b.species,
 		colors = { body = "#" + Color(a.colors.body).lerp(Color(b.colors.body), t).to_html(false), wing = "#" + Color(a.colors.wing).lerp(Color(b.colors.wing), 1 - t).to_html(false) },
+		parent = nm,
 	}
+
+
+## 이 아이의 다른 부모 (용 이름). 없으면 ""
+static func parent_of(kid: Dictionary) -> String:
+	var e = kid.get("entity")
+	return str(e.genes.get("parent", "")) if e and e.genes else ""
 
 
 static func rename(kid: Dictionary, nm: String) -> void:

@@ -1,8 +1,9 @@
 class_name JournalPanel
 extends GamePanel
 ## 2D판 ui/journal.js. 모험 일지 [J].
-##   [퀘스트] [지도] [소지품] [마을 용들] [스킬] [성장] [유물] [도감] [기록] [소리]
+##   [퀘스트] [지금까지 이야기] [지도] [소지품] [마을 용들] [스킬] [성장] [유물] [도감] [기록] [소리]
 ## 퀘스트 탭은 줄을 누르면 펼쳐지고, [추적] 을 누르면 오른쪽 추적창에 그 퀘스트가 걸린다.
+## 지금까지 이야기 탭은 끝낸 장의 요약을 최근 장부터 보여 주고, 지금 장에는 할 일 한 줄을 단다 (며칠 쉬었다 돌아와도 여기서 잇는다).
 ## 성장·스킬 탭은 뿌리 하나에서 세 갈래가 뻗는 나무로 그리고, 마디를 누르면 아래 줄에서 자세히 보고 포인트를 쓴다.
 
 const SECTION := preload("res://scenes/ui/journal_section.tscn")
@@ -60,7 +61,6 @@ func toggle_tab(tab_id := "") -> void:
 	if tab_id != "" and tab_id != tab:
 		tab = tab_id
 		_picked = null
-	Tutorial.mark("journal")
 	render()
 	open()
 
@@ -71,6 +71,7 @@ func refresh() -> void:
 
 
 func render() -> void:
+	Tutorial.mark("tab_" + tab)   # 스스로 열어 본 탭은 안내하지 않는다
 	for b in _tabs.get_children():
 		var on: bool = b.name == tab
 		for s in ["normal", "pressed"]: b.add_theme_stylebox_override(s, tab_on_style if on else tab_style)
@@ -90,6 +91,7 @@ func render() -> void:
 		c.queue_free()
 	match tab:
 		"quests": _render_quests()
+		"story": _render_story()
 		"map": $Frame/Lines/Body/MapPage/Map.queue_redraw()
 		"bag": _render_bag()
 		"folk": _render_folk()
@@ -149,6 +151,55 @@ func _replay(title: String, scene: Array) -> void:
 	close()
 	Sfx.play("ui")
 	Chronicle.play_scene(title, scene, null, false)
+
+
+# ---------- 지금까지 이야기 ----------
+
+## 끝낸 장의 요약(data/chapters.json 의 recap)을 최근 장부터. 이름이 같은 장(3장의 c3 · c3b)은 한 장으로 묶는다.
+## 지금 장은 끝낸 칸의 요약까지 적고, 끝에 "지금 할 일"을 단다
+func _render_story() -> void:
+	var cur: Dictionary = Chapters.current(GameState)
+	var groups := []
+	for c in Data.get_module("chapters").CHAPTERS:
+		var head := "%s · %s" % [c.title, c.name]
+		if groups.is_empty() or groups[-1].head != head: groups.append({ head = head, lines = [], now = false })
+		var g: Dictionary = groups[-1]
+		if c.done.call(GameState): g.lines.append_array(c.get("recap", []).filter(_recap_ok).map(func(l): return l.text))
+		elif c.id == cur.id: g.now = true
+	if GameState.story.get("endingSeen", "") != "": _note("결말을 보았다. 이야기는 여기서 끝나지만, 마을의 하루는 이어진다.")
+	groups.reverse()
+	for g in groups:
+		if g.lines.is_empty() and not g.now: continue
+		_section(g.head, [])
+		for t in g.lines:
+			var p: Label = $Templates/Para.duplicate()
+			p.text = t
+			_list.add_child(p)
+		if g.now: _now_box()
+
+
+## 요약 한 줄을 보여 줄지. chose: 고른 것 (Chronicle 과 같은 모양) · seen: 본 사건이나 장면 · route: 결말의 길 · dead: 떠난 용
+func _recap_ok(l: Dictionary) -> bool:
+	var st: Dictionary = GameState.story
+	if not Chronicle._chosen(l): return false
+	if l.has("seen") and not (st.get("events", []).has(l.seen) or st.get("scenes", []).has(l.seen)): return false
+	if l.has("route") and st.get("route") != l.route: return false
+	if l.has("dead") and not st.get("dead", []).has(l.dead): return false
+	return true
+
+
+## 지금 장의 할 일: 추적 중인 퀘스트의 summary. 맡은 일이 없으면 다음에 할 만한 일
+func _now_box() -> void:
+	var box: Control = $Templates/Now.duplicate()
+	var q = Quests.tracked_quest()
+	if q:
+		box.get_node("Lines/Head").text = "지금 할 일 · %s" % q.title
+		box.get_node("Lines/Text").text = q.get("summary", "")
+	else:
+		var s: Dictionary = Quests.suggestion()
+		box.get_node("Lines/Head").text = "지금 할 일"
+		box.get_node("Lines/Text").text = "%s. %s" % [s.title, s.goal]
+	_list.add_child(box)
 
 
 # ---------- 소지품 · 기록 · 소리 ----------

@@ -11,6 +11,7 @@
    { "scene": "epi_falls" },
    { "fade": "그날 밤 · 망루", "place": "VILLAGE", "at": [29, 9], "time": 0.9 },
    { "scene": "epi_tower" },
+   { "life": "그 뒤로", "place": "VILLAGE", "at": [4, 9], "time": 0.78, "nextDay": true },
    { "credits": "새 수호룡의 이야기 · 끝" },
    { "fade": "", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true }
   ],
@@ -25,6 +26,7 @@
    { "scene": "epi_dojo" },
    { "fade": "구름 폭포", "place": "FALLS", "at": [10, 11], "time": 0.8 },
    { "scene": "epi_falls" },
+   { "life": "그 뒤로", "place": "VILLAGE", "at": [4, 9], "time": 0.78, "nextDay": true },
    { "credits": "돌아온 형의 이야기 · 끝" },
    { "fade": "", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true }
   ],
@@ -33,6 +35,7 @@
    { "quest": "m7d" },
    { "fade": "며칠 뒤 · 구름 폭포", "place": "FALLS", "at": [10, 11], "time": 0.5, "nextDay": true },
    { "scene": "epi_dark_falls" },
+   { "life": "그 뒤로", "place": "VILLAGE", "at": [4, 9], "time": 0.78, "nextDay": true },
    { "credits": "잿빛 날개의 이야기 · 끝" },
    { "fade": "", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true }
   ]
@@ -97,6 +100,38 @@
    { "who": "Nara", "text": "…됐고. 수련이나 하자. 다음에 만나면, 그땐 내가 이길 거거든?", "do": [{ "emote": "Nara", "icon": "💢" }] }
   ] }
  },
+ "LIFE": {
+  "home": {
+   "vow": "(평생을 약속한 {partner}하고 오늘도 한 굴에서 잠든다.)",
+   "partner": "({partner}하고 한 굴에서 산 지 {days}일째다.)",
+   "partner_long": "({partner}하고 한 굴에서 산 지도 꽤 되었다.)",
+   "kid": {
+    "BABY": "(둥지에서는 아기 {kid}의 숨소리가 들린다.{looks})",
+    "TEEN": "(요즘 {kid}의 날갯짓이 부쩍 힘차졌다.{looks})",
+    "ADULT": "(어느새 다 자란 {kid}의 등이 제법 넓다.{looks})"
+   },
+   "looks": " 생김새는 {parent}하고 꼭 닮았다.",
+   "kids": "(굴 안은 {kids}의 소리로 하루도 조용할 날이 없다.)",
+   "built": "(굴은 아직 소박하지만, 둥지만은 내 손으로 지었다.)",
+   "den": {
+    "2": "(굴이 아늑해지자 친한 용들이 가끔 저녁에 들른다.)",
+    "3": "(친한 용들이 이틀이 멀다 하고 내 굴에 들른다.)",
+    "4": "(어디 내놔도 부끄럽지 않은 굴이 되었다. 저녁마다 누군가 들른다.)"
+   },
+   "gathering": {
+    "peace": "(달이 가장 밝은 밤이면 두 마을이 폭포 아래에 모인다. 이제는 그 불가에서 아무도 이빨을 드러내지 않는다.)",
+    "redeem": "(달이 가장 밝은 밤이면 두 마을이 폭포 아래에 모인다. 이제는 그 불가에 이그나르의 자리도 하나 있다.)"
+   },
+   "ally": "(산꼭대기까지 곁에서 싸워 준 {ally}하고는 요즘도 가끔 같이 사냥을 나간다.)"
+  },
+  "dark": {
+   "partner": "({partner}하고는 아직 한 굴에 산다. 다만 그날 뒤로 {partner}의 눈을 똑바로 본 적이 없다.)",
+   "kid": "(아이는 잿마루 용들이 오가는 날이면 둥지 밖으로 나오지 않는다.)",
+   "kids": "(아이들은 잿마루 용들이 오가는 날이면 둥지 밖으로 나오지 않는다.)",
+   "den": "(저녁마다 내 굴에 들르던 발길이 끊겼다.)",
+   "gathering": "(폭포 아래 달맞이 불은 다시 꺼졌다.)"
+  }
+ },
  "CREDITS": [
   { "kind": "title", "text": "Dragonia" },
   { "kind": "gap" },
@@ -135,6 +170,9 @@
   { "kind": "line", "text": "Noto Emoji — Google" },
   { "kind": "gap" },
   { "kind": "gap" },
+  { "kind": "head", "text": "내 식구", "family": true },
+  { "kind": "line", "text": "{Family}", "family": true },
+  { "kind": "gap", "family": true },
   { "kind": "head", "text": "그리고" },
   { "kind": "title", "text": "{name}" },
   { "kind": "gap" },

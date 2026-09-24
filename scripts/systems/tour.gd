@@ -79,6 +79,7 @@ static func _guide(): return World.any_npc(GUIDE)
 
 
 static func update(dt: float) -> void:
+	if not GameState.tour and _cut_short(): start()
 	var t = GameState.tour
 	if not t or GameState.map_id != "VILLAGE": return
 	var e = _guide()
@@ -129,6 +130,13 @@ static func update(dt: float) -> void:
 				t.phase = "walk"
 				t.via = 0
 				t.stuck = 0.0)
+
+
+## 구경 대목(m0 의 둘째)인데 구경이 돌고 있지 않다: 구경 도중에 저장한 판을 불러왔다 (세이브는 구경을 적지 않는다).
+## 그러면 포코가 처음부터 다시 데리고 돈다
+static func _cut_short() -> bool:
+	var m0 = GameState.quests.active.get("m0")
+	return m0 != null and int(m0.step) == 1 and GameState.elderTutorialDone and not GameState.tutorial.get("toured") and not GameState.prologue
 
 
 ## 그 용이 지금 이 마을에 나와 있는가

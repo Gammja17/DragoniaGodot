@@ -97,6 +97,17 @@ theme_override_styles/hover = SubResource("tab")
 theme_override_styles/pressed = SubResource("tab")
 text = "퀘스트"
 
+[node name="story" type="Button" parent="Frame/Lines/Body/Tabs"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+focus_mode = 0
+theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
+theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab")
+theme_override_styles/pressed = SubResource("tab")
+text = "지금까지 이야기"
+
 [node name="map" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
 custom_minimum_size = Vector2(80, 0)
@@ -292,3 +303,32 @@ autowrap_mode = 3
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/separation = 6
+
+[node name="Templates" type="Control" parent="."]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+
+[node name="Para" type="Label" parent="Templates"]
+layout_mode = 0
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
+theme_override_constants/line_spacing = 3
+autowrap_mode = 3
+
+[node name="Now" type="PanelContainer" parent="Templates"]
+layout_mode = 0
+theme_override_styles/panel = SubResource("note")
+
+[node name="Lines" type="VBoxContainer" parent="Templates/Now"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Head" type="Label" parent="Templates/Now/Lines"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.847, 0.29, 1)
+theme_override_fonts/font = ExtResource("5")
+
+[node name="Text" type="Label" parent="Templates/Now/Lines"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
+autowrap_mode = 3

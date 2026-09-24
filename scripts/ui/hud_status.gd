@@ -49,7 +49,7 @@ func refresh() -> void:
 	_meat.text = "🍖 %d" % p.inventory.meat
 	_gold.text = "🪙 %d" % p.gold
 	_twigs.visible = not GameState.den.get("built", false)
-	_twigs.text = "🪵 %d/8" % GameState.den.get("twigs", 0)
+	_twigs.text = "🪵 둥지 %d/8" % GameState.den.get("twigs", 0)
 	_partner.text = "💞 %s" % (Names.npc(GameState.partner.config.name) if GameState.partner else "없음")
 	var pts: int = GameState.growth.get("points", 0)
 	_points.visible = pts > 0

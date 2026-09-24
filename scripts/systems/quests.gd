@@ -164,9 +164,9 @@ static func complete_step(q: Dictionary, quiet := false):
 	if not quiet and st.get("scene"): _queue_scene(q.title, st.scene, st.get("place"))
 	if st.get("flag"): on_flag.call(st.flag)
 	if st.get("toast"): Hud.pop(st.toast, st.icon if st.get("icon") else "📜")
-	if is_complete(q): Hud.quest_banner("다음 할 일", q.title, "%s에게 돌아간다%s" % [Names.npc(turn_in_npc(q)), _where_is(turn_in_npc(q))])
-	else: Hud.quest_banner("다음 할 일", q.title, _hint_or_goal(q))
-	_catch_up(q)
+	_catch_up(q)   # 배너는 이미 이룬 대목을 건너뛴 뒤의 할 일을 알린다
+	if is_complete(q): Hud.quest_banner("다음 할 일", q.title, "%s에게 돌아간다%s" % [Names.npc(turn_in_npc(q)), _where_is(turn_in_npc(q))], q)
+	else: Hud.quest_banner("다음 할 일", q.title, _hint_or_goal(q), q)
 	on_change.call()
 	return st
 
@@ -353,7 +353,9 @@ static func suggestion():
 			goal = "마을 용들에게 말을 걸어 보자. 머리 위에 '!'가 뜬 용이 있다" + (" (%s 쪽)" % " · ".join(where.slice(0, 2)) if not where.is_empty() else "") }
 	var t = training.line.call()
 	if t: return { who = "Kairon", title = "오늘의 수련", goal = t.goal if t.get("goal") else "카이론을 찾아간다" }
-	if all().any(func(q): return q.get("auto") and _ready_quest(q)):
+	# 본 이야기 줄기에서 저절로 열릴 차례인 것만 센다. 조건이 따로 없는 것(밀회 s1 · 어둠의 길 m7d)은 사건이 불러 주는 것이라
+	# 첫날부터 "숲길·호수를 걷다 보면 다음 이야기가 열린다"가 떴다 (호수는 아직 닫혀 있었다)
+	if all().any(func(q): return q.get("auto") and q.act == "main" and q.get("requires") and _ready_quest(q)):
 		return { who = null, title = "세상을 돌아다녀 보자", goal = "숲길·호수를 걷다 보면 다음 이야기가 열린다. 옛 굴을 탐험해 보거나 마을 용들과 이야기해도 좋다" }
 	return { who = null, title = "한숨 돌리자", goal = "굴을 꾸미거나, 게시판의 잡일을 맡거나, 마을 용들과 이야기해 보자" }
 
@@ -390,7 +392,7 @@ static func accept(q: Dictionary) -> void:
 	Q.active[q.id] = { step = 0, n = 0 }
 	_catch_up(q)
 	if not Q.tracked: Q.tracked = q.id
-	Hud.quest_banner("새 이야기", q.title, "%s에게 돌아간다" % Names.npc(turn_in_npc(q)) if is_complete(q) else _hint_or_goal(q))
+	Hud.quest_banner("새 이야기", q.title, "%s에게 돌아간다" % Names.npc(turn_in_npc(q)) if is_complete(q) else _hint_or_goal(q), q)
 	on_change.call()
 
 

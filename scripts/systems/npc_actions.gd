@@ -20,17 +20,33 @@ static func close() -> void:
 	DialogueBox.current.hide_dialogue()
 
 
+const DAILY_GAIN := 10.0   # 한 용과 하루에 쌓을 수 있는 호감 (말 · 선물 · 놀이 · 부탁을 다 합쳐 첫날에 절친이 되던 것)
+
+
 ## 호감도를 올린다. 단계가 올라가면 그 인물의 장면을 하나 예약한다 (지금 대화가 끝난 뒤 Chronicle 이 꺼내 준다).
-## 호감을 올리는 곳은 모두 여기를 거친다. 그래도 단계를 건너뛴 적이 있으면 못 본 장면은 다음에 호감이 오를 때 꺼낸다
-static func add_relation(npc, amount: float) -> void:
+## 호감을 올리는 곳은 모두 여기를 거친다. 그래도 단계를 건너뛴 적이 있으면 못 본 장면은 다음에 호감이 오를 때 꺼낸다.
+## 오르는 쪽은 한 용과 하루에 DAILY_GAIN 까지다. 이야기 장면 · 평생 약속처럼 daily 를 끈 것은 빼고. 실제로 오른 만큼을 돌려준다
+static func add_relation(npc, amount: float, daily := true) -> float:
+	if amount > 0 and daily:
+		var got: Dictionary = GameState.story.get("relGain", {})
+		if got.get("day") != GameState.day: got = { day = GameState.day }
+		var nm: String = npc.config.name
+		amount = minf(amount, DAILY_GAIN - float(got.get(nm, 0.0)))
+		if amount <= 0: return 0.0
+		got[nm] = float(got.get(nm, 0.0)) + amount
+		GameState.story.relGain = got
 	npc.relation = clampf(npc.relation + amount, 0, 100)
 	if amount > 0: _book_bond(npc)
+	return amount
 
 
 ## 지금 단계까지 열렸는데 아직 못 본 장면을 아래 단계부터 하나 예약한다. 기다리는 장면이 있으면 다음 기회에
 ## (예약은 한 자리뿐이라, 습격을 막고 여럿이 한꺼번에 단계를 넘으면 하나만 남고 나머지는 영영 사라졌다)
 static func _book_bond(npc) -> void:
 	if GameState.pendingBond: return
+	# 첫날에는 꺼내지 않는다. 장면들은 지내 온 날을 전제로 한다 (튜토리얼 대화의 호감만으로 엘더의 '네 이름이 이제 어색하지 않다'가 첫날에 나오던 것).
+	# 넘은 단계는 이튿날 다음에 호감이 오를 때 챙긴다
+	if GameState.day < 2: return
 	var nm: String = npc.config.name
 	# 장면 표는 단계("1"~"3")를 열쇠로 쓴다 (배열로 읽어서 서른 장면이 하나도 안 나오던 것)
 	var scenes = _talk().BOND_SCENES.get(nm)
@@ -377,9 +393,9 @@ static func _chat(npc) -> void:
 static func _give_gift(npc) -> void:
 	GameState.player.inventory.meat -= 1
 	npc.last_gift_day = GameState.day
-	add_relation(npc, 8)
+	var got := add_relation(npc, 8)
 	Particles.burst(npc.x, npc.y - 60, "#ff7aa8", 1, 10)
-	Hud.pop("%s에게 고기를 선물했습니다. (호감 ↑)" % Names.npc(npc.config.name), "🎁")
+	Hud.pop("%s에게 고기를 선물했습니다. (%s)" % [Names.npc(npc.config.name), "호감 ↑" if got > 0 else "오늘은 이미 많이 가까워졌습니다"], "🎁")
 	var said = _talk().NPC_TALK.get(npc.config.name, {}).get("gift")   # 받는 말은 용마다 (data/npcTalk.json 의 gift)
 	show(npc, _retold(npc, said.pick_random()) if said else "이걸 나한테? 고마워. 잘 먹을게.", [{ label = "(고개를 끄덕인다)", on_select = func(): open_hub(npc) }])
 

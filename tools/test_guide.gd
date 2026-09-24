@@ -389,7 +389,7 @@ func _alone(on: bool) -> void:
 
 func _said() -> String:
 	if not DialogueBox.is_open(): return ""
-	return "%s | %s" % [DialogueBox.current._name.text, DialogueBox.current._text.text]
+	return "%s | %s" % [DialogueBox.current._name.text, DialogueBox.current.shown_text()]
 
 
 ## 떠 있는 대화를 끝까지 넘긴다

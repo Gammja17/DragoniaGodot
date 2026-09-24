@@ -90,7 +90,9 @@ static func _lessons_at(n: int) -> Callable: return func(s): return _lessons(s) 
 static func _build_story() -> void:
 	var t := {
 		# ---- quests.js: 부탁이 나오는 조건 ----
-		"quests:QUESTS.2.needs": func(s): return _scene_seen(s, "ch1"),
+		# 자라나는 날개: 엘더가 "카이론한테 구르고 있다지?" 하고 꺼낸다. 첫 수련을 받은 뒤라야 말이 맞는다
+		# (스승을 소개받자마자 걸려서, 추적창은 카이론의 수련을 가리키는데 화살표는 엘더를 가리켰다)
+		"quests:QUESTS.2.needs": func(s): return _scene_seen(s, "ch1") and _lessons(s) >= 1,
 		"quests:QUESTS.6.needs": func(s): return not s.quests.done.has("m5a") and not s.quests.active.has("m5a"),
 		"quests:QUESTS.10.needs": func(s): return not _boss(s, "IGNAR"),
 		"quests:QUESTS.17.needs": func(s): return s.quests.done.has("m3") and not _dead(s, "Gron"),
@@ -264,6 +266,10 @@ static func _build_fix() -> void:
 		"chatter:CHATTER.elder_mira_falls.when": func(s): return not s.quests.done.has("s1"),
 		# 잡담: 봉우리의 알 소식 뒤로 전쟁 전까지 도란이 수군거린다 (6장에서 도란이 "그 소리, 처음 꺼낸 게 나여" 하고 사과한다)
 		"chatter:CHATTER.doran_rumor.when": func(s): return s.quests.done.has("m5a") and not s.quests.done.has("m6w"),
+		# 바윗골의 무게: 가람은 모래 폭군(바실)이 사라진 뒤에야 빚을 갚겠다고 한다. 조건이 없어서 첫날부터 '가람에게 말을 걸어 보자'가 떴다
+		"quests:QUESTS.e1.needs": func(s): return _boss(s, "BASIL"),
+		# 마을 최고의 술래: 포코의 두 부탁(엿들은 말 · 술래잡기)이 첫날 한꺼번에 이어져, 첫날에 포코와 절친이 되었다. 술래잡기는 사흘째부터
+		"quests:QUESTS.p2.needs": func(s): return s.day >= 3,
 		# 일과: 어둠의 길 끝에 나라가 떠난 뒤의 스승
 		"routines:ROUTINES.Kairon.variants.after_dark.when": func(s): return s.story.get("route") == "dark" and s.quests.done.has("m7d"),
 	})

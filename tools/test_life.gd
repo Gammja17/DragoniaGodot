@@ -25,6 +25,9 @@ func _ready() -> void:
 	GameState.player.stage_index = 2   # 아기 용은 밤이 깊으면 알아서 잠들어 버린다
 	GameState.raidTimer = 99999
 	GameState.story.events.append_array(["ev_falls", "ev_cloudtop"])
+	# 호감이 오르면 인연 장면이 예약되어 대화창이 열린 채 남는다 (창 없는 시험에서는 아무도 넘기지 않는다). 여기서는 생활만 본다
+	for nm in Data.get_module("npcTalk").BOND_SCENES:
+		for tier in [1, 2, 3]: GameState.story.bonds.append("%s:%d" % [nm, tier])
 
 	await _den_lock()
 	await _chest_eggs()
@@ -118,7 +121,7 @@ func _parents() -> void:
 		var t := Time.get_ticks_msec()
 		while Cutscene.busy() and not DialogueBox.is_open() and Time.get_ticks_msec() - t < 8000: await get_tree().process_frame
 		if not DialogueBox.is_open(): break
-		seen += _box._text.text
+		seen += _box.shown_text()
 		_box._text.visible_characters = -1
 		_box._choose(0)
 	_check("성년식: 엘더의 아이는 '아빠'라고 부른다", seen.contains("아빠가 방금 웃었으니까"))
@@ -226,10 +229,7 @@ func _guests() -> void:
 	var tiamat = World.any_npc("Tiamat")
 	var haru = World.any_npc("Haru")
 	poco.relation = 60; tiamat.relation = 60; haru.relation = 90
-	# 반겨 맞아 호감이 오르면 인연 장면(B)이 예약되어 대화창이 열린 채 남는다. 여기서는 손님만 본다
-	if not GameState.story.get("bonds"): GameState.story.bonds = []
-	for nm in ["Poco", "Tiamat", "Haru"]:
-		for tier in [1, 2, 3]: GameState.story.bonds.append("%s:%d" % [nm, tier])
+	GameState.story.erase("relGain")   # 앞에서 오늘 쌓은 호감이 하루 상한(NpcActions.DAILY_GAIN)에 걸리지 않게
 	await _evening(3)
 	_check("살 만하다(8점)에는 손님이 없다", _guest() == "", _guest())
 	GameState.denDecor.append({ id = "FIREPLACE", tx = 15, ty = 1 })
@@ -402,7 +402,7 @@ func _evening(day: int) -> void:
 func _greet(npc) -> String:
 	Dialogue.start(npc, "TALK")
 	await get_tree().process_frame
-	var t := _box._text.text.replace("\n", " ")
+	var t := _box.shown_text().replace("\n", " ")
 	Dialogue.close()
 	return t
 

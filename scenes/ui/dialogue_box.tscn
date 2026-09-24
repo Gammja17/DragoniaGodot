@@ -48,10 +48,14 @@ font_color = Color(0.925, 0.89, 0.812, 1)
 
 [node name="DialogueBox" type="PanelContainer"]
 visible = false
-anchors_preset = 12
+anchors_preset = 7
+anchor_left = 0.5
 anchor_top = 1.0
-anchor_right = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
+offset_left = -320.0
+offset_right = 320.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("frame")
@@ -120,10 +124,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 label_settings = SubResource("body_text")
 autowrap_mode = 3
+visible_characters_behavior = 1
 
 [node name="Options" type="GridContainer" parent="Pad/Body"]
 layout_mode = 2
-size_flags_horizontal = 0
+size_flags_horizontal = 3
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 4
 

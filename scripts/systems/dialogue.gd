@@ -63,7 +63,7 @@ static func _render(group: Dictionary, key: String, npc) -> void:
 
 static func _choose(group: Dictionary, opt: Dictionary, npc) -> void:
 	if opt.get("eff"):
-		npc.relation = clampf(npc.relation + opt.eff, 0, 100)
+		NpcActions.add_relation(npc, opt.eff)   # 하루에 쌓을 수 있는 호감(NpcActions.DAILY_GAIN)을 함께 센다
 		npc.emote("♥" if opt.eff > 0 else "💢")   # 대화창을 보는 눈에 닿게, 위쪽 알림 대신 그 용의 머리 위에
 	match opt.next:
 		"end":
@@ -100,8 +100,8 @@ static func _can_gift(npc) -> bool:
 static func _gift(npc) -> void:
 	GameState.player.inventory.meat -= 1
 	npc.last_gift_day = GameState.day
-	npc.relation = clampf(npc.relation + 8, 0, 100)
+	var got := NpcActions.add_relation(npc, 8)
 	Particles.burst(npc.x, npc.y - 60, "#ff7aa8", 1, 10)
 	npc.say("고마워! 잘 먹을게.")
-	Hud.pop("%s에게 고기를 선물했습니다. (호감 ↑)" % Names.npc(npc.config.name), "🎁")
+	Hud.pop("%s에게 고기를 선물했습니다. (%s)" % [Names.npc(npc.config.name), "호감 ↑" if got > 0 else "오늘은 이미 많이 가까워졌습니다"], "🎁")
 	close()

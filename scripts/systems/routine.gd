@@ -36,6 +36,19 @@ static func slot_at_hour(routine: Dictionary, hour: float) -> Dictionary:
 	return best
 
 
+## 그날 이 시각까지의 자리 가운데 내가 갈 수 있는 마지막 자리 (없으면 전날 밤의 갈 수 있는 자리).
+## 하나도 없으면 그대로 둔다 (구름마루에 사는 용은 구름마루에 있다)
+static func _open_slot(routine: Dictionary, hour: float, slot: Dictionary) -> Dictionary:
+	var best = null
+	var last = null
+	for s in routine.day:
+		if not Chapters.map_open(GameState, s.map): continue
+		last = s
+		if s.h <= hour: best = s
+	if best == null: best = last
+	return best if best != null else slot
+
+
 ## 지금 이 용이 어디서 무엇을 하고 있는가
 static func plan_for(name: String, hour := -1.0):
 	if hour < 0: hour = GameState.dayTime * 24
@@ -50,6 +63,9 @@ static func plan_for(name: String, hour := -1.0):
 	if base == null:
 		base = r.after if r.get("after") and is_dead(r.after.of) else r
 	var slot := slot_at_hour(base, hour)
+	# 일과의 자리가 아직 내가 갈 수 없는 곳(장이 막아 둔 지도)이면, 그날 앞서 있던 갈 수 있는 자리에 머문다.
+	# 1장에 포코가 호수로 가 버리면 고기를 건네러 따라갈 수도 없이 세 시간을 기다려야 했다
+	if not Chapters.map_open(GameState, slot.map): slot = _open_slot(base, hour, slot)
 	var home = Den.partner_home(name, slot)   # 같이 사는 짝이 잘 자리 (내 굴). 아니면 null
 	if home == null: home = Den.guest_slot(name, hour)   # 오늘 저녁 내 굴에 놀러 온 손님
 	var spot = Gathering.spot_of(name) if Gathering.is_gather_now() else null   # 모임에서 앉을 자리 (이야기에 따라 바뀐다)

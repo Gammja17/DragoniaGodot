@@ -386,7 +386,7 @@ func _kairon() -> void:
 	for o in _menu_options(k):
 		if o.label == "🤝 같이 가자": go = o
 	if go: go.on_select.call()
-	_check("다짐 뒤 '같이 가자' → 다짐을 말한다", DialogueBox.current._text.text.contains("다시는 마을을 비우지 않겠다고 했다"), true)
+	_check("다짐 뒤 '같이 가자' → 다짐을 말한다", DialogueBox.current.shown_text().contains("다시는 마을을 비우지 않겠다고 했다"), true)
 	NpcActions.close()
 	k.state = "PARTNER_FOLLOW"
 	Party.sync()

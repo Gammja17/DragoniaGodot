@@ -516,7 +516,7 @@ func _advance() -> void:
 		Cutscene.rush()
 		return
 	if not DialogueBox.is_open(): return
-	var text: String = _box._text.text
+	var text: String = _box.shown_text()
 	if _seen.is_empty() or _seen[-1] != text: _seen.append(text)
 	_box._text.visible_characters = -1
 	_box._choose(0)

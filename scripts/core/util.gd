@@ -24,6 +24,17 @@ static func josa(word: String, with_final: String, without_final: String) -> Str
 	return word + (with_final if jong != 0 else without_final)
 
 
+## 글에서 줄을 바꿀 수 있는 곳을 띄어쓰기로만 둔다. 글자판은 한글을 글자마다 끊어서 낱말이 두 줄로 쪼개졌다 ('한|참').
+## 띄어쓰기 사이의 글자들을 줄바꿈 금지 문자(WORD JOINER, 보이지 않는다)로 묶는다. 한 줄보다 긴 낱말은 글자판이 알아서 끊는다
+const WJ := "\u2060"
+static func keep_words(s: String) -> String:
+	var out := PackedStringArray()
+	for i in s.length():
+		out.append(s[i])
+		if i + 1 < s.length() and not (s[i] in " \n" or s[i + 1] in " \n"): out.append(WJ)
+	return "".join(out)
+
+
 ## JS 의 Math.imul. 32비트 곱의 아래 32비트를 부호 없는 수로 돌려준다
 static func imul(a: int, b: int) -> int:
 	a &= U32; b &= U32

@@ -105,6 +105,14 @@ static func _wanted():
 				for pr in GameState.entities.props:
 					if pr.type == "CAVE": cave = pr
 				place = { map = GameState.map_id, x = cave.x, y = cave.y, label = "굴 입구" } if cave else { map = "EAST_ROAD" }
+			elif g.type == "kill" and g.get("target") == "DUMMY":   # 첫날 광장의 허수아비 (숲길 사냥터를 가리키던 것)
+				place = { map = "VILLAGE", label = "허수아비" }
+				var best := INF
+				for e in GameState.entities.enemies:
+					var d := Util.dist(e, GameState.player)
+					if e.type == "DUMMY" and not e.remove and GameState.map_id == "VILLAGE" and d < best:
+						best = d
+						place.x = e.x; place.y = e.y
 			elif (g.type == "kill" or g.type == "killAny" or g.type == "elite") and (GameState.map_id == "VILLAGE" or GameState.map_id == "DOJO"):
 				place = { map = "EAST_ROAD", label = "사냥터" }
 	else:

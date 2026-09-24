@@ -139,7 +139,7 @@ func _ready() -> void:
 func _say() -> String:
 	if not DialogueBox.is_open(): return "(대화창 없음)"
 	var opts: Array = _box._list.map(func(o): return o.label)
-	return "%s | %s | %s" % [_box._name.text, _box._text.text.left(60).replace("\n", " "), opts]
+	return "%s | %s | %s" % [_box._name.text, _box.shown_text().left(60).replace("\n", " "), opts]
 
 
 ## 대화창이 떠 있으면 첫 줄을 골라 넘긴다. 닫히면 멈춘다 (연출 박자가 도는 동안은 기다린다)

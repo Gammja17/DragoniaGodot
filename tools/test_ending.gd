@@ -59,7 +59,7 @@ func _ready() -> void:
 		GameState.map_id, GameState.day, GameState.dayTime, GameState.isDialogueOpen, Cutscene.on])
 	print("[결말 뒤] 습격 오는가=%s 본 장면=%s 유물=%s" % [Raid._still_coming(), GameState.story.scenes.filter(func(s): return s.begins_with("ending")), GameState.relics])
 	print("[장면 순서] %s" % " → ".join(_log))
-	if DialogueBox.is_open(): print("[그 뒤 열린 대화] %s | %s | 제목=%s" % [DialogueBox.current._name.text, DialogueBox.current._text.text.left(50), Cutscene.title])
+	if DialogueBox.is_open(): print("[그 뒤 열린 대화] %s | %s | 제목=%s" % [DialogueBox.current._name.text, DialogueBox.current.shown_text().left(50), Cutscene.title])
 	get_tree().quit()
 
 
@@ -161,7 +161,7 @@ func _wait(sec: float) -> void:
 func _maybe_shoot() -> void:
 	if _shots == "": return
 	var now := Time.get_ticks_msec()
-	var text: String = DialogueBox.current._text.text if DialogueBox.is_open() and not DialogueBox.current.typing() else ""
+	var text: String = DialogueBox.current.shown_text() if DialogueBox.is_open() and not DialogueBox.current.typing() else ""
 	if (text != "" and text != _last_text) or now - _last_shot > 900:
 		_last_text = text if text != "" else _last_text
 		_last_shot = now

@@ -181,7 +181,7 @@
    "act": "main",
    "requires": "m1",
    "needs": {
-    "$fn": "s => s.story.scenes.includes('ch1')",
+    "$fn": "s => s.story.scenes.includes('ch1') && s.story.lessons.length >= 1",
     "$at": "QUESTS.2.needs"
    },
    "title": "자라나는 날개",
@@ -2632,7 +2632,7 @@
        },
        {
         "who": "Poco",
-        "text": "그 용은 지금 어디 있을까? 너처럼 날개가 컸을까? …야, 우리 이제 진짜 절친이다? 나중에 취소하기 없기야."
+        "text": "그 용은 지금 어디 있을까? 너처럼 날개가 컸을까? …너한테 말하길 잘했다. 다음에 또 뭐 들으면 너한테 제일 먼저 말해 줄게."
        }
       ]
      },
@@ -2663,6 +2663,10 @@
    "giver": "Poco",
    "act": "Poco",
    "requires": "p1",
+   "needs": {
+    "$fn": "s => s.day >= 3",
+    "$at": "QUESTS.p2.needs"
+   },
    "title": "마을 최고의 술래",
    "offer": "나 술래잡기에서 한 번도 안 잡혀 봤다? 네가 나를 [두 번] 잡으면 내 보물을 줄게. 진짜야, 진짜 보물이야!",
    "summary": "포코는 마을에서 제일 빨리 달린다. 왜 그렇게 빠른지는 본인도 별로 자랑스러워하지 않는 눈치다.",
@@ -3446,6 +3450,10 @@
    "id": "e1",
    "giver": "Garam",
    "act": "main",
+   "needs": {
+    "$fn": "s => !!s.bossesDefeated.BASIL",
+    "$at": "QUESTS.e1.needs"
+   },
    "title": "바윗골의 무게",
    "offer": "모래 폭군이 사라져서 예순 해 만에 길이 열렸다. 바윗골은 빚을 지고는 못 사는 마을이다.\n\n갚을 게 있는데, 그 전에 돌이 너를 데려가서 보여 줄 데가 있다고 한다.",
    "summary": "사막 서쪽 고원의 바윗골은 바실 때문에 예순 해 동안 갇혀 있었다. 어른 가람이 빚을 갚겠다고 한다.",

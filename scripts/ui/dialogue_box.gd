@@ -23,7 +23,9 @@ const OPTION_SIZES := [12, 12, 14, 18]
 ## 고를 줄이 셋 이상이고 모두 이만큼(글자)보다 짧으면 두 줄로 나란히 놓는다 (창 높이가 반으로 준다)
 const SHORT_LABEL := 22
 
-@onready var _pad: MarginContainer = $Pad
+## 판의 폭 (px). 화면 끝까지 펼치면 한 줄이 쉰 자 가까이 되어 눈이 다음 줄을 놓쳤다. 보통 글자로 한 줄 마흔 자 남짓
+@export var box_width := 640.0
+
 @onready var _portrait: Control = $Pad/Body/Header/Portrait
 @onready var _title: Control = $Pad/Body/Header/Who/Title      # 이름 · 맡은 일 · 사이 한 줄
 @onready var _name: Label = $Pad/Body/Header/Who/Title/Name
@@ -40,6 +42,7 @@ var _typed := 0.0
 var _pause := 0.0          # 문장 부호에서 쉬는 남은 시간
 var _auto := 0.0           # 다 찍히고 이만큼 뒤 저절로 넘어간다 (0 이면 기다린다)
 var _auto_t := 0.0
+var _per := 1.0            # 글 한 자에 붙은 문자 수 (낱말을 묶는 보이지 않는 문자까지). 그만큼 빨리 찍어야 빠르기가 그대로다
 var _list := []
 var _cinematic := false
 var _compact := false
@@ -97,7 +100,9 @@ func show_dialogue(opts: Dictionary) -> void:
 	_rel.visible = rel != null and not narration
 	_text.label_settings.font_color = NARRATION_COLOR if narration else _body_color
 	if rel != null: _rel_fill.size.x = (_rel.size.x - 2) * minf(100, rel) / 100.0
-	_text.text = GameInput.words(fill_name(opts.get("text", "")))
+	var plain := GameInput.words(fill_name(opts.get("text", "")))
+	_text.text = Util.keep_words(plain)   # 낱말 가운데서 줄이 바뀌지 않게
+	_per = float(_text.text.length()) / maxf(1.0, plain.length())
 	_text.visible_characters = 0
 	_typed = 0.0
 	_pause = 0.0
@@ -109,14 +114,11 @@ func show_dialogue(opts: Dictionary) -> void:
 	if _list.is_empty(): _list = [{ label = "닫기", on_select = opts.get("on_close", func(): pass) }]
 	var two: bool = _list.size() >= 3 and _list.all(func(o): return str(o.label).length() <= SHORT_LABEL)
 	_options.columns = 2 if two else 1
-	_options.size_flags_horizontal = SIZE_EXPAND_FILL if two else SIZE_SHRINK_BEGIN
 	for i in _list.size():
 		var b: Button = OPTION.instantiate()
 		b.text = _list[i].label                 # 번호는 붙이지 않는다 (방향키로 고른다)
 		b.add_theme_font_size_override("font_size", OPTION_SIZES[step - 1])
-		if two:   # 두 줄이면 한 칸이 반씩 (한 줄일 때의 최소 너비 680 을 풀어 준다)
-			b.custom_minimum_size.x = 0
-			b.size_flags_horizontal = SIZE_EXPAND_FILL
+		b.size_flags_horizontal = SIZE_EXPAND_FILL   # 판 폭을 채운다. 두 줄이면 한 칸이 반씩
 		b.pressed.connect(_choose.bind(i))
 		# 마우스를 '움직여' 얹으면 그 줄이 골라진다 (창이 열리는 순간 커서 밑에 깔린 줄이 멋대로 골라지지 않게)
 		b.gui_input.connect(func(ev): if ev is InputEventMouseMotion and _selected != i: _select(i))
@@ -140,27 +142,18 @@ func hide_dialogue() -> void:
 	_list = []
 
 
-## 컷씬이면 가운데로 모으고 띠 안쪽에 앉힌다
+## 컷씬이면 띠 안쪽에 앉힌다
 func set_cinematic(on: bool) -> void:
 	_cinematic = on
 	_layout()
 
 
+## 판은 늘 가운데에 box_width 만큼. 컷씬이면 띠 안쪽까지 올려 앉힌다
 func _layout() -> void:
 	var vw := get_viewport_rect().size
-	if _cinematic:
-		var w := minf(940, vw.x * 0.84)
-		anchor_left = 0.5; anchor_right = 0.5
-		offset_left = -w / 2; offset_right = w / 2
-		offset_bottom = -vw.y * 0.12
-		_pad.add_theme_constant_override("margin_left", 0)
-		_pad.add_theme_constant_override("margin_right", 0)
-	else:
-		anchor_left = 0.0; anchor_right = 1.0
-		offset_left = 0; offset_right = 0; offset_bottom = 0
-		var side := int(vw.x * 0.08)
-		_pad.add_theme_constant_override("margin_left", side)
-		_pad.add_theme_constant_override("margin_right", side)
+	var w := minf(box_width, vw.x - 24)
+	offset_left = -w / 2; offset_right = w / 2
+	offset_bottom = -vw.y * 0.12 if _cinematic else -10.0
 	# 판이 커진 뒤로는 거의 불투명해야 글이 읽힌다. 컷씬 때 조금 더 어둡게
 	self_modulate = Color(0.95, 0.95, 1.0, 1.0) if _cinematic else Color.WHITE
 
@@ -174,20 +167,22 @@ func _process(dt: float) -> void:
 			return
 		var total := _text.get_total_character_count()
 		var before := int(_typed)
-		_typed += dt * (CINE_SPEED if _cinematic else TYPE_SPEED)
+		_typed += dt * (CINE_SPEED if _cinematic else TYPE_SPEED) * _per
 		var now := mini(int(_typed), total)
 		if _cinematic:
 			var s := _text.text
 			for i in range(before, mini(now, s.length())):
 				var ch := s[i]
-				var next := s[i + 1] if i + 1 < s.length() else " "
+				var j := i + 1
+				while j < s.length() and s[j] == Util.WJ: j += 1
+				var next := s[j] if j < s.length() else " "
 				if PAUSES.has(ch) and not PAUSES.has(next):   # 말줄임표·느낌표가 이어지면 마지막 것에서만
 					now = i + 1
 					_typed = now
 					_pause = PAUSES[ch]
 					break
 		_text.visible_characters = now
-		if int(_typed) / 6 != before / 6: Sfx.play("talk")
+		if int(_typed / _per) / 6 != int(before / _per) / 6: Sfx.play("talk")
 		if now >= total: _text.visible_characters = -1
 	elif _auto > 0 and _list.size() == 1:
 		_auto_t += dt
@@ -197,6 +192,11 @@ func _process(dt: float) -> void:
 	# ▼ 는 다 찍힌 뒤에 천천히 깜박인다
 	_next.visible = _compact and not typing()
 	if _next.visible: _next.modulate.a = 0.55 + sin(Time.get_ticks_msec() / 260.0) * 0.45
+
+
+## 지금 떠 있는 대사 (낱말을 묶은 문자를 뺀 것)
+func shown_text() -> String:
+	return _text.text.replace(Util.WJ, "")
 
 
 ## 아직 글자를 찍는 중인가

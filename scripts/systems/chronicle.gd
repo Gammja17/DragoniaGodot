@@ -166,15 +166,27 @@ static func _choose(ev: Dictionary, done: Callable) -> void:
 			pick_one.call(o) }) })
 
 
-static func _fire(ev: Dictionary) -> void:
+## 조건을 따지지 않고 그 사건을 지금 튼다 (아직 안 봤을 때만). then: 다 끝난 뒤에 부를 것 (이미 봤으면 곧바로)
+static func fire_now(id: String, then: Callable) -> void:
+	for ev in Data.get_module("chronicle").CHRONICLE:
+		if ev.id == id and not seen_event(id):
+			_fire(ev, then)
+			return
+	then.call()
+
+
+static func _fire(ev: Dictionary, then = null) -> void:
 	# 본 사건으로 적는 것은 장면이 끝난 뒤다 (_finish_event). 장면 도중에 저장되고 꺼지면 그 사건이 주는 퀘스트를 영영 잃었다.
 	# 도는 동안은 _playing 이 같은 사건을 다시 부르지 않게 막는다
 	if not GameState.story.has("eventDay"): GameState.story.eventDay = {}
 	GameState.story.eventDay[ev.id] = GameState.day   # 그날 밤은 그 사건이 이어진다 (달맞이 모임)
 	_playing = true
+	var finish := func():
+		_finish_event(ev)
+		if then: then.call()
 	play_scene(ev.title, ev.lines, func():
-		if ev.get("choice"): _choose(ev, func(): _finish_event(ev))
-		else: _finish_event(ev))
+		if ev.get("choice"): _choose(ev, finish)
+		else: finish.call())
 
 
 static func _finish_event(ev: Dictionary) -> void:

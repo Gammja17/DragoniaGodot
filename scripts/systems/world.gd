@@ -339,6 +339,7 @@ static func enter_map(id: String, from = null, spot = null) -> GameMap:
 	Party.sync(true, false)   # 이야기 동료를 이야기에 맞춘다 (불러온 세이브에서도)
 	Party.ensure_panel()
 	var was := GameState.map_id
+	GameState.dojoSpot = null   # 허수아비 자리는 수련장에만 있다 (_populate 가 다시 적는다). 한 번 들른 뒤로는 딴 지도의 수련에서도 수련장 좌표에 허수아비가 섰다
 	# 떠나기 전에 둥지 상태를 갈무리한다 (내 굴에만 있다)
 	if GameState.entities and not GameState.entities.get("nests", []).is_empty():
 		var leaving = GameState.entities.nests[0]

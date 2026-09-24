@@ -289,7 +289,7 @@ func _check(label: String, ok: bool) -> void:
 func _say() -> String:
 	if not DialogueBox.is_open(): return "(대화창 없음)"
 	var opts: Array = _box._list.map(func(o): return o.label)
-	return "%s | %s | %s" % [_box._name.text, _box._text.text.left(60).replace("\n", " "), opts]
+	return "%s | %s | %s" % [_box._name.text, _box.shown_text().left(60).replace("\n", " "), opts]
 
 
 ## 장면을 끝까지 넘긴다 (고름이 뜨면 첫째). 대화창이 닫히고 연출 박자도 멈추면 돌아온다

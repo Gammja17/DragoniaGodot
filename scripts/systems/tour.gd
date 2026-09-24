@@ -109,17 +109,21 @@ static func update(dt: float) -> void:
 		if far and t.nag <= 0:
 			e.say("이쪽이야, 이쪽!")
 			t.nag = 4.0
-		# 소품에 걸려 더 못 가면 그 자리에서 이야기한다 (1.5초 제자리면 다 온 셈). 나를 기다리는 동안은 세지 않는다
-		var moved := Vector2(e.x - t.get("lx", 0.0), e.y - t.get("ly", 0.0)).length()
-		t.stuck = t.get("stuck", 0.0) + dt if moved < 3 and not far else 0.0
-		t.lx = e.x; t.ly = e.y
-		# 멀리서 걸렸더라도 3초를 못 움직이면 그 자리에서 이야기한다
+		# 소품에 걸려 더 못 가면 그 자리에서 이야기한다 (1.5초 못 다가가면 다 온 셈). 나를 기다리는 동안은 세지 않는다.
+		# 움직였는지가 아니라 목표에 다가갔는지를 본다 — 소품에 비비적대며 몸만 흔들리면 멈춘 셈 치지 않아서 대장간 앞에서 영영 서 있었다
 		var dg := Vector2(e.x, e.y).distance_to(target)
+		if far or dg < float(t.get("best", INF)) - 6.0:
+			t.best = dg
+			t.stuck = 0.0
+		else:
+			t.stuck = t.get("stuck", 0.0) + dt
+		# 멀리서 걸렸더라도 3초를 못 다가가면 그 자리에서 이야기한다
 		var arrived: bool = dg < 48 or (t.stuck > 1.5 and dg < 260) or t.stuck > 3
 		if vi < via.size():   # 거쳐 가는 칸에 닿았으면 다음 칸으로
 			if arrived:
 				t.via = vi + 1
 				t.stuck = 0.0
+				t.erase("best")
 			return
 		if arrived and Util.dist(p, e) < 200:
 			t.phase = "talk"
@@ -129,7 +133,8 @@ static func update(dt: float) -> void:
 				t.i += 1
 				t.phase = "walk"
 				t.via = 0
-				t.stuck = 0.0)
+				t.stuck = 0.0
+				t.erase("best"))
 
 
 ## 구경 대목(m0 의 둘째)인데 구경이 돌고 있지 않다: 구경 도중에 저장한 판을 불러왔다 (세이브는 구경을 적지 않는다).

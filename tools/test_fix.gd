@@ -52,6 +52,7 @@ func _ready() -> void:
 	_check("성장 포인트 · 옛 굴 이정표(2+3)", GameState.growth.points, 5)
 
 	# ---- 인연 장면: 다른 데서 호감을 올려 단계를 건너뛰어도 사라지지 않는다 ----
+	GameState.day = 2   # 첫날에는 인연 장면을 꺼내지 않는다 (NpcActions._book_bond)
 	GameState.story.bonds = []
 	GameState.pendingBond = null
 	tia.relation = 60.0
@@ -77,6 +78,11 @@ func _ready() -> void:
 	Raid._end()
 	_check("인연 · 습격을 막은 호감도 장면을 예약한다", _bond(), "Elder:1")
 	GameState.pendingBond = null
+	GameState.day = 1
+	elder.relation = 30.0
+	GameState.story.bonds = []
+	NpcActions.add_relation(elder, 1)
+	_check("인연 · 첫날에는 장면을 꺼내지 않는다", _bond(), "없음")
 
 	# ---- 엘더 · 카이론이 짝이어도 동행 · 나들이 메뉴가 있다 ----
 	GameState.partner = elder
@@ -202,7 +208,7 @@ func _ready() -> void:
 
 	# ---- 말을 걸면 뜨는 퀘스트 한 줄: 힌트로, 하나짜리는 숫자 없이 ----
 	NpcActions.open_hub(elder, true)
-	var hub_text: String = _box._text.text
+	var hub_text: String = _box.shown_text()
 	_check("진행 줄 · 힌트로 ('그 자리에 가 있기 0/1'이 아니다)", hub_text.contains("해가 진 뒤") and not hub_text.contains("그 자리에") and not hub_text.contains("0/1"), true)
 	NpcActions.close()
 	GameState.quests.active.erase("m5g")
@@ -217,16 +223,16 @@ func _ready() -> void:
 	NpcActions._entrust_egg(elder)
 	_box._text.visible_characters = -1
 	_box._choose(0)
-	_check("알 · 성체에게", _box._text.text.begins_with("이제 네 몸으로도"), true)
+	_check("알 · 성체에게", _box.shown_text().begins_with("이제 네 몸으로도"), true)
 	NpcActions.close()
 	GameState.eggSitting = null
 
 	# ---- 엠버가 모루를 맡으면 엠버의 말투 ----
 	var ember = World.any_npc("Ember")
 	NpcActions._open_goods(ember)
-	_check("대장간 · 엠버(골드로 산다)", _box._text.text.begins_with("돈으로 사겠다면 안 말릴게."), true)
+	_check("대장간 · 엠버(골드로 산다)", _box.shown_text().begins_with("돈으로 사겠다면 안 말릴게."), true)
 	NpcActions._forge_one(ember, Forge.recipes()[0])
-	_check("대장간 · 엠버(재료가 모자라)", _box._text.text.begins_with("재료가 모자라."), true)
+	_check("대장간 · 엠버(재료가 모자라)", _box.shown_text().begins_with("재료가 모자라."), true)
 	NpcActions.close()
 
 	# ---- 혼잣말: 묶음에는 누가 해도 맞는 줄만 ----

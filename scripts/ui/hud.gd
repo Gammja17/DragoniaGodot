@@ -170,8 +170,21 @@ func _banner_top() -> float:
 
 ## kind: '새 퀘스트' | '다음 할 일' | '퀘스트 완료' | '다음에 할 만한 일'
 ## (quests.gd 가 아직 '새 이야기' · '이야기 완료' 로 부르는 동안은 옛 이름도 받는다)
-static func quest_banner(kind: String, title: String, goal := "") -> void:
-	if current: current._qb_queue.append({ kind = kind, title = title, goal = goal })
+## q: 이 배너가 알리는 대목의 퀘스트. 줄 서 있는 동안 그 대목이 지나가면 띄우지 않는다 (_stale_banner)
+static func quest_banner(kind: String, title: String, goal := "", q = null) -> void:
+	if not current: return
+	var b := { kind = kind, title = title, goal = goal }
+	if q: b.merge({ id = q.id, step = Quests.step_index(q), complete = Quests.is_complete(q) })
+	current._qb_queue.append(b)
+
+
+## 줄 서 있는 동안 지나가 버린 배너. 대화 · 장면 · 지역 이름에 밀려 늦게 뜨면서, 이미 다 잡은 슬라임을 '새 이야기'로 알리거나
+## 일을 맡았는데도 맡기 전에 줄 선 '다음에 할 만한 일'을 띄웠다
+func _stale_banner(b: Dictionary) -> bool:
+	if b.kind == "다음에 할 만한 일": return not Quests.active_quests().is_empty()
+	if not b.has("id"): return false
+	var q = Quests.by_id(b.id)
+	return q == null or not GameState.quests.active.has(b.id) or Quests.step_index(q) != b.step or Quests.is_complete(q) != b.complete
 
 
 ## 쌓아 둔 퀘스트 배너를 버린다 (결말처럼 장면이 직접 이야기를 닫을 때)
@@ -184,6 +197,9 @@ func _flush_quest_banner() -> void:
 	var now := Time.get_ticks_msec()
 	if now < _qb_until or now < _region_until: return   # 하나 끝나면 다음 것. 지역 이름이 지나간 뒤에
 	var b: Dictionary = _qb_queue.pop_front()
+	while _stale_banner(b):
+		if _qb_queue.is_empty(): return
+		b = _qb_queue.pop_front()
 	_qb_now = b
 	var qb: Control = $QuestBanner
 	var kind: Label = qb.get_node("Bg/Lines/Kind")

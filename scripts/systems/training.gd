@@ -117,6 +117,7 @@ static func _close() -> void:
 
 static func _ask(npc, text: String, options: Array) -> void:
 	GameState.isDialogueOpen = true
+	GameState.currentNpc = npc   # 말하는 동안은 일과대로 자리를 뜨지 않는다 (Routine._tied_to_player)
 	DialogueBox.current.show_dialogue({ name = Names.npc(npc.config.name), text = text, sheet = npc.sheet, on_close = _close, options = options })
 
 
@@ -149,6 +150,12 @@ static func _begin(npc, plan: Dictionary) -> void:
 	var d := _def(plan)
 	match plan.kind:
 		"DRILL":
+			# 첫 수련 전에 나라가 먼저 인사한다. 수련장에 들르지 않고 마을에서 첫 수련을 받으면
+			# 나라를 만나기도 전에 나라가 끼어들고(자라는 법) 아침에 깨우러 왔다가, 나중에야 "난 나라" 하고 제 소개를 했다
+			if GameState.story.lessons.is_empty():
+				GameState.currentNpc = npc   # 나라가 인사하는 동안 스승이 일과대로 걸어 나가지 않게
+				Chronicle.fire_now("ev_nara", func(): Story.start_lesson(npc, Story.next_lesson()))
+				return
 			Story.start_lesson(npc, Story.next_lesson())
 			return
 		"REST":

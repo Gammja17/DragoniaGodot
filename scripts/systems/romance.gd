@@ -282,7 +282,7 @@ static func vowed(npc) -> bool:
 static func make_vow(npc, ui: Dictionary) -> void:
 	ui.play_lines.call(npc, _lines(npc).vow, func():
 		L().vow = { with = npc.config.name, day = GameState.day }
-		NpcActions.add_relation(npc, 100)   # 끝까지 (100 에서 멈춘다)
+		NpcActions.add_relation(npc, 100, false)   # 끝까지 (100 에서 멈춘다. 하루 상한에 넣지 않는다)
 		for i in 10: Vfx.spawn_effect("HEART", npc.x + (randf() - 0.5) * 160, npc.y - 40 - randf() * 90, { color = "#ff7aa8", size = 1.2 })
 		Vfx.spawn_effect("RING", npc.x, npc.y - 40, { size = 2.2, color = "#ffd0e0" })
 		if not Relics.owns("VOW_RING"): Relics.grant("VOW_RING", GameState.player.x, GameState.player.y)

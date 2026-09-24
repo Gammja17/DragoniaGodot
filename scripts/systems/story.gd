@@ -35,6 +35,7 @@ static func _close() -> void:
 
 static func _say(npc, text: String, then = null) -> void:
 	GameState.isDialogueOpen = true
+	GameState.currentNpc = npc   # 말하는 동안은 일과대로 자리를 뜨지 않는다 (Routine._tied_to_player)
 	DialogueBox.current.show_dialogue({ name = Names.npc(npc.config.name), text = text, sheet = npc.sheet, on_close = _close,
 		options = [{ label = "시작한다!" if then else "알겠습니다.", on_select = func():
 			_close()
@@ -135,6 +136,15 @@ static func try_awaken() -> bool:
 static func start_drill(npc, drill: Dictionary, extra: Dictionary) -> void:
 	_close()
 	var p = GameState.player
+	# 상대가 이 지도를 떠났으면 곁으로 다시 부른다. 수련 얘기를 듣는 사이에 스승이 일과대로 걸어 나가 버리면,
+	# 없는 상대로 수련이 돌아 허수아비를 다 깨도 끝나지 않았다 (스승이 저녁에 돌아올 때까지)
+	if not GameState.entities.npcs.has(npc):
+		npc.remove = false
+		npc.is_hidden = false
+		npc.walk_to = null
+		npc.x = p.x + 160; npc.y = p.y
+		World.add_entity("npcs", npc)
+	npc.stage_alpha = 1.0
 	var a := extra.duplicate()
 	a.merge({ type = drill.type, npc = npc, timer = 1.0, time = drill.get("time", 0), max = drill.time if drill.get("time") else drill.get("hp", 1), hp = drill.get("hp", 0), startHp = p.hp }, true)
 	GameState.activity = a
@@ -443,7 +453,7 @@ static func _dark_duel() -> void:
 static func _warm(by: Dictionary) -> void:
 	for nm in by:
 		var n = World.any_npc(nm)
-		if n: NpcActions.add_relation(n, by[nm])
+		if n: NpcActions.add_relation(n, by[nm], false)   # 이야기가 주는 것은 하루 상한에 넣지 않는다
 
 
 ## 이야기에서 용이 죽는다. 일과와 명단에서 빠지고, 곁에 있었다면 떠난다

@@ -55,9 +55,10 @@ func refresh() -> void:
 		suggest = true
 	visible = true
 	_kind.text = "다음에 할 만한 일" if suggest else "보고하러 간다" if line.complete else "오늘의 수련" if line.get("training") else "지금 할 일"
-	_title.text = line.title
-	_goal.text = line.goal
-	_where.text = "📍 %s" % line.where if line.get("where") else ""
+	# 좁은 칸이라 줄이 자주 바뀐다. 낱말 가운데서 끊기지 않게 (Util.keep_words)
+	_title.text = Util.keep_words(line.title)
+	_goal.text = Util.keep_words(line.goal)
+	_where.text = Util.keep_words("📍 %s" % line.where) if line.get("where") else ""
 	_where.visible = _where.text != ""
 	_prog.text = line.get("text", "") if line.get("text") else ""
 	_prog.visible = _prog.text != ""

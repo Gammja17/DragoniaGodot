@@ -21,7 +21,6 @@ font_size = 12
 font_color = Color(1, 0.847, 0.29, 1)
 
 [node name="DialogueOption" type="Button"]
-custom_minimum_size = Vector2(680, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.925, 0.89, 0.812, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)

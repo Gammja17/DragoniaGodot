@@ -51,6 +51,7 @@ static func plan_for(name: String, hour := -1.0):
 		base = r.after if r.get("after") and is_dead(r.after.of) else r
 	var slot := slot_at_hour(base, hour)
 	var home = Den.partner_home(name, slot)   # 같이 사는 짝이 잘 자리 (내 굴). 아니면 null
+	if home == null: home = Den.guest_slot(name, hour)   # 오늘 저녁 내 굴에 놀러 온 손님
 	var gather := Gathering.is_gather_now() and Gathering.GATHER_SPOTS.has(name)
 	# 길잡이를 마치기 전에는 촌장이 마을을 뜨지 않는다. 처음 온 아이가 헤매지 않게
 	# (모임 날 밤만은 예외다 — 촌장이 빠진 모임은 모임이 아니다)
@@ -67,7 +68,7 @@ static func plan_for(name: String, hour := -1.0):
 		slot = { map = "FALLS", spot = [10, 10], doing = "폭포에서 마을로 달려오고 있다" }
 	elif not Gathering.is_gather_now() and own.get("rain") and (GameState.weather.type == "RAIN" or GameState.weather.type == "SNOW"):
 		slot = own.rain
-	# 짝은 제 굴 대신 내 굴에서 잔다. 비가 와도 그대로 자고, 모임과 습격이 먼저다
+	# 짝은 제 굴 대신 내 굴에서 잔다. 손님은 저녁에 내 굴에 들른다. 비가 와도 그대로이고, 모임과 습격이 먼저다
 	if home and not gather and not GameState.raid.active: slot = home
 	var maps: Dictionary = Data.get_module("maps").MAPS
 	var dens: Dictionary = Data.get_module("dens").DENS
@@ -181,6 +182,7 @@ static func update(dt: float, get_npc: Callable) -> void:
 	_tick -= dt
 	if _tick > 0: return
 	_tick = 1.0
+	Den.update_guest()   # 저녁이 되면 오늘 손님을 정한다
 	if GameState.dungeon: return
 
 	var here := GameState.map_id

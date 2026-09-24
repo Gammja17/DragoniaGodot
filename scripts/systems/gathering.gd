@@ -41,6 +41,11 @@ static func days_to_gather() -> int:
 	return left
 
 
+## 6장 전쟁 동안 (맡긴 알 m5a 를 끝낸 뒤부터 m6w 까지). 두 마을이 폭포에서 맞서 있다
+static func at_war() -> bool:
+	return GameState.quests.done.has("m5a") and not GameState.quests.done.has("m6w")
+
+
 ## 폭포 위로 올라가 본 적이 있는가 (모임에 한 번 나가면 열린다)
 static func invited_up() -> bool:
 	return GameState.story.events.has("ev_gathering")

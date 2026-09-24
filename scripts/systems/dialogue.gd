@@ -64,7 +64,7 @@ static func _render(group: Dictionary, key: String, npc) -> void:
 static func _choose(group: Dictionary, opt: Dictionary, npc) -> void:
 	if opt.get("eff"):
 		npc.relation = clampf(npc.relation + opt.eff, 0, 100)
-		Hud.pop("좋아했다!" if opt.eff > 0 else "싫어했다...", "💖" if opt.eff > 0 else "💔")
+		npc.emote("♥" if opt.eff > 0 else "💢")   # 대화창을 보는 눈에 닿게, 위쪽 알림 대신 그 용의 머리 위에
 	match opt.next:
 		"end":
 			if group == _scripts().TUTORIAL:

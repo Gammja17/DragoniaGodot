@@ -465,12 +465,21 @@ func gain_xp(amount: float) -> void:
 		max_hp += 12
 	hp = max_hp
 	if not is_player: return
-	Growth.grant_points(levels * Growth.POINTS_PER_LEVEL, "레벨 %d 달성" % level)
-	Hud.pop("LEVEL UP! LV.%d" % level, "🔥")
-	Sfx.play("level")
-	Particles.burst(x, y, "#f1c40f", 1.2, 25)
-	Vfx.spawn_effect("STAR", x, y - 50, { size = 1.6 })
+	Growth.grant_points(levels * Growth.POINTS_PER_LEVEL)
+	Hud.level_up(level, levels * Growth.POINTS_PER_LEVEL)   # 글자·빛기둥·소리는 대화·장면이 끝나 조용해진 뒤에 (Hud)
 	check_evolution()
+
+
+## 레벨 업 연출 (Hud 가 머리 위 글자를 띄우며 부른다):
+## 발밑의 금빛 마법진, 몸을 감싸고 솟는 빛기둥, 퍼지는 고리, 떠오르는 반짝임
+func level_up_fx() -> void:
+	var sc: float = maxf(stage.scale, 0.9)   # 아기 용이라고 빛기둥까지 작으면 보이지 않는다
+	Vfx.spawn_effect("MAGIC_CIRCLE", x, y, { size = 0.8 * sc, color = "#ffd84a" })
+	Vfx.spawn_effect("PILLAR", x, y - 110 * sc, { size = sc, color = "#ffe9a0" })
+	Vfx.spawn_effect("RING", x, y - 45 * sc, { size = 1.3 * sc, color = "#ffd84a" })
+	for i in 6:
+		Vfx.spawn_effect("SPARKLE", x + (randf() - 0.5) * 90 * sc, y - (10 + randf() * 90) * sc, { color = "#fff2b0" })
+	Particles.burst(x, y - 40 * sc, "#f1c40f", 1.2, 28, 140)
 
 
 ## 레벨이 다음 단계에 닿으면 스승의 승급 시험을 받을 수 있다 (Story). 자동으로 자라지는 않는다

@@ -122,13 +122,13 @@ git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/Drag
 | D | 해 질 녘 폭포: 몰래 다가가기 | 중 | 끝 · 합침 | DragoniaGodot-tryst · improve/tryst |
 | E | 생활: 굴 손님 · 짝과 사는 굴 · 달맞이 모임 | 중 | 끝 · 합침 | DragoniaGodot-life · improve/life |
 | HUD | 화면 알림 정리 | — | 끝 · 합침 | DragoniaGodot · improve/depth-flow |
-| F | 처음 하는 사람 안내 · 일지의 지금까지 이야기 · 에필로그의 생활 줄 | 중 | 지금 | DragoniaGodot-guide · improve/guide |
-| G | 원정대 (함께 싸우는 동료) | 대 | 지금 | DragoniaGodot-party · improve/party |
+| F | 처음 하는 사람 안내 · 일지의 지금까지 이야기 · 에필로그의 생활 줄 | 중 | 끝 · 합침 | DragoniaGodot-guide · improve/guide |
+| G | 원정대 (함께 싸우는 동료) | 대 | 진행 중 | DragoniaGodot-party · improve/party |
 | H | 6장 전쟁 | 대 | G 뒤 | |
 
 - A~E와 HUD는 모두 끝나서 `improve/story-depth`에 합쳤다 (6절).
-- 지금 돌릴 수 있는 것은 F와 G 둘이다. 서로 기다리는 일이 없다. H는 G 뒤에 한다.
-- F · G의 작업 폴더(worktree)는 만들어 두었다. 0-4절의 명령은 칠 필요가 없다.
+- F는 끝나서 합쳤고 main에도 올렸다. G는 `DragoniaGodot-party`에서 진행 중이다. H는 G 뒤에 한다.
+- G가 끝나면: story-depth(또는 main)를 한 번 받아 합친 뒤 story-depth에 합친다. 결말의 생활 줄(F)은 `GameState.story.ally`(끝까지 곁에서 싸운 용의 이름)를 읽는다. G가 이 값을 적는다.
 
 ---
 

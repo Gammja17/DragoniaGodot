@@ -234,4 +234,6 @@ static func _build_c() -> void:
 	_table.merge({
 		# 마을의 시선: 첫 습격을 같이 막기 전까지, 하늘에서 떨어진 아이를 꺼리는 용들이 있다
 		"npcTalk:SITUATION_LINES.wary.when": func(s, _n = null): return s.raid.count == 0,
+		# 첫 습격을 같이 막은 뒤 한동안은, 꺼리던 용들의 말이 조금씩 풀린다 (세 번째 습격부터는 [7] 이 받는다)
+		"npcTalk:SITUATION_LINES.thaw.when": func(s, _n = null): return s.raid.count >= 1 and s.raid.count < 3,
 	}, true)

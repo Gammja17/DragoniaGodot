@@ -22,6 +22,7 @@ func _ready() -> void:
 	GameState.tutorial.finished = true
 	_frame()
 	await _chapter1()
+	await _chapter2()
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit()
 
@@ -81,6 +82,32 @@ func _chapter1() -> void:
 	_check("1장", "p2: 포코 보물 50G", GameState.player.gold - gold == 50)
 	# 옛 굴: 그론한테 들은 적 없는 말은 하지 않는다
 	_check("1장", "ev_cave: 그론 얘기 없음", not JSON.stringify(_event("ev_cave").lines).contains("그론"))
+
+
+func _chapter2() -> void:
+	# 첫 습격을 같이 막은 뒤 한동안: 티아맷이 "네 자리도 있다"
+	var tia = World.any_npc("Tiamat")
+	var talk: Dictionary = Data.get_module("npcTalk").NPC_TALK.Tiamat
+	GameState.raid.count = 1
+	_check("2장", "첫 습격 뒤: 티아맷 '네 자리도 있으니까'", _greets(tia, talk, "네 자리도 있으니까"))
+	GameState.raid.count = 3
+	_check("2장", "세 번째 습격부터는 안 나옴", not _greets(tia, talk, "네 자리도 있으니까"))
+	# m3 마무리: 덫을 봤을 때(m1) 묻지 않았으면 엘더가 그걸 기억한다
+	GameState.quests.choices.m1 = "quiet"
+	var m3 = Quests.by_id("m3")
+	Quests.accept(m3)
+	for i in 4: Quests.complete_step(m3)
+	Quests.turn_in(m3, World.any_npc("Elder"), "press")
+	await _play_until(_idle, 40)
+	_check("2장", "m3: m1 에서 안 물은 걸 기억 ('이번엔 묻는구나')", _saw("이번엔 묻는구나"))
+	_check("2장", "m3: m1=ask 줄은 안 나옴", not _saw("둘만 알자고 했었지"))
+	# n1 끝: 나라가 마음을 바꾼다
+	var n1 = Quests.by_id("n1")
+	Quests.accept(n1)
+	for i in 2: Quests.complete_step(n1)
+	Quests.turn_in(n1, World.any_npc("Nara"), "tip")
+	await _play_until(_idle, 30)
+	_check("2장", "n1: '얄미운 애는 그런 거 안 해'", _saw("얄미운 애는 그런 거 안 해"))
 
 
 # ---------- 도구 ----------

@@ -418,7 +418,7 @@
    "title": "여름에 내린 눈",
    "grant": "m5a",
    "when": {
-    "$fn": "c => c.map === 'VILLAGE' && c.done('m5g') && !c.done('m5a') && !c.active('m5a') && c.day - (c.s.story.eventDay || {}).ev_gathering >= 3",
+    "$fn": "c => c.map === 'VILLAGE' && c.done('m5g') && !c.done('m5a') && !c.active('m5a') && snowDue(c.s) /* 밀회(s1 둘째 대목) 사흘째 */",
     "$at": "CHRONICLE.7.when"
    },
    "lines": [
@@ -456,7 +456,7 @@
     },
     {
      "who": "Elder",
-     "text": "…봉우리에서 내려오는 눈이로구나. 사절들이 떠난 지 벌써 사흘인데, 아직 아무 기별이 없어.",
+     "text": "…봉우리에서 내려오는 눈이로구나. 사절들이 떠난 지 며칠이 지났는데, 아직 아무 기별이 없어.",
      "zoom": 1.3
     },
     {
@@ -1811,7 +1811,7 @@
    "id": "ev_yuan_torn",
    "title": "경계석에 기대앉은 용",
    "when": {
-    "$fn": "c => (c.map === 'FALLS' || c.map === 'CLOUDTOP') && c.done('s1') && !c.night && !c.gathering && !c.done('m6w')",
+    "$fn": "c => (c.map === 'FALLS' || c.map === 'CLOUDTOP') && c.done('m5a') && !c.night && !c.gathering && c.s.story.trystDay != null && !c.s.story.events.includes('ev_border')",
     "$at": "CHRONICLE.26.when"
    },
    "lines": [

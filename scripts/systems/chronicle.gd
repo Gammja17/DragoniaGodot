@@ -69,9 +69,17 @@ static func _stamp_bosses() -> void:
 		if GameState.bossesDefeated[id] and not GameState.story.bossDay.has(id): GameState.story.bossDay[id] = GameState.day
 
 
+## 5장의 밀회(s1 의 둘째 대목)를 본 날을 적어 둔다 (story.trystDay). 유안은 그다음 날 봉우리에 오르고, 한여름 눈은 그 뒤에 온다
+static func _stamp_tryst() -> void:
+	if GameState.story.has("trystDay"): return
+	var e = GameState.quests.active.get("s1")
+	if GameState.quests.done.has("s1") or (e != null and int(e.step) >= 2): GameState.story.trystDay = GameState.day
+
+
 ## 매 프레임 부른다. 0.8초마다 조건이 맞는 사건이 있는지 살핀다
 static func update(dt: float) -> void:
 	_stamp_bosses()
+	_stamp_tryst()
 	if _playing or Ending.playing or GameState.isDialogueOpen or GameState.dungeon or GameState.activity or GameState.raid.active: return
 	if GameState.bannerUntil and GameState.play_time < GameState.bannerUntil: return   # 지역 이름이 떠 있는 동안은 기다린다
 	if GameState.entities.bosses.any(func(b): return b.dying > 0): return   # 보스가 무너지는 동안은 기다린다 (작별은 그 뒤에)

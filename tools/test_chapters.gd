@@ -232,12 +232,19 @@ func _chapter5() -> void:
 	Quests.turn_in(m5g, World.any_npc("Seiran"), null)
 	await _play_until(_idle, 30)
 	_check("5장", "세이란: 물이 흐려 (물점은 7장)", _saw("물이 흐려") and not G.story.clues.has("sky"))
-	# 모임 사흘째에야 한여름 눈이 온다
+	# 한여름 눈은 밀회(D 의 s1 둘째 대목)를 본 사흘째에 온다. 그 전에는 오지 않는다
 	World.travel_to("VILLAGE")
 	G.dayTime = 0.4
-	await _wait(3.0)
-	_check("5장", "모임 다음 날엔 아직 눈이 안 온다", not G.story.events.has("ev_glacia"))
 	G.day += 3
+	await _wait(3.0)
+	_check("5장", "밀회 전엔 눈이 안 온다", not G.story.events.has("ev_glacia"))
+	G.quests.done.append("s1")   # 밀회를 봤다고 친다
+	await _wait(1.0)
+	_check("5장", "밀회를 본 날을 적는다", G.story.get("trystDay") == G.day)
+	G.day += 2
+	await _wait(2.0)
+	_check("5장", "밀회 이틀째도 아직", not G.story.events.has("ev_glacia"))
+	G.day += 1
 	await _play_until(func(): return G.story.events.has("ev_glacia") and _idle(), 40)
 	_check("5장", "한여름 눈: 카이론이 나선다 (제자 때문에)", _saw("이번에는 안 빠지오") and G.quests.active.has("m5a"))
 	_check("5장", "t2 를 안 했으면 '돌려보냈던 아이'", _saw("내가 돌려보냈던 아이고") and not _saw("가르치기 시작한 아이"))
@@ -285,6 +292,13 @@ func _chapter5() -> void:
 	ctx = Chronicle.context()
 	ctx.map = "VILLAGE"; ctx.hour = 10.0
 	_check("5장", "m5a 뒤엔 도란·미루 알 소식", egg_when.call(ctx))
+	# 경계석의 유안: 봉우리에서 돌아온 뒤, 폭포의 대치 전까지만
+	var torn: Callable = _event("ev_yuan_torn").when
+	ctx.map = "FALLS"; ctx.night = false; ctx.gathering = false
+	_check("5장", "경계석 유안: 돌아온 뒤엔 나온다", torn.call(ctx))
+	G.story.events.append("ev_border")
+	_check("5장", "경계석 유안: 폭포 대치 뒤엔 안 나온다", not torn.call(ctx))
+	G.story.events.erase("ev_border")
 	# 다시 식음: 수군거림이 돈다
 	var ember = World.any_npc("Ember")
 	_check("5장", "다시 식음: 엠버가 수군거림을 전한다", _greets(ember, Data.get_module("npcTalk").NPC_TALK.Ember, "속성 여럿 가진 애가"))

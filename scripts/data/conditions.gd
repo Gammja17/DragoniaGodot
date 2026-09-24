@@ -255,9 +255,12 @@ static func _build_c() -> void:
 		"quests:QUESTS.r1.needs": func(s): return _boss(s, "ZALGORA"),
 
 		# ---- 5장: 맡긴 알 ----
-		# 모임에서 사절을 보내기로 정하고 사흘째, 한여름에 눈이 온다 (사절이 봉우리 문턱에 닿았다). 모임 날을 모르면(옛 세이브) 바로
+		# 한여름 눈은 밀회(s1 둘째 대목) 사흘째부터: 유안이 "내일 봉우리에 오른다"고 한 다음 날 사절이 떠나고, 그 뒤에 봉우리가 문을 닫는다
 		"chronicle:CHRONICLE.7.when": func(c): return c.map == "VILLAGE" and c.done.call("m5g") and not c.done.call("m5a") and not c.active.call("m5a") \
-			and c.day - int(c.s.story.get("eventDay", {}).get("ev_gathering", -99)) >= 3,
+			and _snow_due(c.s),
+		# 경계석의 유안: 봉우리에서 돌아온 뒤, 폭포의 대치 전까지 (밀회 뒤 그 사이에는 유안이 봉우리에 갇혀 있다)
+		"chronicle:CHRONICLE.26.when": func(c): return (c.map == "FALLS" or c.map == "CLOUDTOP") and c.done.call("m5a") and not c.night and not c.gathering \
+			and c.s.story.has("trystDay") and not c.s.story.get("events", []).has("ev_border"),
 		# 얼어붙은 망루에서 다친 사절 둘을 찾는다
 		"chronicle:CHRONICLE.32.when": func(c): return c.map == "SNOW_RIDGE" and c.active.call("m5a") and not c.boss.call("GLACIA"),
 		# 도란과 미루의 알 소식은 눈이 그친 뒤에 (눈이 쏟아지는 한가운데 태평한 소식이 끼어들던 것)
@@ -268,6 +271,16 @@ static func _build_c() -> void:
 		# 그론을 보낸 뒤: 수군거림을 처음 꺼낸 이가 먼저 와서 사과한다
 		"npcTalk:SITUATION_LINES.family.when": func(s, _n = null): return s.quests.done.has("m6w") and not s.quests.done.has("m5c"),
 	}, true)
+
+
+## 5장: 봉우리에 눈이 퍼부을 때가 되었는가. 밀회를 본 날(Chronicle 이 적는다)로부터 사흘째.
+## 밀회가 아예 걸리지 않은 판(s1 이 시작도 안 됐다)이면 모임 닷새째에 그냥 온다 — 이야기가 거기서 멈추지 않게
+static func _snow_due(s) -> bool:
+	var tryst = s.story.get("trystDay")
+	if tryst != null: return s.day - int(tryst) >= 3
+	if s.quests.active.has("s1") or s.quests.done.has("s1"): return false
+	var met = s.story.get("eventDay", {}).get("ev_gathering")
+	return met == null or s.day - int(met) >= 5
 
 
 const NEWS_DAYS := 5   # 소식이 소식인 동안 (날)

@@ -95,6 +95,7 @@ git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/Drag
 - `test_title`은 2번 칸을 건드리므로 돌리지 않는다.
 - `user://`(세이브 · 로그)는 모든 작업 폴더가 같이 쓴다. 두 세션이 한꺼번에 시험을 돌리면 9번 칸이 부딪친다. PowerShell에서 `$env:APPDATA`를 세션마다 다른 폴더로 바꾸고 돌린다.
 - `class_name`이 있는 스크립트를 새로 만들었으면 `--headless --path . --import`를 한 번 돌린다. 안 그러면 headless에서 그 이름을 찾지 못한다.
+- 시험을 몰아 돌리는 `.ps1` 파일에는 한글 주석을 쓰지 않는다. Windows PowerShell 5.1은 BOM 없는 UTF-8 파일의 한글을 잘못 읽어서, 한글 주석 바로 다음 줄을 통째로 건너뛸 수 있다 (`$env:APPDATA` 줄이 빠져 세이브 폴더가 섞이거나 시험이 통째로 빠진다).
 
 ### 0-6. 같이 쓰는 파일 다루기
 1. 2절 표에서 자기 세션 칸에 없는 파일은 읽기만 한다. 고쳐야 하면 주인에게 말한다.

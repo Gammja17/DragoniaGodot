@@ -94,6 +94,7 @@ static func save_game() -> void:
 		gameTime = GameState.game_time, dayTime = GameState.dayTime, day = GameState.day, raidTimer = GameState.raidTimer,
 		mapId = GameState.map_id, visited = GameState.visited,
 		villageLayout = 2,   # 마을이 34×24 로 넓어진 뒤의 세이브 (불러올 때 서 있던 자리를 믿어도 된다)
+		questLayout = 2,     # 이야기를 다시 쓴 뒤의 퀘스트 대목 (m4 · s1 의 대목 번호를 믿어도 된다)
 		elderTutorialDone = GameState.elderTutorialDone, tutorial = GameState.tutorial,
 		weather = "STORM" if Weather.stormy() else GameState.weather.type,
 		quests = GameState.quests, chores = GameState.chores,
@@ -135,6 +136,15 @@ static func apply(data: Dictionary) -> void:
 	G.game_time = data.gameTime; G.dayTime = data.dayTime; G.day = data.day; G.raidTimer = data.raidTimer
 	G.elderTutorialDone = data.elderTutorialDone; G.bossesDefeated = data.bossesDefeated
 	G.quests = Quests.migrate(data.get("quests", {}) if data.get("quests") else {})
+	# 이야기를 다시 쓰기 전 세이브: 대목이 바뀐 퀘스트의 번호를 새 대목에 맞춘다 (옛 대목 번호 → 새 대목 번호)
+	#   m4 [성체 → 모르가스 → 장면 → 폭포] → [모르가스 → 소이 → 폭포] · s1 [미라] → [엿보기 → 하룻밤 → 미라]
+	if int(data.get("questLayout", 1)) < 2:
+		var remap := { m4 = [0, 0, 2, 2], s1 = [2] }
+		for id in remap:
+			var e = G.quests.active.get(id)
+			if e == null: continue
+			e.step = remap[id][clampi(int(e.step), 0, remap[id].size() - 1)]
+			e.n = 0
 	G.chores = data.chores if data.get("chores") else { day = 0, offers = [], taken = {}, done = [] }
 	G.questScenes = []
 	G.weather.type = "RAIN" if data.weather == "STORM" else data.weather   # 폭풍은 번개 치는 센 비다 (Weather)

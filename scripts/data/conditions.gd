@@ -261,6 +261,8 @@ static func _build_fix() -> void:
 		"chores:CHORES.c_raid.when": func(s): return not (s.story.get("route") == "dark" and s.quests.done.has("m7d")) and s.story.get("endingSeen", "") == "",
 		# 잡담: 미라가 폭포 일을 털어놓은(s1) 뒤로 엘더가 모르는 척 묻지 않는다
 		"chatter:CHATTER.elder_mira_falls.when": func(s): return not s.quests.done.has("s1"),
+		# 잡담: 봉우리의 알 소식 뒤로 전쟁 전까지 도란이 수군거린다 (6장에서 도란이 "그 소리, 처음 꺼낸 게 나여" 하고 사과한다)
+		"chatter:CHATTER.doran_rumor.when": func(s): return s.quests.done.has("m5a") and not s.quests.done.has("m6w"),
 		# 일과: 어둠의 길 끝에 나라가 떠난 뒤의 스승
 		"routines:ROUTINES.Kairon.variants.after_dark.when": func(s): return s.story.get("route") == "dark" and s.quests.done.has("m7d"),
 	})

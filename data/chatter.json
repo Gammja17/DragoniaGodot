@@ -374,6 +374,31 @@
    ]
   },
   {
+   "id": "doran_rumor",
+   "pair": [
+    "Doran",
+    "Miru"
+   ],
+   "when": {
+    "$fn": "s => s.quests.done.includes('m5a') && !s.quests.done.includes('m6w')",
+    "$at": "CHATTER.doran_rumor.when"
+   },
+   "lines": [
+    [
+     "Doran",
+     "들었어? 봉우리 알이 하나도 안 남았댜. 속성 여럿 가진 애가 오고 나서부터 일이 자꾸 터지는 거여. 예순 해 전에도 그랬다잖여."
+    ],
+    [
+     "Miru",
+     "쉿, 목소리 좀 낮춰. …그 알들은 그 애가 오기 훨씬 전에 얼었잖아."
+    ],
+    [
+     "Doran",
+     "알어, 나도 알어. 스무 해 전 우리 알 생각만 하면 속이 뒤집혀서 그려."
+    ]
+   ]
+  },
+  {
    "pair": [
     "Gron",
     "Ember"

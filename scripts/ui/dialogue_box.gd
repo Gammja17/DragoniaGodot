@@ -75,6 +75,7 @@ static func fill_name(text: String) -> String:
 ## narration: 이름표·초상화 없이 해설로 · auto: 다 찍히고 이만큼(초) 뒤 저절로 첫 선택지를 고른다
 func show_dialogue(opts: Dictionary) -> void:
 	_portrait.sheet = opts.get("sheet")
+	_portrait.face = opts.get("face", Face.face_for(opts.get("text", "")))   # 대사에 face 를 안 적었으면 말투로 고른다
 	_portrait.queue_redraw()
 	_name.text = opts.get("name", "")
 	var npc = opts.get("npc")

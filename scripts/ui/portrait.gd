@@ -7,7 +7,19 @@ var sheet = null   # SpriteSheet
 @export var frame := true   # 바탕과 흐린 금테를 깐다 (외형 고르기 칸은 칸 스스로 테를 두른다)
 @export var animate := false
 
+var face := "neutral"   # 초상화 표정 (neutral·happy·angry·sad·surprised·worried)
+static var _face_tex := {}   # "이름_표정" → Texture2D
+
 var _t := 0.0
+
+
+## 마을 인물의 얼굴 초상화 (96px 도트). 없으면 null
+static func face_texture(name: String, expr: String) -> Texture2D:
+	var key := name + "_" + expr
+	if not _face_tex.has(key):
+		var path := "res://assets/portraits/%s.png" % key
+		_face_tex[key] = load(path) if ResourceLoader.exists(path) else null
+	return _face_tex[key]
 
 
 func _process(dt: float) -> void:
@@ -22,6 +34,16 @@ func _draw() -> void:
 		draw_rect(r, Color(0, 0, 0, 0.35))
 		draw_rect(r, Color(216 / 255.0, 178 / 255.0, 90 / 255.0, 0.38), false, 1)
 	if sheet == null: return
+	if sheet.portrait != "":
+		var tex := face_texture(sheet.portrait, face)
+		if tex == null: tex = face_texture(sheet.portrait, "neutral")
+		if tex:
+			texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST   # 도트를 그대로 키운다
+			var kk := minf(size.x / tex.get_width(), size.y / tex.get_height())
+			var ww := tex.get_width() * kk
+			var hh := tex.get_height() * kk
+			draw_texture_rect(tex, Rect2(roundf((size.x - ww) / 2), roundf((size.y - hh) / 2), ww, hh), false)
+			return
 	var idle: Dictionary = sheet.frames.idle
 	var frames: Array = idle.down if idle.has("down") else idle.left
 	var f: Dictionary = frames[int(_t * 6) % frames.size()] if animate else frames[0]

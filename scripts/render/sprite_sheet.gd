@@ -20,6 +20,7 @@ var procedural := false
 var scale := 1.0
 var anchor := Vector2(0.5, 1)
 var flying := false
+var portrait := ""   # 대화창 초상화 파일 이름 (assets/portraits/<이름>_<표정>.png). 마을 인물(CAST)만
 
 
 ## images: perDir → { down, left, right, up }, rows/side/static → { sheet }. 값은 Image

@@ -29,6 +29,7 @@ func _ready() -> void:
 	await _chapter6()
 	await _chapter7()
 	await _chapter8()
+	_life()
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit()
 
@@ -415,6 +416,46 @@ func _chapter8() -> void:
 	_check("8장", "대면: '제 숨결 없이' 대신 '불씨 하나만 쥐고'", not meet.contains("숨결") and meet.contains("불씨 하나만 쥐고"))
 	var fall := JSON.stringify(_event("ev_ignar_fall"))
 	_check("8장", "무릎: 카이론이 곁에 있다 · 선택지 글 유지", fall.contains("카이론, 너도 보고 있구나") and fall.contains("같이 가자") and fall.contains("끝낸다"))
+
+
+## 장 밖: 생활 대사 · 사냥꾼 · 아이들
+func _life() -> void:
+	var G := GameState
+	var talk: Dictionary = Data.get_module("npcTalk")
+	# 어둠의 길 끝: 포코·나라·티아맷의 가장 가까운 이야기도 바뀐다 (S9 · S10)
+	G.story.route = "dark"
+	G.quests.done.append("m7d")
+	_check("장 밖", "어둠 뒤 포코", NpcActions._retold(World.any_npc("Poco"), "나 사실 겁이 엄청 많아. 근데 너랑 같이 있으면 그게 좀 덜해져서 신기해.").contains("티아맷 뒤에서"))
+	_check("장 밖", "어둠 뒤 나라", NpcActions._retold(World.any_npc("Nara"), "나는 네 뒤를 쫓아가는 것 말고, 언젠가 네 옆에 나란히 서 있고 싶어.").contains("지금 네가 서 있는 데는 싫어"))
+	_check("장 밖", "어둠 뒤 티아맷", NpcActions._retold(World.any_npc("Tiamat"), "너랑 순찰 도는 날은 아무 일도 안 생겨. 심심하다고 말하려다가… 됐어, 그냥 좋다고 하자. 나도 그런 말 할 줄 알아.").contains("잿마루 용들이"))
+	G.story.route = null
+	G.quests.done.erase("m7d")
+	# 이름을 밝히기 전의 엘더 이야기 줄에 이그나르 이름이 없다 (S1)
+	_check("장 밖", "엘더 이야기 줄에 이그나르 이름 없음", not JSON.stringify(talk.NPC_TALK.Elder.topics).contains("이그나르"))
+	# 티아맷 인연 장면 2는 망루 장면(t1)과 겹치지 않는다 (S11)
+	_check("장 밖", "티아맷 인연 2: 망루 세기 대신 발자국", not JSON.stringify(talk.BOND_SCENES.Tiamat["2"]).contains("굴이 열둘"))
+	# 아이 말투: 짝이 될 수 있는 용을 삼촌·할아버지로 부르지 않는다 (S12~15)
+	var kid := JSON.stringify(talk.KID_TALK)
+	_check("장 밖", "아이 말에 포코 삼촌·카이론 할아버지·엘더 할아버지 없음", not kid.contains("포코 삼촌") and not kid.contains("카이론 할아버지") and not kid.contains("엘더 할아버지"))
+	# 아이 안부는 짝 본인이 묻지 않는다 (S17~19)
+	var kids_when: Callable
+	for s in talk.SITUATION_LINES:
+		if str(s.lines.get("Elder", "")).contains("네 아이들은"): kids_when = s.when
+	var elder = World.any_npc("Elder")
+	var old_kids = G.kids
+	var old_partner = G.partner
+	G.kids = [{}]
+	G.partner = elder
+	_check("장 밖", "짝(엘더)은 제 아이 안부를 안 묻는다", not kids_when.call(G, elder) and kids_when.call(G, World.any_npc("Poco")))
+	G.kids = old_kids
+	G.partner = old_partner
+	# 잿별: 결말 뒤에도 맞는 말 (S33) · 리운: 카이론을 묻는 까닭 (S34)
+	_check("장 밖", "잿별: '산 위에 계셔' 없음", not JSON.stringify(talk.NPC_TALK.Jaetbyeol.topics).contains("산 위에 계셔"))
+	_check("장 밖", "리운: 스무 해 전 우리 아이들도 배웠다", JSON.stringify(talk.NPC_TALK.Riun.topics).contains("우리 아이들도 그에게 배웠소"))
+	# 사냥꾼이 나를 노리는 까닭 (0-3)
+	var amb := JSON.stringify(_event("ev_ambush").lines)
+	_check("장 밖", "베르단: 크기 전에 잡아 오라는 값 · 지도", amb.contains("크기 전에 잡아 오라고") and amb.contains("지도까지 돌더라"))
+	_check("장 밖", "'두 번 붉어졌다'는 어디에도 없다", not JSON.stringify(talk).contains("두 번 붉") and not JSON.stringify(Data.get_module("quests")).contains("두 번 붉"))
 
 
 # ---------- 도구 ----------

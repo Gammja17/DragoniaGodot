@@ -236,6 +236,8 @@ static func _build_c() -> void:
 		"npcTalk:SITUATION_LINES.wary.when": func(s, _n = null): return s.raid.count == 0,
 		# 첫 습격을 같이 막은 뒤 한동안은, 꺼리던 용들의 말이 조금씩 풀린다 (세 번째 습격부터는 [7] 이 받는다)
 		"npcTalk:SITUATION_LINES.thaw.when": func(s, _n = null): return s.raid.count >= 1 and s.raid.count < 3,
+		# 아이 안부는 짝 본인이 묻지 않는다 (제 아이를 두고 "네 아이들은 잘 크느냐"고 하던 것)
+		"npcTalk:SITUATION_LINES.8.when": func(s, _n = null): return s.kids.size() > 0 and s.partner != _n,
 		# 소식을 반기는 인사는 그 일이 있고 며칠 동안만 (수십 일 뒤에도 "이겼다고?!"가 나오던 것)
 		"npcTalk:SITUATION_LINES.13.when": func(s, _n = null): return s.partner != null and s.partner != _n and _fresh(s.story.get("love", {}).get("since"), s),
 		"npcTalk:SITUATION_LINES.14.when": func(s, _n = null): return _fresh(s.story.get("bossDay", {}).get("MORGATH"), s),

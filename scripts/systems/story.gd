@@ -163,7 +163,8 @@ static func _end_drill(win: bool) -> void:
 	var p = GameState.player
 	GameState.activity = null
 	Hud.current.set_boss_bar(null)
-	for d in a.get("dummies", []): d.remove = true
+	for d in a.get("dummies", []):
+		if is_instance_valid(d): d.remove = true   # 이미 깨져 치워진 허수아비도 있다
 	for b in GameState.entities.bullets:
 		if b.faction == "ENEMY": b.remove = true
 	p.hp = maxf(p.hp, p.max_hp * 0.5)
@@ -220,7 +221,7 @@ static func update_drill(npc, dt: float) -> void:
 	if a.type == "TARGETS":
 		a.time -= dt
 		if a.get("rival"): _rival_tick(a, dt)
-		var left: int = a.dummies.filter(func(x): return not x.remove).size()
+		var left: int = a.dummies.filter(func(x): return is_instance_valid(x) and not x.remove).size()   # 깨진 허수아비는 곧 치워진다
 		var mine: int = a.dummies.size() - left - a.get("rivalKills", 0)
 		Hud.current.set_boss_bar("나 %d : %d %s" % [mine, a.rivalKills, Names.npc(a.rival.config.name)] if a.get("rival") else "허수아비 %d개 남음" % left, a.time / a.max)
 		if left == 0: _end_drill(mine > a.rivalKills if a.get("rival") else true)
@@ -266,7 +267,7 @@ static func update_drill(npc, dt: float) -> void:
 ## 맞수가 가까운 허수아비로 달려가 두들긴다. 제 손으로 깬 것만 제 몫으로 센다
 static func _rival_tick(a: Dictionary, dt: float) -> void:
 	var r = a.rival
-	var alive: Array = a.dummies.filter(func(x): return not x.remove)
+	var alive: Array = a.dummies.filter(func(x): return is_instance_valid(x) and not x.remove)
 	if alive.is_empty(): return
 	alive.sort_custom(func(u, v): return Util.dist(r, u) < Util.dist(r, v))
 	var d = alive[0]

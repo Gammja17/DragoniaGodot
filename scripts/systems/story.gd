@@ -399,6 +399,7 @@ static func on_flag(flag: String) -> void:
 				Data.get_module("npcs").NAME_OVERRIDES.Iseul = n
 				Hud.pop("아이의 이름은 %s. 내일부터 마을을 뛰어다닌다." % n, "🐣")
 				Save.save_game())
+		"tryst_start", "tryst_done": Sneak.on_flag(flag)   # [세션 D] 해 질 녘 폭포: 몰래 다가가기를 열고 닫는다
 	Save.save_game()
 
 

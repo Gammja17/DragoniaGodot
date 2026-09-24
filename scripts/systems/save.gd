@@ -93,6 +93,7 @@ static func save_game() -> void:
 		},
 		gameTime = GameState.game_time, dayTime = GameState.dayTime, day = GameState.day, raidTimer = GameState.raidTimer,
 		mapId = GameState.map_id, visited = GameState.visited,
+		villageLayout = 2,   # 마을이 34×24 로 넓어진 뒤의 세이브 (불러올 때 서 있던 자리를 믿어도 된다)
 		elderTutorialDone = GameState.elderTutorialDone, tutorial = GameState.tutorial,
 		weather = GameState.weather.type,
 		quests = GameState.quests, chores = GameState.chores,
@@ -221,4 +222,7 @@ static func apply(data: Dictionary) -> void:
 
 	# 마지막으로 있던 지도로 (여기서 소품·NPC·보스·가족이 전부 새로 깔린다)
 	var start: String = Data.get_module("maps").START_MAP
-	World.enter_map(data.mapId if World.maps().has(data.mapId) else start, null, Vector2(s.x, s.y))
+	# 마을이 넓어지기 전(24×17)에 마을에서 저장한 세이브: 그때 서 있던 자리는 새 마을에서 엉뚱한 풀밭이다 → 석비 곁에서
+	var at = Vector2(s.x, s.y)
+	if data.mapId == "VILLAGE" and int(data.get("villageLayout", 1)) < 2: at = null
+	World.enter_map(data.mapId if World.maps().has(data.mapId) else start, null, at)

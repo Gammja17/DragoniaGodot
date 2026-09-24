@@ -99,7 +99,7 @@ static func goal_text(g: Dictionary) -> String:
 			var nm: String = "인간 사냥꾼" if g.target == "HUNTER" else Data.get_module("enemies").ENEMIES.get(g.target, {}).get("name", g.target)
 			return "%s %d%s 처치" % [nm, n, "명" if g.target == "HUNTER" else "마리"]   # 사람은 '명' (습격 알림과 같게)
 		"killAny": return "아무 적이나 %d마리 처치" % n
-		"elite": return "정예 몬스터 %d마리 처치" % n
+		"elite": return "금빛 정예 %d마리 처치" % n
 		"boss": return "%s 처치" % Data.get_module("enemies").BOSSES[g.id].name
 		"stage": return "[%s] 단계까지 자라기" % Data.get_module("elements").STAGES[int(g.index)].name
 		"collect": return "고기 %d개 모으기" % n
@@ -114,9 +114,9 @@ static func goal_text(g: Dictionary) -> String:
 		"raid": return "마을 습격 %d회 격퇴" % n
 		"spar": return "대련 %d회 승리" % n
 		"tag": return "술래잡기 %d회 승리" % n
-		"upgrade": return "비늘 단련 %d회" % n
+		"upgrade": return "대장간 단련 %d회" % n
 		"chest": return "보물상자 %d개 개봉" % n
-		"delve": return "굴의 지하 %d층까지 내려가기" % n
+		"delve": return "옛 굴 지하 %d층까지 내려가기" % n
 	return "목표"
 
 
@@ -133,7 +133,7 @@ static func reward_text(q: Dictionary) -> String:
 	if r.get("xp"): parts.append("경험치 %d" % r.xp)
 	if r.get("gold"): parts.append("%dG" % r.gold)
 	if r.get("meat"): parts.append("고기 %d" % r.meat)
-	if r.get("relation"): parts.append("호감도 상승")
+	if r.get("relation"): parts.append("호감 상승")
 	return " · ".join(parts) if not parts.is_empty() else "-"
 
 
@@ -245,6 +245,7 @@ static func hand_over(q: Dictionary) -> bool:
 static func offer_for(npc):
 	var cand = _find_offer(npc)
 	if not cand: return null
+	if cand.act == "main" and resting(): return null   # 큰 대목을 마친 날은 다음 본 이야기를 아침으로 미룬다
 	if active_quests().size() >= MAX_ACTIVE: return null
 	# 본 이야기가 굴러가는 동안 곁가지는 기다린다. 다섯 용이 한꺼번에 부탁하면 정신이 없다.
 	# 다만 본 이야기가 '자라기'(레벨·승급)를 기다리는 동안은 곁가지를 받는다 — 그 시간에 할 이야기가 없었다
@@ -254,9 +255,27 @@ static func offer_for(npc):
 	return cand
 
 
-## 문턱에 걸려 아직 안 꺼내는 부탁 (NPC가 "그 일이 먼저지" 하고 한마디 한다)
+## 문턱에 걸려 아직 안 꺼내는 부탁 (NPC가 "그 일이 먼저지" 하고 한마디 한다). 쉬는 날 미뤄 둔 것은 rest_offer 가 따로 말한다
 static func held_offer(npc):
-	return null if offer_for(npc) else _find_offer(npc)
+	if offer_for(npc) or rest_offer(npc): return null
+	return _find_offer(npc)
+
+
+## 큰 대목(보스를 잡았거나 장이 끝났다)을 보고한 날은 생활할 틈으로 둔다. 다음 본 이야기는 다음 날 새벽부터 꺼낸다 (자고 일어나면 바로)
+static func resting() -> bool:
+	var until = GameState.story.get("restUntil")
+	if until == null: return false
+	return GameState.day < int(until) or (GameState.day == int(until) and GameState.dayTime < NightEvents.DAWN)
+
+
+## 쉬는 날이라 내일 아침으로 미뤄 둔 본 이야기. 없으면 null
+static func rest_offer(npc):
+	var cand = _find_offer(npc)
+	return cand if cand and cand.act == "main" and resting() else null
+
+
+static func _has_boss(q: Dictionary) -> bool:
+	return steps(q).any(func(st): return st.get("goal", {}).get("type") == "boss")
 
 
 static func _ready_quest(q: Dictionary) -> bool:
@@ -315,6 +334,8 @@ static func suggestion():
 	# 본 이야기는 누구에게 가면 되는지 바로 알려 주고, 곁가지 부탁은 "누군가 할 말이 있는 눈치" 정도로만 귀띔한다
 	for q in all():
 		if not q.get("auto") and q.act == "main" and _ready_quest(q):
+			if resting(): return { who = null, main = false, title = "오늘은 여기까지",
+				goal = "큰일을 치렀다. 다음 이야기는 내일 아침에 이어진다. 오늘은 마을 용들과 어울리거나 굴에서 푹 쉬자." }
 			var plan = Routine.plan_for(q.giver)
 			return { who = q.giver, main = true, title = "%s에게 말을 걸어 보자" % Names.npc(q.giver),
 				goal = "지금 %s에 있다 · %s" % [plan.mapName, plan.doing] if plan else "마을 어딘가에 있다" }
@@ -329,11 +350,11 @@ static func suggestion():
 			var p = Routine.plan_for(q.giver)
 			if p and not where.has(p.mapName): where.append(p.mapName)
 		return { who = side[0].giver, main = false, title = "누군가 할 말이 있는 눈치다",
-			goal = "마을 용들에게 말을 걸어 보자. 머리 위에 ! 가 뜬 용이 있다" + (" (%s 쪽)" % " · ".join(where.slice(0, 2)) if not where.is_empty() else "") }
+			goal = "마을 용들에게 말을 걸어 보자. 머리 위에 '!'가 뜬 용이 있다" + (" (%s 쪽)" % " · ".join(where.slice(0, 2)) if not where.is_empty() else "") }
 	var t = training.line.call()
 	if t: return { who = "Kairon", title = "오늘의 수련", goal = t.goal if t.get("goal") else "카이론을 찾아간다" }
 	if all().any(func(q): return q.get("auto") and _ready_quest(q)):
-		return { who = null, title = "세상을 돌아다녀 보자", goal = "숲길·호수를 걷다 보면 다음 이야기가 열린다. 굴을 파 보거나 마을 용들과 이야기해도 좋다" }
+		return { who = null, title = "세상을 돌아다녀 보자", goal = "숲길·호수를 걷다 보면 다음 이야기가 열린다. 옛 굴을 탐험해 보거나 마을 용들과 이야기해도 좋다" }
 	return { who = null, title = "한숨 돌리자", goal = "굴을 꾸미거나, 게시판의 잡일을 맡거나, 마을 용들과 이야기해 보자" }
 
 
@@ -379,17 +400,19 @@ static func add_clue(id: String) -> void:
 
 
 ## 보고하고 보상을 받는다. choice_id: 마무리에서 고른 선택지 (q.choice). 나중 대사·사건이 읽는다
-static func turn_in(q: Dictionary, npc, choice_id = null) -> void:
+## 큰 대목(보스를 잡았거나 장이 끝난 본 이야기)이었으면 true — 그날은 다음 본 이야기를 꺼내지 않는다 (resting)
+static func turn_in(q: Dictionary, npc, choice_id = null) -> bool:
 	var p = GameState.player
 	var r: Dictionary = q.reward if q.get("reward") else {}
 	var Q: Dictionary = GameState.quests
+	var chapter_before: String = Chapters.current(GameState).id
 	if choice_id: Q.choices[q.id] = choice_id
 	Q.active.erase(q.id)
 	Q.done.append(q.id)
 	if Q.tracked == q.id: Q.tracked = null
 	if r.get("meat"): p.inventory.meat += int(r.meat)
 	if r.get("gold"): p.gold += int(r.gold)
-	if r.get("relation") and npc: npc.relation = clampf(npc.relation + r.relation, 0, 100)
+	if r.get("relation") and npc: NpcActions.add_relation(npc, r.relation)   # 단계를 넘으면 사이 장면이 예약된다
 	if r.get("clue"): add_clue(r.clue)
 	if r.get("element"): p.unlock_element(r.element)      # 싸워서 얻는 게 아니라 맡겨 받는 숨결
 	Hud.quest_banner("이야기 완료", q.title, reward_text(q))
@@ -399,11 +422,15 @@ static func turn_in(q: Dictionary, npc, choice_id = null) -> void:
 		for o in q.choice.get("options", []):
 			if o.id == choice_id and o.get("scene"): _queue_scene(q.title, o.scene, o.get("place"))
 	if r.get("scene"): _queue_scene(q.title, r.scene, r.get("place"))
+	# 큰 대목을 마친 날은 생활할 틈으로 둔다. 새벽 전(한밤중)에 마쳤으면 그날 새벽까지만
+	var big: bool = q.act == "main" and (_has_boss(q) or Chapters.current(GameState).id != chapter_before)
+	if big: GameState.story.restUntil = GameState.day + (0 if GameState.dayTime < NightEvents.DAWN else 1)
 	# 끝냈으면 다음에 할 만한 일을 한 번 귀띔한다
 	if active_quests().is_empty():
 		var s = suggestion()
 		if s: Hud.quest_banner("다음에 할 만한 일", s.title, s.goal)
 	on_change.call()
+	return big
 
 
 ## 추적창에 보여 줄 한 개 (없으면 null)
@@ -483,7 +510,9 @@ static func quest_log() -> Array:
 		for q in all():
 			if acts.get(q.act, q.act) != g.name or Q.active.has(q.id) or Q.done.has(q.id): continue
 			if q.get("requires") and not Q.done.has(q.requires): continue
-			g.rows.append({ id = q.id, title = "???", giver = giver_line(q.giver), upcoming = true,
-				hint = "아직 때가 아니다. 세상을 더 돌아다녀 보자." if q.get("auto") else "%s에게 말을 걸어 보자." % Names.npc(q.giver) })
+			var hint: String = "아직 때가 아니다. 세상을 더 돌아다녀 보자." if q.get("auto") \
+				else "다음 이야기는 내일 아침에 이어진다." if q.act == "main" and resting() \
+				else "%s에게 말을 걸어 보자." % Names.npc(q.giver)
+			g.rows.append({ id = q.id, title = "???", giver = giver_line(q.giver), upcoming = true, hint = hint })
 			break
 	return groups

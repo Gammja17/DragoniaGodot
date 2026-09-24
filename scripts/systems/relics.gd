@@ -30,7 +30,7 @@ static func grant(id: String, x: float, y: float) -> bool:
 		if list[i] == null:
 			list[i] = id; free = i
 			break
-	Hud.pop("유물 획득: [%s]. %s" % [r.name, r.desc] + (" (바로 장착)" if free >= 0 else " ([J] 일지 유물 탭에서 끼울 수 있습니다)"), "💎")
+	Hud.pop("유물 획득: [%s]. %s" % [r.name, r.desc] + (" (바로 끼웠다)" if free >= 0 else " ([J] 일지 유물 탭에서 끼울 수 있습니다)"), "💎")
 	Vfx.spawn_effect("RING", x, y - 30, { size = 1.6 })
 	Sfx.play("relic")
 	return true

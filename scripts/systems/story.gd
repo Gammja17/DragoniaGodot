@@ -64,8 +64,7 @@ static func next_trial():
 	if t == null: return null
 	var st: Dictionary = _stages()[int(t.stage)]
 	t.blocked = null
-	if p.level < st.minLevel: t.blocked = "아직 이르다. 레벨 %d까지는 올라야 몸이 버틴다. (지금 %d)" % [st.minLevel, p.level]
-	elif st.get("needsAllElements") and p.elements.size() < 3: t.blocked = "세 숨결을 모두 제 것으로 만든 뒤의 이야기다."
+	if p.level < st.minLevel: t.blocked = "아직 이르다. 몸이 더 여물어야 버틴다. (레벨 %d 필요 · 지금 %d)" % [st.minLevel, p.level]
 	elif t.get("needs") and not t.needs.call(GameState): t.blocked = t.why
 	return t
 
@@ -81,12 +80,12 @@ static func master_options(npc) -> Array:
 		opts.append({ label = "[승급 시험] %s 단계에 도전한다" % _stages()[int(trial.stage)].name, on_select = func(): start_drill(npc, { type = "DUEL", hp = trial.hp }, { trial = trial }) })
 	elif trial:
 		opts.append({ label = "[승급 시험] %s (아직 이르다)" % _stages()[int(trial.stage)].name, on_select = func(): _say(npc, trial.blocked) })
-	opts.append({ label = "연습 대련을 청한다 (보상 없음)", on_select = func(): start_drill(npc, { type = "DUEL", hp = 220 + p.level * 12 }, { practice = true }) })
+	opts.append({ label = "연습 대련을 청한다 (경험치 조금)", on_select = func(): start_drill(npc, { type = "DUEL", hp = 220 + p.level * 12 }, { practice = true }) })
 	# 수련과 쉬는 날은 여기서 고르지 않는다. 그날 스승이 정해 준다 (Training)
 	var lesson = next_lesson()
 	if lesson and p.level < lesson.level:
 		opts.append({ label = "(다음 기본기: %s → %s. 레벨 %d 필요)" % [lesson.title, Data.get_module("skills").SKILLS[lesson.skill].name, lesson.level],
-			on_select = func(): _say(npc, "아직 이르다. 레벨 %d까지 올리고 와라. 숲에서 몸을 더 굴리고." % lesson.level) })
+			on_select = func(): _say(npc, "아직 이르다. 숲에서 몸을 더 굴리고 와라. (레벨 %d 필요)" % lesson.level) })
 	return opts
 
 
@@ -96,6 +95,10 @@ static func start_lesson(npc, lesson: Dictionary) -> void:
 
 
 # ---------- 고룡의 깨어남 ----------
+## 고룡(마지막 단계)이 되려면 품어야 하는 것: 세 마을이 스스로 건넨 속성. 레벨은 보지 않는다.
+## 이그나르가 빼앗아 간 마을들(뿌리골·바윗골)과, 나란히 서기로 한 구름마루다 (docs/lore.md 정한 것)
+const GIFTS := { GRASS = "뿌리골의 풀", EARTH = "바윗골의 땅", WATER = "구름마루의 물" }
+
 ## 구름 위 폐허의 빈 둥지 앞에서 [Space]. 처리했으면 true
 static func try_awaken() -> bool:
 	if GameState.map_id != "SKY_RUINS": return false
@@ -107,16 +110,16 @@ static func try_awaken() -> bool:
 	if p.stage_index >= 3:
 		Hud.pop("빈 둥지는 조용하다. 여기서 받을 것은 다 받았다.", "🪹"); return true
 	if p.stage_index < 2:
-		Hud.pop("둥지 안이 희미하게 따뜻하다. 아직 이 온기를 받을 몸이 아니다.", "🪹"); return true
+		Hud.pop("둥지 안이 희미하게 따뜻하다. 아직 이 온기를 받을 몸이 아니다. (성체가 된 뒤에 다시 오자)", "🪹"); return true
 	var lacks := []
-	if p.elements.size() < 3: lacks.append("숨결 셋 (지금 %d)" % p.elements.size())
-	if p.level < _stages()[3].minLevel: lacks.append("레벨 %d (지금 %d)" % [_stages()[3].minLevel, p.level])
+	for el in GIFTS:
+		if not p.elements.has(el): lacks.append(GIFTS[el])
 	if not lacks.is_empty():
-		Hud.pop("둥지 안이 따뜻하다. 무언가 모자란다: %s" % " · ".join(lacks), "🪹"); return true
+		Hud.pop("둥지 안이 따뜻하다. 아직 품지 못한 것이 있다: %s" % " · ".join(lacks), "🪹"); return true
 	Chronicle.play_scene("빈 둥지", [
 		{ who = "나", text = "(둥지 안에 손을 대자 돌이 따뜻했다. 삼백 년 전에도, 얼마 전에도 누가 여기서 태어났다.)" },
-		{ who = "나", text = "(품고 있던 숨결들이 한꺼번에 뜨거워진다. 서로 밀어내지 않고 하나로 엮인다.)" },
-		{ who = "나", text = "(등이 갈라지는 것 같더니 날개가 한 뼘 더 자랐다. 이건 누가 시험을 내서 얻은 게 아니라, 원래 내 것이었던 것 같다.)" },
+		{ who = "나", text = "(품고 있던 속성들이 한꺼번에 뜨거워진다. 불과 얼음과 번개, 풀과 땅과 물. 서로 밀어내지 않고 하나로 엮인다.)" },
+		{ who = "나", text = "(등이 갈라지는 것 같더니 날개가 한 뼘 더 자랐다. 누가 시험을 내서 얻은 게 아니다. 건네받은 것들이 나를 여기까지 키웠다.)" },
 	], func():
 		p.evolve(3)
 		if not GameState.story.rites.has(3): GameState.story.rites.append(3)   # 목 아래 무늬가 한층 또렷해진다
@@ -149,9 +152,9 @@ static func start_drill(npc, drill: Dictionary, extra: Dictionary) -> void:
 		Hud.pop("내기: %s보다 허수아비를 많이 부수세요!" % Names.npc(extra.rival.config.name) if extra.get("rival") else "수련: 허수아비 %d개를 %d초 안에 부수세요!" % [drill.count, drill.time], "🎯")
 	elif drill.type == "DODGE":
 		a.rate = drill.rate
-		Hud.pop("수련: %d초 동안 불씨를 피하세요! 체력이 40%% 아래로 떨어지면 실패. ([Shift] 대시)" % drill.time, "💨")
+		Hud.pop("수련: %d초 동안 불씨를 피하세요! 체력이 40%% 아래로 떨어지면 실패. ([Shift]로 대시)" % drill.time, "💨")
 	else:
-		Hud.pop("스승의 기력을 모두 깎으세요! 체력이 25% 아래로 떨어지면 패배.", "⚔️")
+		Hud.pop("스승의 기력을 모두 깎으세요! 내 체력이 25% 아래로 떨어지면 패배.", "⚔️")
 	Sfx.play("warn")
 
 
@@ -299,7 +302,7 @@ static func open_nest_menu() -> void:
 			DenPanel.show_panel() })
 		opts.append({ label = "아직 안 졸려", on_select = _close })
 	DialogueBox.current.show_dialogue({ name = "둥지", on_close = _close, options = opts,
-		text = "지금은 잠들 수 없다. 주변이 너무 소란스럽다." if busy else "%d일째. 자고 일어나면 다음 날 아침이 된다.\n(굴: %s. %s)" % [GameState.day, rest.tier.name, rest.tier.note] })
+		text = "지금은 잠들 수 없다. 주변이 너무 소란스럽다." if busy else "%d일째. 자고 일어나면 다음 날 아침이 된다.\n(굴의 아늑함: %s. %s)" % [GameState.day, rest.tier.name, rest.tier.note] })
 
 
 static func _build_nest() -> void:
@@ -377,6 +380,7 @@ static func on_flag(flag: String) -> void:
 	GameState.story.flags[flag] = true
 	match flag:
 		"gron_dead": _kill_npc("Gron")
+		"nuri_found": _warm({ Dan = 25, Soi = 25, Nuri = 15 })   # 3장: 골짜기 끝에서 누리를 데려온 날, 누리네가 마음을 연다
 		# 이그나르 앞에서 고르는 순간 결말이 흐른다 (걸어서 돌아가 보고하고 잠들 필요 없이)
 		"ignar_slain":
 			GameState.story.route = "guardian"
@@ -399,6 +403,7 @@ static func on_flag(flag: String) -> void:
 				Data.get_module("npcs").NAME_OVERRIDES.Iseul = n
 				Hud.pop("아이의 이름은 %s. 내일부터 마을을 뛰어다닌다." % n, "🐣")
 				Save.save_game())
+		"tryst_start", "tryst_done": Sneak.on_flag(flag)   # [세션 D] 해 질 녘 폭포: 몰래 다가가기를 열고 닫는다
 	Save.save_game()
 
 
@@ -434,6 +439,13 @@ static func _dark_duel() -> void:
 	})
 
 
+## 이야기가 마음을 바꾸는 날. 곁에 없어도 그 용들의 호감이 한 번에 오른다
+static func _warm(by: Dictionary) -> void:
+	for nm in by:
+		var n = World.any_npc(nm)
+		if n: NpcActions.add_relation(n, by[nm])
+
+
 ## 이야기에서 용이 죽는다. 일과와 명단에서 빠지고, 곁에 있었다면 떠난다
 static func _kill_npc(nm: String) -> void:
 	if not GameState.story.has("dead"): GameState.story.dead = []
@@ -463,7 +475,7 @@ static func update_chapter() -> void:
 	var turned: bool = GameState.story.get("chapterTitle") != ch.title   # 한 장이 앞뒤로 나뉜 경우엔 이름을 다시 띄우지 않는다
 	GameState.story.chapter = ch.id
 	GameState.story.chapterTitle = ch.title
-	if turned: Hud.show_chapter_card("제 %s 장" % ch.title.replace("장", ""), ch.name, Save.save_game)
+	if turned: Hud.show_chapter_card("제%s장" % ch.title.replace("장", ""), ch.name, Save.save_game)
 	else: Save.save_game()
 
 

@@ -77,7 +77,7 @@ func _refresh() -> void:
 	var p = GameState.player
 	if not p: return
 	_rows.get_node("Level/Label").text = "레벨 %d → 16" % p.level
-	_rows.get_node("Elements/Label").text = "숨결 %d / 3" % p.elements.size()
+	_rows.get_node("Elements/Label").text = "속성 %d / 3" % p.elements.size()
 	_rows.get_node("Lessons/Label").text = "수련 %d / %d · 보스 %d" % [GameState.story.lessons.size(), Data.get_module("story").LESSONS.size(), GameState.bossesDefeated.size()]
 
 
@@ -94,7 +94,7 @@ func _test_elements() -> void:
 	var p = GameState.player
 	for id in Data.get_module("elements").ELEMENTS:
 		if not p.elements.has(id): p.elements.append(id)
-	Hud.pop("세 숨결을 모두 얻었다. (테스트)", "✨")
+	Hud.pop("세 속성을 모두 얻었다. (테스트)", "✨")
 	Save.save_game()
 	_refresh()
 

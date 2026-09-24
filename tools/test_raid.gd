@@ -4,6 +4,7 @@ extends Node
 
 
 func _ready() -> void:
+	Save.slot = 9   # 시험은 9번 칸을 쓴다 (20초마다 저장하는데, 칸을 안 정하면 사람이 쓰는 1번 칸을 덮는다)
 	var main: Node = load("res://scenes/main.tscn").instantiate()
 	main.play_intro = false
 	main.load_save = false

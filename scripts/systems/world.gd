@@ -300,11 +300,19 @@ static func _bring_family(pools: Dictionary, x: float, y: float) -> void:
 		if not n or n.state == "WANDER": continue   # 기다리라고 한 짝은 두고 간다
 		if not pools.npcs.has(n): pools.npcs.append(n)
 		n.x = x + Util.rand_range(50, 90); n.y = y + Util.rand_range(-30, 40)
+	# 따라오는 아이는 내 곁으로. 둥지를 지키는 아이(성체 · '둥지 지키기')는 따라오지 않고 내 굴 둥지 곁에만 있다
+	var nest = pools.nests[0] if not pools.nests.is_empty() else null
 	for k in GameState.kids:
 		var e = k.get("entity")
 		if not e: continue
+		var stays: bool = k.stage == "ADULT" or k.mode == "STAY"
+		if stays and not nest: continue
 		if not pools.babies.has(e): pools.babies.append(e)
-		e.x = x - Util.rand_range(50, 90); e.y = y + Util.rand_range(-30, 40)
+		if stays:
+			e.home = null   # 둥지 곁을 다시 제집으로 삼는다
+			e.x = nest.x + Util.rand_range(-110, 110); e.y = nest.y + Util.rand_range(50, 110)
+		else:
+			e.x = x - Util.rand_range(50, 90); e.y = y + Util.rand_range(-30, 40)
 
 
 # ---------------- 드나들기 ----------------
@@ -515,7 +523,7 @@ static func update_portals() -> void:
 		return
 	# 하늘길. 날고 있어야 건넌다 (Z)
 	if gate.portal.get("needsFlight") and not p.flying:
-		nag.call("여기서부터는 하늘이다. 날아야 건넌다." if p.stage_index >= 2 else "여기서부터는 하늘이다. 성체가 되어야 날 수 있다.", "☁️")
+		nag.call("여기서부터는 하늘이다. [Z]로 날아올라야 건널 수 있다." if p.stage_index >= 2 else "여기서부터는 하늘이다. 성체가 되어야 날 수 있다.", "☁️")
 		return
 	var spot = null
 	if gate.portal.get("spot"): spot = Vector2(gate.portal.spot.x, gate.portal.spot.y + 84)   # 굴에서 나올 때는 들어갔던 입구 앞에 선다

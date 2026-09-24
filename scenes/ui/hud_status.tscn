@@ -116,7 +116,7 @@ text = "Lv.1"
 [node name="Stage" type="Label" parent="Lines/Head/Id/Lvl"]
 layout_mode = 2
 theme_override_styles/normal = SubResource("stage")
-text = "해츨링"
+text = "아기 용"
 
 [node name="Collapse" type="Button" parent="Lines/Head"]
 layout_mode = 2
@@ -132,7 +132,7 @@ layout_mode = 2
 
 [node name="Food" parent="Lines" instance=ExtResource("3")]
 layout_mode = 2
-label = "허기"
+label = "배부름"
 top_color = Color(1, 0.702, 0.361, 1)
 bottom_color = Color(0.941, 0.569, 0.235, 1)
 

@@ -180,7 +180,7 @@ func die() -> void:
 	GameState.stats.kills[type] = GameState.stats.kills.get(type, 0) + 1
 	if elite and not GameState.stats.get("eliteOffer"):
 		GameState.stats.eliteOffer = true   # 처음 쓰러뜨린 우두머리: 유물을 셋 중 하나 고른다 (첫 시간에 고를 거리가 없던 것)
-		RelicOffer.offer("처음 쓰러뜨린 우두머리에게서")
+		RelicOffer.offer("처음 쓰러뜨린 금빛 정예에게서")
 	elif elite and randf() < 0.3:
 		var id = Relics.random_relic()
 		if id: Relics.grant(id, x, y)

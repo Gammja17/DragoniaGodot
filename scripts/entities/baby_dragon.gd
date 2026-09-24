@@ -61,7 +61,7 @@ func pet() -> bool:
 	pet_timer = 12.0
 	Kids.add_affection(self, 6)
 	Particles.burst(x, y - 30, "#ff7aa8", 0.9, 8)
-	Hud.pop("아기를 쓰다듬었습니다. 기분이 좋아 보여요!", "💗")
+	Hud.pop("아기를 쓰다듬었습니다. 기분이 좋아 보입니다!", "💗")
 	return true
 
 

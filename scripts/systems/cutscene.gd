@@ -23,9 +23,13 @@ class_name Cutscene
 ##   { tone = "memory" | "grief" | "dread" | "warm" | "none" }   화면의 색 (회상은 바랜 색)
 ##   { fade = "out" | "in", time?, text? }            까맣게 덮었다가 걷는다. text 는 덮인 화면 가운데의 글 ("그날 밤")
 ##   { caption = "사흘 뒤", time? }                   화면 가운데 큰 글
-##   { card = "옛 수호룡 모르가스", sub = "달빛 골짜기의 주인", time? }   이름패 (보스·새 땅)
+##   { card = "옛 수호룡 모르가스", sub = "달빛 골짜기의 주인", time? }   이름패 (보스·새 땅).
+##       이 지도에 보스가 있으면 보스를 화면 한가운데로 불러오고, 그 위에 이름을 한 글자씩 두두둥 박는다
 ##   { hide = "Gron" } · { show = "Gron" } · { down = "Gron" } · { up = "Gron" }
 ##   { vanish = "IGNAR" }                            보스는 빛가루로 흩어지고, 용은 제자리에서 흐려진다
+##   { boss = "frost" | "rise" | "home" | "wrap" }   이 지도 보스의 연출 (BossShow.act): 서리가 번진다 · 뼈가 맞춰지며 일어선다 · 제자리로 · 지키던 것 앞으로 가 몸을 만다
+##   { cry = "MORGATH", kind? = "roar" | "far" | … }  보스의 울음 (BossVoice). 보스가 이 지도에 없어도 울린다 (멀리서 들리는 울음)
+##   { stay = "Kairon" }                             불러온 용을 장면이 끝나도 이 지도에 남긴다 (싸움에 합류. BossShow.ally_joined)
 ## 한 줄에는 그 밖에 zoom(그 줄만 당겨 본다) · auto(초. 다 찍히고 이만큼 뒤 저절로 넘어간다)를 달 수 있다.
 ## 대사(text) 없이 do 만 있는 줄은 연출만 하고 넘어간다.
 ## 세계 자체는 대화창이 떠 있는 동안 main 이 멈춰 둔다. 여기서는 "어떻게 보이는가"만 맡는다.
@@ -41,6 +45,7 @@ const PUSH_RATE := 1.5     # 장면이 열릴 때 카메라가 다가가는 빠�
 const PULL_RATE := 4.0     # 장면이 끝나 제 배율로 돌아가는 빠르기 (놀던 손이 기다리지 않게 빠르게)
 const WALK := 260.0        # 무대 위의 걸음 (px/초)
 const EMOTE_TIME := 1.6    # 머리 위 표시가 떠 있는 시간(초)
+const STAMP_SEC := 0.15    # 보스 이름패: 글자 하나를 박는 사이(초)
 
 ## 화면의 색 (PostFx 가 채도·가장자리 어둠·밝기·대비에 곱한다)
 const TONES := {
@@ -66,8 +71,10 @@ static var tone := TONES.none.duplicate()   # 지금 화면 색
 static var black := 0.0    # 화면을 덮는 검은 막 0~1
 static var caption := ""   # 가운데 큰 글
 static var caption_a := 0.0
-static var card := {}      # 이름패 { name, sub } — 보스가 깨어날 때, 새 땅에 들어설 때
+static var card := {}      # 이름패 { name, sub, stamp } — 보스가 깨어날 때, 새 땅에 들어설 때
 static var card_a := 0.0
+static var card_n := 0     # 이름패에 박힌 글자 수 (stamp 가 아니면 처음부터 다)
+static var card_hit := 9.0 # 마지막 글자가 박힌 뒤 지난 시간(초). 막 박힌 글자를 크게 떨어뜨리는 데 쓴다
 static var subtitle := ""  # 싸움 중 자막 (세상을 멈추지 않는다)
 static var _subtitle_at := 0
 static var _subtitle_ms := 0
@@ -83,6 +90,8 @@ static var _black_want := 0.0
 static var _black_rate := 1.2
 static var _caption_want := 0.0
 static var _card_want := 0.0
+static var _card_t := 0.0             # 보스 이름패를 박기 시작한 뒤 지난 시간
+static var _center := false           # 보스 이름패를 박는 동안은 보스를 화면 한가운데에 둔다 (대화창 자리를 비워 두지 않는다)
 static var _beats := []               # 남은 박자
 static var _beat = null               # 지금 박자
 static var _beats_done = null         # 박자를 다 돌면 부를 것
@@ -100,7 +109,7 @@ static func reset() -> void:
 	tone = TONES.none.duplicate(); _tone_want = TONES.none
 	black = 0.0; _black_want = 0.0
 	caption = ""; caption_a = 0.0; _caption_want = 0.0
-	card = {}; card_a = 0.0; _card_want = 0.0
+	card = {}; card_a = 0.0; _card_want = 0.0; card_n = 0; _center = false
 	subtitle = ""; _subtitle_ms = 0
 	_cast = []; _leaving = []
 	_shot = null; _zoom_scene = BOOST; _zoom_line = null
@@ -281,6 +290,7 @@ static func finish() -> void:
 	_black_want = 0.0
 	_caption_want = 0.0
 	_card_want = 0.0
+	_center = false
 	_zoom_line = null
 	title_t = 0.0
 	Hud.scene_title("")
@@ -302,14 +312,23 @@ static func camera_target(cam_h: float):
 		if poi and is_instance_valid(poi.target): f = poi.target
 		elif focus and focus != p and is_instance_valid(focus): f = focus
 		c = Vector2((p.x + f.x) / 2, (p.y + f.y) / 2) if f else Vector2(p.x, p.y)
-	return Vector2(c.x, c.y + cam_h * (0.5 - AIM))
+	var aim := 0.5 if _center else AIM   # 보스 이름패를 박는 동안은 한가운데
+	return Vector2(c.x, c.y + cam_h * (0.5 - aim))
 
 
 ## 카메라 박자의 대상이 지금 어디 있나
 static func _point(to) -> Vector2:
 	if to is Vector2: return to
-	if to is Object and is_instance_valid(to): return Vector2(to.x, to.y - 20)
+	if is_instance_valid(to):   # 'is Object' 는 이미 치워진 용에 쓰면 오류가 난다
+		if _center and to is Boss: return _boss_middle(to)
+		return Vector2(to.x, to.y - 20)
 	return _origin
+
+
+## 보스 그림의 한가운데 (보스 자리는 발밑이라, 그린 몸 높이의 반쯤 위)
+static func _boss_middle(b) -> Vector2:
+	var f: Dictionary = b.animator.frame(b.facing)
+	return Vector2(b.x, b.y - f.sh * b.sheet.scale * b.def.scale * 0.45)
 
 
 ## 지금 카메라가 보고 있는 인물 자리 (camera_target 의 거꾸로)
@@ -317,6 +336,13 @@ static func _camera_subject() -> Vector2:
 	var cam := GameCamera.current
 	if cam == null: return _origin
 	return Vector2(cam.cam_x + cam.w / 2, cam.cam_y + cam.h / 2 - cam.h * (0.5 - AIM))
+
+
+## 지금 화면의 한가운데 (보스 이름패로 카메라를 옮기기 시작할 자리)
+static func _camera_center() -> Vector2:
+	var cam := GameCamera.current
+	if cam == null: return _origin
+	return Vector2(cam.cam_x + cam.w / 2, cam.cam_y + cam.h / 2)
 
 
 ## 매 프레임: 띠와 어둠이 스르르 들어오고 나간다 (대화창이 떠 있어도 돌아야 한다)
@@ -337,6 +363,9 @@ static func update(dt: float) -> void:
 	black = move_toward(black, _black_want, dt * _black_rate)
 	caption_a = move_toward(caption_a, _caption_want, dt * 2.2)
 	card_a = move_toward(card_a, _card_want, dt * 2.6)
+	if card.get("stamp"):
+		card_hit += dt
+		if card_n < str(card.name).length(): _stamp(dt)
 	if title_t > 0:
 		title_t -= dt
 		if title_t <= 0: Hud.scene_title("")
@@ -589,9 +618,32 @@ static func _start(spec: Dictionary) -> Dictionary:
 		b.wait = float(spec.get("time", 2.2))
 		b.end = func(): _caption_want = 0.0   # 다 보여 주면 스르르 걷는다
 	elif spec.has("card"):
-		show_card(str(spec.card), str(spec.get("sub", "")))
-		b.wait = 0.0 if async else float(spec.get("time", 2.2))
-		b.end = func(): _card_want = 0.0
+		# 보스의 이름패: 보스를 화면 한가운데로 불러오고, 그 위에 이름을 한 글자씩 두두둥 박는다
+		var boss = null if GameState.entities.bosses.is_empty() else GameState.entities.bosses[0]
+		show_card(str(spec.card), str(spec.get("sub", "")), 0.0, boss != null)
+		var hold := float(spec.get("time", 2.2))
+		if boss:
+			_shot = { from = _camera_center(), to = boss, t = 0.0, time = 0.45 }
+			exact = true
+			_center = true
+			hold = maxf(hold, stamp_time(str(spec.card)) + 1.1)   # 다 박고 칭호까지 읽을 틈
+		b.wait = 0.0 if async else hold
+		b.end = func():
+			_card_want = 0.0
+			if _center:   # 가운데에서 원래 자리(대화창 위)로 스르르 돌아간다
+				_center = false
+				if _shot: _shot = { from = _camera_subject(), to = _shot.to, t = 0.0, time = 0.45 }
+	elif spec.has("stay"):
+		var m = _cast_of(actor(spec.stay))
+		if m and m.get("guest"):
+			m.guest = false
+			BossShow.ally_joined(m.e)
+	elif spec.has("cry"):
+		BossVoice.cry(str(spec.cry), str(spec.get("kind", "roar")))
+	elif spec.has("boss"):
+		var r := BossShow.act(str(spec.boss))
+		b.wait = 0.0 if async else float(r.get("wait", 0.0))
+		b.rush = r.get("rush")
 	elif spec.has("vanish"):
 		# 보스는 빛가루로 흩어지고, 용은 걸어 나가며 흐려진다
 		var e = actor(spec.vanish)
@@ -623,14 +675,41 @@ static func _start(spec: Dictionary) -> Dictionary:
 	return b
 
 
-## 이름패를 띄운다 (보스의 이름 · 새 땅의 이름). hide_after 초 뒤 걷는다 (0 이면 박자가 걷는다)
-static func show_card(name_text: String, sub := "", hide_after := 0.0) -> void:
-	card = { name = name_text, sub = sub }
+## 이름패를 띄운다 (보스의 이름 · 새 땅의 이름). hide_after 초 뒤 걷는다 (0 이면 박자가 걷는다).
+## stamp 면 이름을 한 글자씩 박는다 (CinemaOverlay 가 막 박힌 글자를 크게 떨어뜨린다)
+static func show_card(name_text: String, sub := "", hide_after := 0.0, stamp := false) -> void:
+	card = { name = name_text, sub = sub, stamp = stamp }
+	card_n = 0 if stamp else name_text.length()
+	card_hit = 9.0
+	_card_t = 0.0
 	_card_want = 1.0
 	if hide_after > 0:
 		var shown := card
 		(Engine.get_main_loop() as SceneTree).create_timer(hide_after, true, false, true).timeout.connect(func():
 			if card == shown: _card_want = 0.0)
+
+
+## 이름을 다 박는 데 걸리는 시간 (빈칸은 다음 글자와 함께 나오므로 세지 않는다)
+static func stamp_time(name_text: String) -> float:
+	return _letters(name_text) * STAMP_SEC
+
+
+static func _letters(s: String) -> int:
+	return s.replace(" ", "").length()
+
+
+## 보스 이름을 한 글자씩 박는다. 글자마다 쿵, 마지막 글자는 쾅 하고 크게 흔들린다
+static func _stamp(dt: float) -> void:
+	_card_t += dt
+	var name_text: String = card.name
+	var want := mini(int(_card_t / STAMP_SEC) + 1, _letters(name_text))
+	while _letters(name_text.left(card_n)) < want:
+		card_n += 1
+		if name_text[card_n - 1] == " ": continue
+		var last := card_n >= name_text.length()
+		card_hit = 0.0
+		Sfx.play("boom" if last else "thud")
+		if GameCamera.current: GameCamera.current.shake(10.0 if last else 3.5)
 
 
 ## 싸움 중 자막. 세상을 멈추지 않고 화면 아래쪽에 한마디를 띄운다 (보스가 판을 바꿀 때)

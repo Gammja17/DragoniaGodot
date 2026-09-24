@@ -29,7 +29,13 @@ static func start(done: Callable) -> void:
 	GameState.dayTime = NIGHT
 	p.is_hidden = true         # 떨어지는 동안에는 빛으로만 보인다
 	_hide_village(true)        # 한밤중이다. 불려 나온 이 말고는 아무도 없어야 한다
+	_first_looks()
 	Cutscene.begin("")         # 제목 없이 위아래 띠만
+
+
+## 마을의 첫인상. 떨어진 날부터 곁을 주는 용이 있고, 하늘에서 떨어진 아이를 꺼리는 용도 있다 (data/npcs.json 의 startRelation, 없으면 0)
+static func _first_looks() -> void:
+	for n in World.fixed_npcs(): n.relation = float(n.config.get("startRelation", 0))
 
 
 ## 마을 용들을 감춘다. 풀 때는 캐시된 용 전부를 푼다 (감춰진 사이에 문을 나선 용이 투명인간으로 남지 않게)

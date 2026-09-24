@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/cinema_overlay.gd" id="1"]
 [ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="2"]
@@ -29,6 +29,14 @@ font = ExtResource("3")
 font_size = 36
 font_color = Color(1, 0.847, 0.29, 1)
 outline_size = 8
+outline_color = Color(0.0235, 0.0196, 0.0471, 0.95)
+shadow_size = 0
+
+[sub_resource type="LabelSettings" id="card_boss"]
+font = ExtResource("3")
+font_size = 60
+font_color = Color(1, 0.847, 0.29, 1)
+outline_size = 12
 outline_color = Color(0.0235, 0.0196, 0.0471, 0.95)
 shadow_size = 0
 
@@ -117,6 +125,7 @@ alignment = 1
 layout_mode = 2
 label_settings = SubResource("card_name")
 horizontal_alignment = 1
+visible_characters_behavior = 1
 
 [node name="Rule" type="TextureRect" parent="Card"]
 custom_minimum_size = Vector2(420, 2)
@@ -129,6 +138,15 @@ expand_mode = 1
 [node name="Sub" type="Label" parent="Card"]
 layout_mode = 2
 label_settings = SubResource("card_sub")
+horizontal_alignment = 1
+
+[node name="Slam" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_right = 60.0
+offset_bottom = 80.0
+mouse_filter = 2
+label_settings = SubResource("card_boss")
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="."]

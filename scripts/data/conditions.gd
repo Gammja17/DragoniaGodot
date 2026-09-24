@@ -54,11 +54,11 @@ static func _build() -> void:
 		"FANG4": func(_r = 0): return "체력이 35% 아래일 때 주는 피해 +45%",
 		"SCALE1": func(r): return "최대 체력 +%d" % (r * 25),
 		"SCALE2": func(r): return "받는 피해 -%d%%" % roundi(r * 3),
-		"SCALE3": func(r): return "허기 소모 -%d%%" % roundi(r * 8),
+		"SCALE3": func(r): return "배 꺼지는 속도 -%d%%" % roundi(r * 8),
 		"SCALE4": func(_r = 0): return "하루 한 번, 쓰러질 공격을 체력 1로 버티고 3초간 무적",
 		"WING1": func(r): return "이동 속도 +%d%%" % roundi(r * 3),
 		"WING2": func(r): return "대시 재사용 대기 -%d%%" % roundi(r * 8),
-		"WING3": func(r): return "스킬 대기 시간 -%d%%" % roundi(r * 4),
+		"WING3": func(r): return "스킬 재사용 대기 -%d%%" % roundi(r * 4),
 		"WING4": func(_r = 0): return "대시한 뒤 3초 동안 브레스 연사 속도 +35%",
 	}
 	var order := ["FANG1", "FANG2", "FANG3", "FANG4", "SCALE1", "SCALE2", "SCALE3", "SCALE4", "WING1", "WING2", "WING3", "WING4"]
@@ -68,6 +68,8 @@ static func _build() -> void:
 	_build_story()
 	_build_talk()
 	_build_chronicle()
+	_build_fix()   # [세션 B]
+	_build_c()
 
 
 # ---- 자주 쓰는 것들 ----
@@ -224,3 +226,120 @@ static func _build_chronicle() -> void:
 	for i in w: _table["chronicle:CHRONICLE.%d.when" % i] = w[i]
 	_table["chronicle:CHRONICLE.15.choice.options.1.when"] = func(c): return c.flag.call("messenger")
 	_table["chronicle:CHRONICLE.16.choice.options.1.when"] = func(c): return c.clueCount >= 4
+
+	# ---- [세션 D] 해 질 녘 폭포 ----
+	# 누구나 한 번은 보는 밀회 (설정집 5-0). 포코의 귓속말(하루와 사귀는 중이면 하루의 초대)로 s1 이 걸리고,
+	# 해 질 녘 폭포에서 몰래 다가가기(Sneak)가 열린다. 성공 장면(ev_tryst · ev_tryst_mine)은 놀이가 직접 연다.
+	# 여기서는 Sneak 을 부르지 않는다: 이 파일은 Data 가 뜨기 전에 컴파일되어, Sneak 을 거쳐 World · GameMap 이 먼저 불리면 깨진다.
+	# 거는 자리는 tryst_hook 한 곳이다: 달맞이 모임 다음 날 아침의 마을. 5장을 다시 짜면 여기만 옮긴다
+	var tryst_hook := func(c): return c.map == "VILLAGE" and c.hour >= 7 and c.hour < 13 and not c.s.raid.active \
+		and ev.call(c, "ev_gathering") and int(c.s.story.get("eventDay", {}).get("ev_gathering", -1)) < c.day \
+		and not A.call(c, "s1") and not D.call(c, "s1")
+	# 하루와 사귀는 중: 짝이거나 데이트를 한 번 이상 했다 (마음을 접거나 헤어지면 데이트 수가 0 으로 돌아간다)
+	var with_haru := func(c): return c.datesOf.call("Haru") >= 1 or (c.s.partner != null and c.s.partner.config.get("name") == "Haru")
+	# 해 질 녘(18~20시) 폭포, s1 첫 대목, 하루에 한 판. 하루가 불렀으면(ev_tryst_invite) 하루 판
+	var tryst_dusk := func(c, mine: bool): return c.map == "FALLS" and c.hour >= 18 and c.hour < 20 and not c.gathering \
+		and A.call(c, "s1") and int(c.s.quests.active.s1.step) == 0 \
+		and int(c.s.story.get("tryst", {}).get("day", -1)) != c.day and ev.call(c, "ev_tryst_invite") == mine
+	_table["chronicle:CHRONICLE.ev_tryst_rumor.when"] = func(c): return tryst_hook.call(c) and not with_haru.call(c)
+	_table["chronicle:CHRONICLE.ev_tryst_invite.when"] = func(c): return tryst_hook.call(c) and with_haru.call(c)
+	_table["chronicle:CHRONICLE.ev_tryst_dusk.when"] = func(c): return tryst_dusk.call(c, false)
+	_table["chronicle:CHRONICLE.ev_tryst_mine_dusk.when"] = func(c): return tryst_dusk.call(c, true)
+	_table["chronicle:CHRONICLE.ev_tryst.when"] = func(_c): return false        # 엿들을 자리에 닿으면 Sneak 이 연다
+	_table["chronicle:CHRONICLE.ev_tryst_mine.when"] = func(_c): return false
+
+# ---- [세션 B] 조건·구조 고치기 ----
+## 게시판 쪽지 · 잡담 · 일과의 갈래. 새 항목의 경로는 번호 대신 id 로 짓는다
+static func _build_fix() -> void:
+	_table.merge({
+		# 게시판: 그론의 쪽지는 그가 떠난 뒤로 붙지 않는다. 모루 쪽지는 불이 다시 붙은 뒤(사흘) 엠버가 붙인다
+		"chores:CHORES.c_goblin.when": func(s): return not _dead(s, "Gron"),
+		"chores:CHORES.c_chest.when": func(s): return not _dead(s, "Gron"),
+		"chores:CHORES.c_upgrade.when": func(s): return not _dead(s, "Gron"),
+		"chores:CHORES.c_upgrade_ember.when": func(s): return _dead(s, "Gron") and s.day - int(s.story.get("deathDay", {}).get("Gron", s.day)) >= 3,
+		# 게시판: 결말을 본 뒤로는 습격이 오지 않는다 (Raid._still_coming 과 같은 판단. Raid 를 부르면 Data 가 서기 전에 지도 스크립트까지 끌려와 튕긴다)
+		"chores:CHORES.c_raid.when": func(s): return not (s.story.get("route") == "dark" and s.quests.done.has("m7d")) and s.story.get("endingSeen", "") == "",
+		# 잡담: 미라가 폭포 일을 털어놓은(s1) 뒤로 엘더가 모르는 척 묻지 않는다
+		"chatter:CHATTER.elder_mira_falls.when": func(s): return not s.quests.done.has("s1"),
+		# 잡담: 봉우리의 알 소식 뒤로 전쟁 전까지 도란이 수군거린다 (6장에서 도란이 "그 소리, 처음 꺼낸 게 나여" 하고 사과한다)
+		"chatter:CHATTER.doran_rumor.when": func(s): return s.quests.done.has("m5a") and not s.quests.done.has("m6w"),
+		# 일과: 어둠의 길 끝에 나라가 떠난 뒤의 스승
+		"routines:ROUTINES.Kairon.variants.after_dark.when": func(s): return s.story.get("route") == "dark" and s.quests.done.has("m7d"),
+	})
+
+# ---- [세션 C] 이야기 다시 쓰기 ----
+## 이야기 쪽에서 새로 넣거나 바꾼 조건. 앞의 표와 키가 같으면 여기 것이 이긴다
+## (여러 세션이 이 파일을 같이 고친다. 합칠 때 부딪히지 않게, 바꾼 조건도 원래 줄은 두고 여기서 덮는다)
+static func _build_c() -> void:
+	_table.merge({
+		# 마을의 시선: 첫 습격을 같이 막기 전까지, 하늘에서 떨어진 아이를 꺼리는 용들이 있다
+		"npcTalk:SITUATION_LINES.wary.when": func(s, _n = null): return s.raid.count == 0,
+		# 첫 습격을 같이 막은 뒤 한동안은, 꺼리던 용들의 말이 조금씩 풀린다 (세 번째 습격부터는 [7] 이 받는다)
+		"npcTalk:SITUATION_LINES.thaw.when": func(s, _n = null): return s.raid.count >= 1 and s.raid.count < 3,
+		# 아이 안부는 짝 본인이 묻지 않는다 (제 아이를 두고 "네 아이들은 잘 크느냐"고 하던 것)
+		"npcTalk:SITUATION_LINES.8.when": func(s, _n = null): return s.kids.size() > 0 and s.partner != _n,
+		# 소식을 반기는 인사는 그 일이 있고 며칠 동안만 (수십 일 뒤에도 "이겼다고?!"가 나오던 것)
+		"npcTalk:SITUATION_LINES.13.when": func(s, _n = null): return s.partner != null and s.partner != _n and _fresh(s.story.get("love", {}).get("since"), s),
+		"npcTalk:SITUATION_LINES.14.when": func(s, _n = null): return _fresh(s.story.get("bossDay", {}).get("MORGATH"), s),
+		"npcTalk:SITUATION_LINES.15.when": func(s, _n = null): return _fresh(s.story.get("bossDay", {}).get("ZALGORA"), s),
+
+		# ---- 3장: 모르가스와의 우연한 마주침 ----
+		# 골짜기에 처음 들어서면 울음이 들린다 (수호룡은 이 장면을 본 뒤에야 무덤에 나온다: enemies BOSSES.MORGATH.needs)
+		"chronicle:CHRONICLE.5.when": func(c): return c.done.call("m3") and not c.boss.call("MORGATH") and (c.map == "HOLLOW" or c.map == "HOLLOW_DEEP"),
+		# 성체가 된 날, 누리가 골짜기 끝으로 사라진다
+		"chronicle:CHRONICLE.ev_nuri_lost.when": func(c): return c.map == "VILLAGE" and c.s.story.rites.has(2) and c.done.call("m3") \
+			and not c.active.call("m4") and not c.done.call("m4") and not c.boss.call("MORGATH"),
+		# 무덤은 누리를 찾으러 갈 때 열린다
+		"chapters:CHAPTERS.c3.hold.MORGATH_LAIR.when": func(s): return s.quests.active.has("m4") or s.quests.done.has("m4") or _boss(s, "MORGATH"),
+
+		# ---- 4장: 굶는 계절 ----
+		# 뿌리골의 부탁은 쌍두룡을 보낸 뒤에 ("쌍두룡을 보내 준 게 너라고 들었단다")
+		"quests:QUESTS.r1.needs": func(s): return _boss(s, "ZALGORA"),
+
+		# ---- 5장: 맡긴 알 ----
+		# 한여름 눈은 밀회(s1 둘째 대목) 사흘째부터: 유안이 "내일 봉우리에 오른다"고 한 다음 날 사절이 떠나고, 그 뒤에 봉우리가 문을 닫는다
+		"chronicle:CHRONICLE.7.when": func(c): return c.map == "VILLAGE" and c.done.call("m5g") and not c.done.call("m5a") and not c.active.call("m5a") \
+			and _snow_due(c.s),
+		# 경계석의 유안: 봉우리에서 돌아온 뒤, 폭포의 대치 전까지 (밀회 뒤 그 사이에는 유안이 봉우리에 갇혀 있다)
+		"chronicle:CHRONICLE.26.when": func(c): return (c.map == "FALLS" or c.map == "CLOUDTOP") and c.done.call("m5a") and not c.night and not c.gathering \
+			and c.s.story.has("trystDay") and not c.s.story.get("events", []).has("ev_border"),
+		# 얼어붙은 망루에서 다친 사절 둘을 찾는다
+		"chronicle:CHRONICLE.32.when": func(c): return c.map == "SNOW_RIDGE" and c.active.call("m5a") and not c.boss.call("GLACIA"),
+		# 도란과 미루의 알 소식은 눈이 그친 뒤에 (눈이 쏟아지는 한가운데 태평한 소식이 끼어들던 것)
+		"chronicle:CHRONICLE.23.when": func(c): return c.map == "VILLAGE" and c.done.call("m5a") and c.hour >= 7 and c.hour < 18 \
+			and not c.s.raid.active and not c.flag.call("couple_egg"),
+		# 마을의 시선: 봉우리의 알이 하나도 안 남았다는 걸 안 뒤로 수군거림이 돈다
+		"npcTalk:SITUATION_LINES.chill.when": func(s, _n = null): return s.quests.done.has("m5a") and not s.quests.done.has("m6w"),
+		# 그론을 보낸 뒤: 수군거림을 처음 꺼낸 이가 먼저 와서 사과한다
+		"npcTalk:SITUATION_LINES.family.when": func(s, _n = null): return s.quests.done.has("m6w") and not s.quests.done.has("m5c"),
+
+		# ---- 7장: 사막 길 ----
+		# 바윗골과 불탄 도시는 모래 폭군이 비킨 뒤에 (바실을 잡기 전에 가면 "모래 폭군을 네가 잡았다고 들었다"가 틀린 말이 되던 것)
+		"chapters:CHAPTERS.c7.hold.STONEBACK.when": func(s): return _boss(s, "BASIL"),
+		"chapters:CHAPTERS.c7.hold.ASH_CITY.when": func(s): return _boss(s, "BASIL"),
+		# 세이란의 물점: 리운과 이야기를 마치면 그 자리(구름마루)에서 이어진다
+		"chronicle:CHRONICLE.ev_seiran_water.when": func(c): return c.map == "CLOUDTOP" and c.active.call("m5c") and int(c.s.quests.active.m5c.step) >= 3,
+
+		# ---- 8장: 잿마루 ----
+		# 정상의 바람은 고룡의 날개로만 뚫린다 (힌트로만 말하던 것을 길로도)
+		"chapters:CHAPTERS.c8.hold.IGNAR_LAIR.when": func(s): return s.player.stage_index >= 3 or _boss(s, "IGNAR"),
+		# 잿마루에서 그날 밤의 밤손님을 알아본다
+		"chronicle:CHRONICLE.ev_heukdan.when": func(c): return c.map == "VOLCANO" and c.s.story.get("events", []).has("ev_volcano") and c.flag.call("messenger"),
+	}, true)
+
+
+## 5장: 봉우리에 눈이 퍼부을 때가 되었는가. 밀회를 본 날(Chronicle 이 적는다)로부터 사흘째.
+## 밀회가 아예 걸리지 않은 판(s1 이 시작도 안 됐다)이면 모임 닷새째에 그냥 온다 — 이야기가 거기서 멈추지 않게
+static func _snow_due(s) -> bool:
+	var tryst = s.story.get("trystDay")
+	if tryst != null: return s.day - int(tryst) >= 3
+	if s.quests.active.has("s1") or s.quests.done.has("s1"): return false
+	var met = s.story.get("eventDay", {}).get("ev_gathering")
+	return met == null or s.day - int(met) >= 5
+
+
+const NEWS_DAYS := 5   # 소식이 소식인 동안 (날)
+
+## 그 일이 있은 날(day)로부터 며칠 안 됐는가. 적힌 날이 없으면 아니다
+static func _fresh(day, s) -> bool:
+	return day != null and s.day - int(day) < NEWS_DAYS

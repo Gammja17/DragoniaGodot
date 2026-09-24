@@ -57,8 +57,8 @@ const STOPS := [
 		{ who = "Mira", text = "안녕. 포코한테 붙잡혔구나. 아픈 데 있으면 참지 말고 와. …포코, 너도 무릎 까진 거 또 숨기지 말고.", here = "Mira" },
 	] },
 	{ at = [3, 8], stand = [90, 60], via = [[9, 8], [8, 12], [3, 12]], lines = [
-		{ who = "Poco", text = "짜잔! 여기가 네 굴이야! 비어 있던 덴데 엘더 할아버지가 너한테 주래.", look = "DEN:DEN_MINE", label = "나의 굴" },
-		{ who = "Poco", text = "안에는 마른 풀 잠자리 하나밖에 없긴 한데, 그건 내가 깔아 놓은 거다? 나도 처음엔 풀 한 줌으로 시작했어.", look = "DEN:DEN_MINE", label = "나의 굴" },
+		{ who = "Poco", text = "짜잔! 여기가 네 굴이야! 비어 있던 덴데 엘더 할아버지가 너한테 주래.", look = "DEN:DEN_MINE", label = "내 굴" },
+		{ who = "Poco", text = "안에는 마른 풀 잠자리 하나밖에 없긴 한데, 그건 내가 깔아 놓은 거다? 나도 처음엔 풀 한 줌으로 시작했어.", look = "DEN:DEN_MINE", label = "내 굴" },
 		{ who = "Poco", text = "밤 되면 안에 있는 둥지에서 자면 돼. 애들은 밤에 돌아다니면 안 된대. 티아맷 누나한테 걸리면 진짜 무서워." },
 		{ who = "Poco", text = "다 봤다! 이제 할아버지한테 가 봐. 너 다 나으면 시킬 일 있다고 하셨거든." },
 	] },
@@ -79,6 +79,7 @@ static func _guide(): return World.any_npc(GUIDE)
 
 
 static func update(dt: float) -> void:
+	if not GameState.tour and _cut_short(): start()
 	var t = GameState.tour
 	if not t or GameState.map_id != "VILLAGE": return
 	var e = _guide()
@@ -129,6 +130,13 @@ static func update(dt: float) -> void:
 				t.phase = "walk"
 				t.via = 0
 				t.stuck = 0.0)
+
+
+## 구경 대목(m0 의 둘째)인데 구경이 돌고 있지 않다: 구경 도중에 저장한 판을 불러왔다 (세이브는 구경을 적지 않는다).
+## 그러면 포코가 처음부터 다시 데리고 돈다
+static func _cut_short() -> bool:
+	var m0 = GameState.quests.active.get("m0")
+	return m0 != null and int(m0.step) == 1 and GameState.elderTutorialDone and not GameState.tutorial.get("toured") and not GameState.prologue
 
 
 ## 그 용이 지금 이 마을에 나와 있는가

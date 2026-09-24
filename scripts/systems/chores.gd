@@ -24,7 +24,7 @@ static func refresh_board() -> Dictionary:
 	var c := _c()
 	var day := GameState.day
 	if c.day == day and not c.offers.is_empty(): return c
-	var pool: Array = Data.get_module("chores").CHORES.filter(func(x): return int(x.get("min", 1)) <= GameState.player.level and not c.taken.has(x.id))
+	var pool: Array = Data.get_module("chores").CHORES.filter(func(x): return int(x.get("min", 1)) <= GameState.player.level and not c.taken.has(x.id) and _open(x))
 	# 날짜를 씨앗으로 고른다 — 저장했다 켜도 그날 게시판은 그대로다
 	var picks := []
 	var i := 0
@@ -37,6 +37,10 @@ static func refresh_board() -> Dictionary:
 	c.offers = picks
 	c.done = []            # 어제 끝낸 것은 다시 붙을 수 있다. 잡일은 되풀이되는 일거리다
 	return c
+
+
+## 지금 붙을 수 있는 쪽지인가 (when). 쪽지를 쓴 용이 떠났거나 더는 할 수 없는 일이면 붙지 않는다
+static func _open(ch: Dictionary) -> bool: return not ch.get("when") or ch.when.call(GameState)
 
 
 static func _count(ch: Dictionary) -> int: return int(ch.goal.get("count", 1)) if ch.goal.get("count") else 1
@@ -106,9 +110,9 @@ static func open_board() -> void:
 	for id in c.offers:
 		if c.taken.has(id) or c.done.has(id): continue
 		var ch = _by_id(id)
-		if not ch: continue
+		if not ch or not _open(ch): continue   # 아침에 붙은 뒤로 사정이 바뀌었다 (쪽지를 쓴 용이 떠났다)
 		if room > 0: opts.append({ label = "📄 %s — %s (%s)" % [ch.title, Quests.goal_text(ch.goal), _reward_line(ch.reward)], on_select = func(): _read(ch) })
-		else: opts.append({ label = "📄 %s (손이 모자란다)" % ch.title, on_select = func(): _board("한 번에 두 장까지만 떼어 갈 수 있다. 하던 것부터 끝내라.") })
+		else: opts.append({ label = "📄 %s (이미 두 장을 떼어 왔다)" % ch.title, on_select = func(): _board("한 번에 두 장까지만 떼어 갈 수 있다. 하던 것부터 끝내라.") })
 	opts.append({ label = "돌아선다", on_select = _close })
 	_board("%d일째 아침에 붙은 쪽지들이다.\n(잡일은 이야기와 상관없다. 하고 싶을 때만 떼어 가면 된다.)" % GameState.day, opts)
 
@@ -140,7 +144,7 @@ static func _drop(ch: Dictionary) -> void:
 			_c().taken.erase(ch.id)
 			Save.save_game()
 			open_board() },
-		{ label = "계속 한다", on_select = open_board },
+		{ label = "계속한다", on_select = open_board },
 	])
 
 

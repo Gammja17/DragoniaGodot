@@ -180,7 +180,7 @@ static func _end() -> void:
 	var gold: int = 30 + raid.count * 15
 	p.gold += gold
 	for npc in GameState.entities.npcs:
-		if npc.config.get("fixed"): npc.relation = minf(100, npc.relation + 2)
+		if npc.config.get("fixed"): NpcActions.add_relation(npc, 2)
 	Hud.pop("습격 %d차 격퇴! (%dG, 마을 용들의 호감 ↑)" % [raid.count, gold], "🛡️")
 	p.gain_xp(60 + raid.count * 30)
 	GameState.story.today.raid = true   # 내일 아침 "어제 습격" 이야기가 나올 수 있다
@@ -189,7 +189,7 @@ static func _end() -> void:
 	if ob:
 		for npc in GameState.entities.npcs:
 			if npc.config.get("name") == ob.name and not ob.failed:
-				npc.relation = minf(100, npc.relation + 8)
+				NpcActions.add_relation(npc, 8)
 				p.gold += 40; p.gain_xp(80)
 				Hud.pop("%s 끝까지 지켜 냈다! (40G, 호감 ↑)" % Util.josa(Names.npc(ob.name), "을", "를"), "🛡️")
 				npc.say("고, 고마워… 나 진짜 무서웠어." if ob.name == "Poco" else "덕분에 살았어. 고마워.")

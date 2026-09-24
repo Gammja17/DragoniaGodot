@@ -127,7 +127,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "맞지 않고 계속 맞히면 차오르고 숨결이 세진다. 아슬아슬하게 대시로 피하면(간발) 크게 차고 세상이 잠깐 느려진다. 빈사의 적은 대시로 뚫으면 끝난다"
+text = "맞지 않고 계속 맞히면 차오르고 브레스가 세진다. 아슬아슬하게 대시로 피하면(간발) 크게 차고 세상이 잠깐 느려진다. 빈사의 적은 대시로 뚫으면 끝난다"
 autowrap_mode = 3
 
 [node name="Row5" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col1"]
@@ -146,7 +146,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "숨결 속성 바꾸기"
+text = "속성 바꾸기"
 autowrap_mode = 3
 
 [node name="Row6" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col1"]
@@ -165,7 +165,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "장착한 스킬 (대기 시간만 쓴다)"
+text = "끼운 스킬 (재사용 대기만 쓴다)"
 autowrap_mode = 3
 
 [node name="Row7" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col1"]
@@ -184,7 +184,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "스킬 나무 (장착·강화) · G 성장 나무 · X 필살기"
+text = "스킬 나무 (끼우기·강화) · G 성장 나무 · X 필살기"
 autowrap_mode = 3
 
 [node name="Row8" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col1"]
@@ -322,7 +322,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "일지 (퀘스트 · 지도 · 소지품 · 마을 용들 · 기록 · 유물 · 도감)"
+text = "일지 (퀘스트 · 지금까지 이야기 · 지도 · 소지품 · 마을 용들 · 기록 · 유물 · 도감)"
 autowrap_mode = 3
 
 [node name="Row3" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
@@ -414,7 +414,7 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(84, 0)
 layout_mode = 2
 size_flags_vertical = 0
-text = "허기"
+text = "배부름"
 label_settings = SubResource("key")
 
 [node name="Text" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row8"]
@@ -517,7 +517,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "골드가 아니라 소재로 그론의 모루에서 두드린다"
+text = "골드가 아니라 재료로 그론의 모루에서 두드린다"
 autowrap_mode = 3
 
 [node name="Row14" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
@@ -556,4 +556,80 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 text = "수련·보스 말고도 혼자 깨우치거나, 둘을 익히면 열리는 것이 있다"
+autowrap_mode = 3
+
+[node name="Row16" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row16"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "둥지"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row16"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
+text = "나뭇가지 8개와 30G로 내 굴 잠자리 앞에서 [Space]로 짓는다. 알은 둥지에서 품는다"
+autowrap_mode = 3
+
+[node name="Row17" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row17"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "잠"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row17"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
+text = "내 굴 잠자리 앞에서 [Space]. 자고 일어나야 다음 수련을 받고 아침 이야기가 이어진다. 어른이 되면 아무도 재워 주지 않는다"
+autowrap_mode = 3
+
+[node name="Row18" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row18"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "석비"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row18"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
+text = "손을 얹어 깨운다. 깨운 석비끼리 건너뛸 수 있고, 일지 지도에 ○로 남는다"
+autowrap_mode = 3
+
+[node name="Row19" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row19"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "지난 이야기"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row19"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
+text = "일지의 [지금까지 이야기]에 끝낸 장의 줄거리가 쌓인다"
 autowrap_mode = 3

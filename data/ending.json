@@ -11,6 +11,7 @@
    { "scene": "epi_falls" },
    { "fade": "그날 밤 · 망루", "place": "VILLAGE", "at": [29, 9], "time": 0.9 },
    { "scene": "epi_tower" },
+   { "life": "그 뒤로", "place": "VILLAGE", "at": [4, 9], "time": 0.78, "nextDay": true },
    { "credits": "새 수호룡의 이야기 · 끝" },
    { "fade": "", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true }
   ],
@@ -25,6 +26,7 @@
    { "scene": "epi_dojo" },
    { "fade": "구름 폭포", "place": "FALLS", "at": [10, 11], "time": 0.8 },
    { "scene": "epi_falls" },
+   { "life": "그 뒤로", "place": "VILLAGE", "at": [4, 9], "time": 0.78, "nextDay": true },
    { "credits": "돌아온 형의 이야기 · 끝" },
    { "fade": "", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true }
   ],
@@ -33,34 +35,35 @@
    { "quest": "m7d" },
    { "fade": "며칠 뒤 · 구름 폭포", "place": "FALLS", "at": [10, 11], "time": 0.5, "nextDay": true },
    { "scene": "epi_dark_falls" },
+   { "life": "그 뒤로", "place": "VILLAGE", "at": [4, 9], "time": 0.78, "nextDay": true },
    { "credits": "잿빛 날개의 이야기 · 끝" },
    { "fade": "", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true }
   ]
  },
  "SCENES": {
   "evening_guardian": { "title": "돌아온 저녁", "lines": [
-   { "who": "나", "text": "(마을에 들어서니 해가 지고 있었다. 모닥불 옆에 스승이 혼자 앉아 있다.)", "do": [{ "bgm": "none" }, { "tone": "warm" }, { "cam": "Kairon", "time": 1.6, "zoom": 1.08 }] },
-   { "who": "Kairon", "text": "…돌아왔구나. 얼굴을 보니, 끝이 나긴 났구나.", "do": [{ "cam": "auto", "zoom": 1.18 }] },
-   { "who": "Kairon", "text": "형이 마지막에 뭐라고 하더냐. …아니다, 천천히 말해라. 나는 예순 해를 기다린 놈이라서 조금 더 기다리는 건 아무것도 아니다." },
-   { "who": "나", "text": "(이그나르가 남긴 말을 그대로 옮겼다. 뒤에서 보는 하늘도, 넓더라고.)", "zoom": 1.3 },
+   { "who": "나", "text": "(마을에 들어서니 해가 지고 있었다. 모닥불 옆에 스승이 먼저 와 앉아 있다.)", "do": [{ "bgm": "none" }, { "tone": "warm" }, { "cam": "Kairon", "time": 1.6, "zoom": 1.08 }] },
+   { "who": "Kairon", "text": "…왔냐.", "do": [{ "cam": "auto", "zoom": 1.18 }] },
    { "who": "Kairon", "text": "(스승은 한참 동안 대답 없이 하늘만 올려다보았다.)", "do": [{ "face": "Kairon", "to": "up" }, { "wait": 1.8 }] },
+   { "who": "Kairon", "text": "뒤에서 보는 하늘도 넓더라고. …형이 그 말을 할 줄은 몰랐다.", "zoom": 1.3 },
+   { "who": "Kairon", "text": "네가 전에 그랬지. 뒤에서 보는 하늘도 넓던데요, 하고. 형도 똑같은 말을 하더라.", "chose": "k2:sky" },
    { "who": "Kairon", "text": "…그 양반, 끝까지 말은 번지르르하게 하는군.", "do": [{ "emote": "Kairon", "icon": "…" }] },
    { "who": "Kairon", "text": "됐다. 들어가서 자라. 나는 여기 좀 더 앉아 있다 가마. …오늘은 잔소리 안 한다." }
   ] },
   "evening_redeem": { "title": "돌아온 저녁", "lines": [
-   { "who": "나", "text": "(마을 어귀 바위 옆에 이그나르를 내려놓고 들어왔다. 해가 지고 있었다. 모닥불 옆에 스승이 혼자 앉아 있다.)", "do": [{ "bgm": "none" }, { "tone": "warm" }, { "cam": "Kairon", "time": 1.6, "zoom": 1.08 }] },
-   { "who": "Kairon", "text": "…돌아왔구나. 얼굴을 보니, 끝이 나긴 났구나.", "do": [{ "cam": "auto", "zoom": 1.18 }] },
-   { "who": "Kairon", "text": "어떻게 됐는지는… 아니다, 천천히 말해라. 나는 예순 해를 기다린 놈이라서 조금 더 기다리는 건 아무것도 아니다." },
-   { "who": "나", "text": "(이그나르를 데려왔다고 말했다. 지금 마을 어귀 바위에 기대 쉬고 있다고.)", "zoom": 1.3 },
-   { "who": "Kairon", "text": "……", "do": [{ "emote": "Kairon", "icon": "!" }, { "wait": 0.8 }] },
-   { "who": "Kairon", "text": "형이… 마을 밖에 와 있다고?" },
+   { "who": "나", "text": "(마을 어귀 바위 옆에 이그나르를 내려놓고 들어왔다. 해가 지고 있었다. 모닥불 옆에 스승이 먼저 와 앉아 있다.)", "do": [{ "bgm": "none" }, { "tone": "warm" }, { "cam": "Kairon", "time": 1.6, "zoom": 1.08 }] },
+   { "who": "Kairon", "text": "…왔냐. 형은 어귀에 있고?", "do": [{ "cam": "auto", "zoom": 1.18 }] },
+   { "who": "나", "text": "(바위에 기대 쉬고 있다고 말했다.)", "zoom": 1.3 },
+   { "who": "Kairon", "text": "같이 날아 내려오면서 한마디도 못 했다. 예순 해를 기다렸는데, 막상 옆에 있으니까 할 말이 하나도 생각이 안 나더라." },
    { "who": "Kairon", "text": "(스승은 어귀 쪽을 한참 바라보다가, 등을 돌렸다.)", "do": [{ "face": "Kairon", "to": "left" }, { "wait": 1.4 }] },
-   { "who": "Kairon", "text": "…오늘 밤은 못 나가겠다. 날 밝으면 가마. 너는 들어가 자라. 수고했다." }
+   { "who": "Kairon", "text": "…날 밝으면 가마. 너는 들어가 자라. 수고했다." }
   ] },
   "epi_dojo": { "title": "", "lines": [
    { "who": "Nara", "text": "스승님! …아니, 카이론 아저씨! 오늘은 나랑 대련해 주는 거죠? 약속했잖아요!", "do": [{ "bgm": "village" }, { "move": "Nara", "to": [150, -20] }] },
    { "who": "Kairon", "text": "약속한 적 없다. 허수아비나 쳐라." },
    { "who": "Nara", "text": "아 짜증 나. 맨날 허수아비래.", "do": [{ "move": "Nara", "to": [60, 90] }, { "fx": "PUFF", "at": "Nara" }, { "sfx": "hit" }] },
+   { "who": "나", "text": "(나라는 허수아비 앞에서 하나, 하고 숨을 고른 뒤에 들어간다. 한 박자 늦게.)", "chose": "n1:tip" },
+   { "who": "나", "text": "(나라는 여전히 몸이 먼저 나간다. 엄마를 닮았다는 그 버릇대로, 누구보다 빠르게.)", "chose": "n1:mom" },
    { "who": "Kairon", "text": "(허수아비를 두들기는 나라를 한참 보다가, 스승이 혼잣말처럼 중얼거렸다.) …꼬리 쓰는 게 늘었군. 내 제자답게.", "do": [{ "wait": 1.0 }] },
    { "who": "Nara", "text": "…방금 뭐라고 했어요? 제자라고 했죠? 했죠?!", "do": [{ "emote": "Nara", "icon": "!" }, { "move": "Nara", "to": "near:Kairon" }] },
    { "who": "Kairon", "text": "안 했다. 헛것 들었다. …백 번 더 쳐라." },
@@ -69,16 +72,16 @@
   "epi_falls": { "title": "", "lines": [
    { "who": "나", "text": "(폭포 아래에는 이제 달이 밝지 않은 밤에도 불이 피었다.)", "do": [{ "bgm": "lake" }, { "cam": "look:PROP:CAMPFIRE", "time": 1.6 }] },
    { "who": "Yuan", "text": "…또 왔군. 오늘은 약초 핑계도 안 대나.", "do": [{ "cam": "auto" }] },
-   { "who": "Mira", "text": "약초는 이제 구름마루에도 있잖아. 어디서 나는지 네가 알려 줬으면서." },
+   { "who": "Mira", "text": "약초라면 이제 구름마루에 올라가서 캐도 되잖아. 어디서 나는지 네가 다 알려 줬으면서." },
    { "who": "Yuan", "text": "……", "do": [{ "emote": "Yuan", "icon": "…" }] },
    { "who": "Yuan", "text": "경계는 이제 하루 한 번만 돈다. …남는 시간엔 여기 있지." },
    { "who": "Riun", "text": "(불가 건너편에서 리운이 잔을 들어 보였다.) 아랫마을 촌장, 오늘은 누가 먼저 취하는지 봅시다." },
-   { "who": "Elder", "text": "허허… 이 나이에 내기라니. 무릎이 시려서 오래는 못 앉아 있는단다… 한 잔만 하자꾸나." }
+   { "who": "Elder", "text": "허허… 이 나이에 내기라니. 무릎이 시려서 오래는 못 앉아 있단다… 한 잔만 하자꾸나." }
   ] },
   "epi_tower": { "title": "", "lines": [
    { "who": "Tiamat", "text": "오늘 밤도 조용해.", "do": [{ "bgm": "none" }, { "cam": "look:PROP:TOWER", "time": 1.2 }, { "cam": "auto" }] },
    { "who": "Tiamat", "text": "…나팔을 안 부는 밤이 이렇게 긴 줄 몰랐어." },
-   { "who": "Poco", "text": "누나, 그럼 이제 자도 돼? 있잖아, 나 오늘은 모루 밑 말고 내 굴에서 잘래. …그래도 되지? 그치?", "do": [{ "move": "Poco", "to": "near:Tiamat" }] },
+   { "who": "Poco", "text": "누나, 그럼 이제 자도 돼? 있잖아, 나 오늘은 누나 옆 말고 내 굴에서 잘래. …그래도 되지? 그치?", "do": [{ "move": "Poco", "to": "near:Tiamat" }] },
    { "who": "Tiamat", "text": "…그래. 들어가 자. 오늘은 내가 볼게.", "do": [{ "emote": "Tiamat", "icon": "♥" }] },
    { "who": "Tiamat", "text": "(포코가 뛰어가자, 티아맷은 여느 밤처럼 망루 위에서 이름을 하나씩 불렀다. 아홉 번째 이름을 부를 때, 목소리가 조금 덜 떨렸다.)", "do": [{ "exit": "Poco" }, { "wait": 0.8 }, { "tone": "warm" }] }
   ] },
@@ -97,6 +100,38 @@
    { "who": "Nara", "text": "…됐고. 수련이나 하자. 다음에 만나면, 그땐 내가 이길 거거든?", "do": [{ "emote": "Nara", "icon": "💢" }] }
   ] }
  },
+ "LIFE": {
+  "home": {
+   "vow": "(평생을 약속한 {partner}하고 오늘도 한 굴에서 잠든다.)",
+   "partner": "({partner}하고 한 굴에서 산 지 {days}일째다.)",
+   "partner_long": "({partner}하고 한 굴에서 산 지도 꽤 되었다.)",
+   "kid": {
+    "BABY": "(둥지에서는 아기 {kid}의 숨소리가 들린다.{looks})",
+    "TEEN": "(요즘 {kid}의 날갯짓이 부쩍 힘차졌다.{looks})",
+    "ADULT": "(어느새 다 자란 {kid}의 등이 제법 넓다.{looks})"
+   },
+   "looks": " 생김새는 {parent}하고 꼭 닮았다.",
+   "kids": "(굴 안은 {kids}의 소리로 하루도 조용할 날이 없다.)",
+   "built": "(굴은 아직 소박하지만, 둥지만은 내 손으로 지었다.)",
+   "den": {
+    "2": "(굴이 아늑해지자 친한 용들이 가끔 저녁에 들른다.)",
+    "3": "(친한 용들이 이틀이 멀다 하고 내 굴에 들른다.)",
+    "4": "(어디 내놔도 부끄럽지 않은 굴이 되었다. 저녁마다 누군가 들른다.)"
+   },
+   "gathering": {
+    "peace": "(달이 가장 밝은 밤이면 두 마을이 폭포 아래에 모인다. 이제는 그 불가에서 아무도 이빨을 드러내지 않는다.)",
+    "redeem": "(달이 가장 밝은 밤이면 두 마을이 폭포 아래에 모인다. 이제는 그 불가에 이그나르의 자리도 하나 있다.)"
+   },
+   "ally": "(산꼭대기까지 곁에서 싸워 준 {ally}하고는 요즘도 가끔 같이 사냥을 나간다.)"
+  },
+  "dark": {
+   "partner": "({partner}하고는 아직 한 굴에 산다. 다만 그날 뒤로 {partner}의 눈을 똑바로 본 적이 없다.)",
+   "kid": "(아이는 잿마루 용들이 오가는 날이면 둥지 밖으로 나오지 않는다.)",
+   "kids": "(아이들은 잿마루 용들이 오가는 날이면 둥지 밖으로 나오지 않는다.)",
+   "den": "(저녁마다 내 굴에 들르던 발길이 끊겼다.)",
+   "gathering": "(폭포 아래 달맞이 불은 다시 꺼졌다.)"
+  }
+ },
  "CREDITS": [
   { "kind": "title", "text": "Dragonia" },
   { "kind": "gap" },
@@ -111,7 +146,7 @@
   { "kind": "head", "text": "잿마루" },
   { "kind": "line", "text": "{Ignar} · {Vesna}" },
   { "kind": "gap" },
-  { "kind": "head", "text": "옛 이야기의 용들" },
+  { "kind": "head", "text": "옛이야기의 용들" },
   { "kind": "line", "text": "모르가스 · 리크와 로크 · 글라시아 · 바실" },
   { "kind": "gap" },
   { "kind": "head", "text": "그림" },
@@ -135,6 +170,9 @@
   { "kind": "line", "text": "Noto Emoji — Google" },
   { "kind": "gap" },
   { "kind": "gap" },
+  { "kind": "head", "text": "내 식구", "family": true },
+  { "kind": "line", "text": "{Family}", "family": true },
+  { "kind": "gap", "family": true },
   { "kind": "head", "text": "그리고" },
   { "kind": "title", "text": "{name}" },
   { "kind": "gap" },

@@ -1,8 +1,9 @@
 class_name JournalPanel
 extends GamePanel
 ## 2D판 ui/journal.js. 모험 일지 [J].
-##   [퀘스트] [지도] [소지품] [마을 용들] [스킬] [성장] [유물] [도감] [기록] [소리]
+##   [퀘스트] [지금까지 이야기] [지도] [소지품] [마을 용들] [스킬] [성장] [유물] [도감] [기록] [소리]
 ## 퀘스트 탭은 줄을 누르면 펼쳐지고, [추적] 을 누르면 오른쪽 추적창에 그 퀘스트가 걸린다.
+## 지금까지 이야기 탭은 끝낸 장의 요약을 최근 장부터 보여 주고, 지금 장에는 할 일 한 줄을 단다 (며칠 쉬었다 돌아와도 여기서 잇는다).
 ## 성장·스킬 탭은 뿌리 하나에서 세 갈래가 뻗는 나무로 그리고, 마디를 누르면 아래 줄에서 자세히 보고 포인트를 쓴다.
 
 const SECTION := preload("res://scenes/ui/journal_section.tscn")
@@ -60,7 +61,6 @@ func toggle_tab(tab_id := "") -> void:
 	if tab_id != "" and tab_id != tab:
 		tab = tab_id
 		_picked = null
-	Tutorial.mark("journal")
 	render()
 	open()
 
@@ -71,6 +71,7 @@ func refresh() -> void:
 
 
 func render() -> void:
+	Tutorial.mark("tab_" + tab)   # 스스로 열어 본 탭은 안내하지 않는다
 	for b in _tabs.get_children():
 		var on: bool = b.name == tab
 		for s in ["normal", "pressed"]: b.add_theme_stylebox_override(s, tab_on_style if on else tab_style)
@@ -90,6 +91,7 @@ func render() -> void:
 		c.queue_free()
 	match tab:
 		"quests": _render_quests()
+		"story": _render_story()
 		"map": $Frame/Lines/Body/MapPage/Map.queue_redraw()
 		"bag": _render_bag()
 		"folk": _render_folk()
@@ -151,6 +153,55 @@ func _replay(title: String, scene: Array) -> void:
 	Chronicle.play_scene(title, scene, null, false)
 
 
+# ---------- 지금까지 이야기 ----------
+
+## 끝낸 장의 요약(data/chapters.json 의 recap)을 최근 장부터. 이름이 같은 장(3장의 c3 · c3b)은 한 장으로 묶는다.
+## 지금 장은 끝낸 칸의 요약까지 적고, 끝에 "지금 할 일"을 단다
+func _render_story() -> void:
+	var cur: Dictionary = Chapters.current(GameState)
+	var groups := []
+	for c in Data.get_module("chapters").CHAPTERS:
+		var head := "%s · %s" % [c.title, c.name]
+		if groups.is_empty() or groups[-1].head != head: groups.append({ head = head, lines = [], now = false })
+		var g: Dictionary = groups[-1]
+		if c.done.call(GameState): g.lines.append_array(c.get("recap", []).filter(_recap_ok).map(func(l): return l.text))
+		elif c.id == cur.id: g.now = true
+	if GameState.story.get("endingSeen", "") != "": _note("결말을 보았다. 이야기는 여기서 끝나지만, 마을의 하루는 이어진다.")
+	groups.reverse()
+	for g in groups:
+		if g.lines.is_empty() and not g.now: continue
+		_section(g.head, [])
+		for t in g.lines:
+			var p: Label = $Templates/Para.duplicate()
+			p.text = t
+			_list.add_child(p)
+		if g.now: _now_box()
+
+
+## 요약 한 줄을 보여 줄지. chose: 고른 것 (Chronicle 과 같은 모양) · seen: 본 사건이나 장면 · route: 결말의 길 · dead: 떠난 용
+func _recap_ok(l: Dictionary) -> bool:
+	var st: Dictionary = GameState.story
+	if not Chronicle._chosen(l): return false
+	if l.has("seen") and not (st.get("events", []).has(l.seen) or st.get("scenes", []).has(l.seen)): return false
+	if l.has("route") and st.get("route") != l.route: return false
+	if l.has("dead") and not st.get("dead", []).has(l.dead): return false
+	return true
+
+
+## 지금 장의 할 일: 추적 중인 퀘스트의 summary. 맡은 일이 없으면 다음에 할 만한 일
+func _now_box() -> void:
+	var box: Control = $Templates/Now.duplicate()
+	var q = Quests.tracked_quest()
+	if q:
+		box.get_node("Lines/Head").text = "지금 할 일 · %s" % q.title
+		box.get_node("Lines/Text").text = q.get("summary", "")
+	else:
+		var s: Dictionary = Quests.suggestion()
+		box.get_node("Lines/Head").text = "지금 할 일"
+		box.get_node("Lines/Text").text = "%s. %s" % [s.title, s.goal]
+	_list.add_child(box)
+
+
 # ---------- 소지품 · 기록 · 소리 ----------
 
 func _render_bag() -> void:
@@ -158,10 +209,10 @@ func _render_bag() -> void:
 	var mats: Dictionary = Forge.mats()
 	var rows := [["고기", "%d개" % p.inventory.meat], ["골드", "%dG" % p.gold]]
 	if not GameState.den.get("built"): rows.append(["나뭇가지", "%d / 8 (둥지 재료)" % GameState.den.get("twigs", 0)])
-	if p.carrying == "EGG": rows.append(["용의 알", "들고 있다 (내 굴 둥지에 [E], 또는 엘더에게 맡긴다)"])
+	if p.carrying == "EGG": rows.append(["용의 알", "들고 있다 (내 굴 둥지 앞에서 [E]로 놓거나, 엘더에게 맡긴다)"])
 	if GameState.eggSitting: rows.append(["맡긴 알", "엘더가 품는 중 (%d일 남음)" % maxi(0, 3 - (GameState.day - GameState.eggSitting.day))])
 	_section("가진 것", rows)
-	_section("대장간 소재", mats.keys().map(func(id): return [mats[id].name, "%d개" % Forge.mat_count(id), Forge.mat_count(id) == 0]))
+	_section("대장간 재료", mats.keys().map(func(id): return [mats[id].name, "%d개" % Forge.mat_count(id), Forge.mat_count(id) == 0]))
 	var F := Den.furniture()
 	var furn := F.keys().filter(func(id): return Den.owned(id) > 0).map(func(id): return [F[id].name, "%d개" % Den.owned(id)])
 	_section("굴 살림살이 (안 놓은 것)", furn if not furn.is_empty() else [["", "없다", true]])
@@ -195,7 +246,7 @@ func _render_sound() -> void:
 	_section("음량", [
 		["배경음", "%d" % roundi(Audio.music_volume() * 100)],
 		["효과음", "%d" % roundi(Sfx.volume() * 100)],
-		["소리 끄기 (O 키)", "꺼짐" if Prefs.get_value("sound", "muted", false) else "켜짐"],
+		["소리 (O 키로 끄고 켠다)", "꺼짐" if Prefs.get_value("sound", "muted", false) else "켜짐"],
 	])
 	_note("음량은 [Esc] 설정 창에서 바꾼다.")
 	_section("빌려 쓴 소리", [
@@ -212,15 +263,19 @@ func _render_folk() -> void:
 	var hour := floori(t)
 	var minute := floori(fmod(t, 1.0) * 60 / 10.0) * 10
 	_section("%d일째 %02d:%02d · %s" % [GameState.day, hour, minute, NightEvents.day_phase_name()], [])
-	# 달 밝은 밤의 모임
-	var moon := _note("")
-	moon.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	if Gathering.is_gather_now():
-		moon.text = "🌕 지금 구름 폭포에서 모임이 서 있다. 두 마을이 모두 내려와 있다."
-		moon.add_theme_color_override("font_color", Color("#ffd84a"))
-	elif Gathering.is_gather_day(): moon.text = "🌕 오늘 밤이 모임이다. 해가 지면 구름 폭포로."
-	else: moon.text = "🌘 다음 모임까지 %d일. 달이 가장 밝은 밤, 구름 폭포에서." % Gathering.days_to_gather()
-	var tiers := [[75, "연인"], [50, "절친"], [25, "친구"], [10, "아는 사이"], [0, "낯선 사이"]]
+	# 달맞이 모임. 엘더가 첫 모임(m5g)을 알려 주기 전에는 모임이 있는 줄도 모르고,
+	# 스무 해 끊겼던 모임은 그 첫 모임 때 다시 서므로 그 전에는 날짜를 세지 않는다 (여드레째 밤이 와도 아무도 가지 않는다)
+	if Gathering.is_gather_day() or Gathering.invited_up():
+		var moon := _note("")
+		moon.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		if Gathering.is_gather_now():
+			moon.text = "🌕 지금 구름 폭포에서 달맞이 모임이 열리고 있다. 두 마을 용들이 모두 내려와 있다."
+			moon.add_theme_color_override("font_color", Color("#ffd84a"))
+		elif not Gathering.invited_up(): moon.text = "🌕 오늘 밤, 스무 해 만에 달맞이 모임이 다시 선다. 해가 지면 구름 폭포 아래로."
+		elif Gathering.is_gather_day(): moon.text = "🌕 오늘 밤이 달맞이 모임이다. 해가 지면 구름 폭포 아래로."
+		else: moon.text = "🌘 다음 달맞이 모임까지 %d일. 달이 가장 밝은 밤이면 두 마을이 구름 폭포 아래에 모인다." % Gathering.days_to_gather()
+	# 사이 단계는 대화창 머리 · 사이 장면 제목과 같은 문턱이다. 짝이 된 용만 '짝'
+	var tiers := [[75, "절친"], [50, "친구"], [25, "아는 사이"], [0, "낯선 사이"]]
 	for r in Routine.roster():
 		if r.east and not Gathering.knows_cloudtop(): continue   # 아직 만나지 않은 마을의 용은 적지 않는다
 		var card: PanelContainer = FOLK_CARD.instantiate()
@@ -230,6 +285,7 @@ func _render_folk() -> void:
 			if r.relation >= tt[0]:
 				tier = tt[1]
 				break
+		if GameState.partner and GameState.partner.config.name == r.name: tier = "짝"
 		card.get_node("Lines/Head/Name").text = r.label
 		card.get_node("Lines/Head/Job").text = "%s · %s" % [r.job, tier]
 		card.get_node("Lines/Where").text = ("📍 " if r.near else "") + r.where
@@ -249,7 +305,7 @@ func _render_relics() -> void:
 	var table := Relics.table()
 	var kins: Dictionary = Data.get_module("systems_relics").KINS
 	var worn := Relics.equipped()
-	_section("장착 %d / %d칸" % [worn.size(), mx], [])
+	_section("끼운 것 %d / %d칸" % [worn.size(), mx], [])
 	var n1 := _note("가진 유물을 눌러 끼우고 뺀다. 몸이 자라면 끼울 수 있는 칸이 늘어난다 (어린 용 2칸 · 성체 3칸 · 고룡 4칸)." if mx < 4 else "가진 유물을 눌러 끼우고 뺀다. 끼운 것만 힘이 된다.")
 	n1.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	var n2 := _note("공명 — 같은 갈래를 둘 끼우면: " + " · ".join(kins.keys().map(func(k): return "%s %s (%s)" % ["◆" if Relics.resonates(k) else "◇", kins[k].name, kins[k].bonus])))
@@ -285,17 +341,17 @@ func _render_relics() -> void:
 		row.get_node("Row/Name").text = nm
 		row.get_node("Row/Desc").text = r.desc
 		row.tooltip_text = r.desc
-		row.get_node("Row/State").text = "장착 중" if on else "끼우기"
+		row.get_node("Row/State").text = "끼워 둠" if on else "끼우기"
 		if on:
 			row.get_node("Row/State").add_theme_color_override("font_color", Color("#ffd84a"))
 			for s in ["normal", "hover", "pressed"]: row.add_theme_stylebox_override(s, row.get_meta("on_style"))
 		row.pressed.connect(func():
 			Relics.toggle(id)
 			render())
-	var missing := table.keys().filter(func(id): return not Relics.owns(id)).map(func(id): return ["???", "강대한 용이 지니고 있다" if table[id].get("boss") else "상자·정예 몬스터·굴 깊은 곳에서", true])
+	var missing := table.keys().filter(func(id): return not Relics.owns(id)).map(func(id): return ["???", "큰 용이 지니고 있다" if table[id].get("boss") else "상자·금빛 정예·옛 굴 깊은 곳에서", true])
 	if not missing.is_empty(): _section("", missing)
 	var mats := Forge.mats()
-	_section("대장간 소재", mats.keys().map(func(k): return [mats[k].name, "%d개. %s" % [Forge.mat_count(k), mats[k].desc]]))
+	_section("대장간 재료", mats.keys().map(func(k): return [mats[k].name, "%d개. %s" % [Forge.mat_count(k), mats[k].desc]]))
 
 
 # ---------- 도감 ----------
@@ -349,7 +405,7 @@ func _tree_note(title: String, text: String) -> void:
 func _render_growth() -> void:
 	var p = GameState.player
 	var g: Dictionary = Data.get_module("growth")
-	_tree_note("레벨 %d · %s" % [p.level, p.stage.name], "레벨업마다 포인트 2, 승급 시험마다 3. 위로 갈수록 자란 몸이라야 버틴다. 마디를 눌러 조건과 효과를 본다.")
+	_tree_note("레벨 %d · %s" % [p.level, p.stage.name], "레벨이 오를 때마다 성장 포인트 2, 승급 시험을 넘을 때마다 3을 받는다. 위 칸일수록 더 자란 몸(어린 용·성체·고룡)이라야 찍을 수 있다. 마디를 눌러 조건과 효과를 본다.")
 	var branches := []
 	for key in g.BRANCHES:
 		var b: Dictionary = g.BRANCHES[key]
@@ -434,11 +490,11 @@ func _render_picked() -> void:
 		var rank := Skills.rank(id)
 		var cost = Growth.skill_upgrade_cost(id)
 		info_name.text = "%s  %d / %d단" % [def.name, rank, Data.get_module("skills").MAX_SKILL_RANK] if rank else "%s (아직 못 배움)" % def.name
-		info_text.text = "%s · 대기 %.1f초" % [def.desc, Skills.cooldown(id)] if rank else _source_text(id)
+		info_text.text = "%s · 재사용 대기 %.1f초" % [def.desc, Skills.cooldown(id)] if rank else _source_text(id)
 		if rank:
 			for s in Data.get_module("skills").SKILL_SLOTS:
 				var on: bool = GameState.player.slots.get(s) == id
-				var b := _action("[%s] 해제" % s if on else "[%s] 에 장착" % s, true, func():
+				var b := _action("[%s] 해제" % s if on else "[%s]에 끼우기" % s, true, func():
 					_equip(id, s, on)
 					render())
 				if on: b.add_theme_color_override("font_color", Color("#7dd36a"))
@@ -446,7 +502,7 @@ func _render_picked() -> void:
 				if Growth.upgrade_skill(id): render())
 			else:
 				var l := Label.new()
-				l.text = "끝까지 익힌 기술이다"
+				l.text = "끝까지 익힌 스킬이다"
 				l.add_theme_color_override("font_color", Color("#a39a87"))
 				actions.add_child(l)
 

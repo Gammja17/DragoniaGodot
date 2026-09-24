@@ -4,7 +4,7 @@
    "name": "송곳니",
    "sub": "공격",
    "color": "#ff8a5c",
-   "desc": "숨결과 기술의 위력을 키운다"
+   "desc": "브레스와 스킬의 위력을 키운다"
   },
   "SCALE": {
    "name": "비늘",
@@ -26,7 +26,7 @@
    "tier": 0,
    "cost": 1,
    "max": 5,
-   "name": "날카로운 이빨",
+   "name": "날 선 송곳니",
    "stat": "dmg",
    "per": 0.04,
    "desc": {
@@ -133,7 +133,7 @@
    "stat": "hunger",
    "per": 0.08,
    "desc": {
-    "$fn": "(r) => `허기 소모 -${Math.round(r * 8)}%`",
+    "$fn": "(r) => `배 꺼지는 속도 -${Math.round(r * 8)}%`",
     "$at": "GROWTH_NODES.6.desc"
    }
   },
@@ -200,7 +200,7 @@
    "stat": "cdr",
    "per": 0.04,
    "desc": {
-    "$fn": "(r) => `스킬 대기 시간 -${Math.round(r * 4)}%`",
+    "$fn": "(r) => `스킬 재사용 대기 -${Math.round(r * 4)}%`",
     "$at": "GROWTH_NODES.10.desc"
    }
   },
@@ -229,7 +229,7 @@
    "tier": 0,
    "cost": 1,
    "max": 5,
-   "name": "날카로운 이빨",
+   "name": "날 선 송곳니",
    "stat": "dmg",
    "per": 0.04,
    "desc": {
@@ -336,7 +336,7 @@
    "stat": "hunger",
    "per": 0.08,
    "desc": {
-    "$fn": "(r) => `허기 소모 -${Math.round(r * 8)}%`",
+    "$fn": "(r) => `배 꺼지는 속도 -${Math.round(r * 8)}%`",
     "$at": "NODES_BY_ID.SCALE3.desc"
    }
   },
@@ -403,7 +403,7 @@
    "stat": "cdr",
    "per": 0.04,
    "desc": {
-    "$fn": "(r) => `스킬 대기 시간 -${Math.round(r * 4)}%`",
+    "$fn": "(r) => `스킬 재사용 대기 -${Math.round(r * 4)}%`",
     "$at": "NODES_BY_ID.WING3.desc"
    }
   },

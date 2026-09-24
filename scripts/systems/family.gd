@@ -35,9 +35,11 @@ static func morning() -> bool:
 	var mentor: String = job.fallback if Routine.is_dead(job.mentor) else job.mentor
 	kid.job = kid.personality
 	var say: Dictionary = _d().FAMILY_LINES[kid.personality]
+	# 아이의 다른 부모가 그 자리의 어른이면 부르는 말이 달라진다 (엘더의 아이면 '촌장 할아버지'가 아니라 '아빠')
+	var rite: String = say.get("riteWith", {}).get(Kids.parent_of(kid), say.rite)
 	Chronicle.play_scene("%s의 성년식" % kid.name, [
 		{ who = "Elder", text = "오늘부터 %s도 이 마을의 어엿한 용이란다. 알에서 나오던 날이 엊그제 같은데 벌써 이만큼 컸구나…" % kid.name },
-		{ who = "나", text = "(%s: \"%s\")" % [kid.name, say.rite] },
+		{ who = "나", text = "(%s: \"%s\")" % [kid.name, rite] },
 		{ who = mentor, text = job.offer.get(mentor, job.offer.default) },
 		{ who = "나", text = "(%s %s 밑에서 [%s] 일을 맡았다. 이제 아침마다 뭔가를 들고 돌아온다.)" % [iga(kid.name), Names.npc(mentor), job.name] },
 	], Save.save_game, true, "VILLAGE")
@@ -95,7 +97,7 @@ static func go_outing(then = null) -> void:
 			partner.relation = minf(100, partner.relation + 6)
 			GameState.player.hp = GameState.player.max_hp
 			Vfx.spawn_effect("HEART", GameState.player.x, GameState.player.y - 90, { color = "#ff7aa8", size = 1.4 })
-			Hud.pop("가족 나들이를 다녀왔습니다. 아이들의 애정과 성장, 짝의 호감이 올랐습니다.", "🧺")
+			Hud.pop("가족 나들이를 다녀왔습니다. 아이들은 정이 깊어지고 조금 자랐습니다. 짝의 호감도 올랐습니다.", "🧺")
 			Save.save_game()
 			if then: then.call()))
 

@@ -29,7 +29,7 @@ static func has_perk(flag: String) -> bool:
 
 static func grant_points(n: int, why := "") -> void:
 	GameState.growth.points += n
-	if why != "": Hud.pop("%s. 성장 포인트 +%d ([G] 성장)" % [why, n], "🌟")
+	if why != "": Hud.pop("%s. 성장 포인트 +%d ([G] 성장 나무에서 쓴다)" % [why, n], "🌟")
 
 
 ## 이미 쓴 포인트의 합. 옛 세이브를 불러올 때 남은 포인트를 되짚는 데 쓴다
@@ -46,11 +46,23 @@ static func _spent_points() -> int:
 ## 세이브를 불러왔을 때 지금까지 쌓였어야 할 포인트를 채워 준다 (레벨·단계를 복원한 뒤에 부른다)
 static func reconcile_points() -> void:
 	var p = GameState.player
-	var earned: int = (p.level - 1) * POINTS_PER_LEVEL + p.stage_index * POINTS_PER_STAGE
+	var earned: int = (p.level - 1) * POINTS_PER_LEVEL + p.stage_index * POINTS_PER_STAGE + _delve_points()
 	GameState.growth.points = maxi(0, earned - _spent_points())
 
 
-const STAGE_LABEL := ["해츨링", "어린 용", "성체", "고룡", "삼원룡"]
+## 옛 굴에서 처음 닿은 깊이로 받은 포인트 (Delve.MILESTONES). 레벨·단계만 세면 불러올 때마다 이것이 사라졌다
+static func _delve_points() -> int:
+	var recs = GameState.story.get("delve")
+	if not recs: return 0
+	var sum := 0
+	for id in recs:
+		var claimed: Array = recs[id].get("claimed", [])
+		for m in Delve.MILESTONES:
+			if m.get("points") and claimed.has(m.depth): sum += int(m.points)
+	return sum
+
+
+const STAGE_LABEL := ["아기 용", "어린 용", "성체", "고룡", "삼원룡"]
 
 
 static func _nodes_by_id() -> Dictionary: return Data.get_module("growth").NODES_BY_ID
@@ -95,7 +107,7 @@ static func skill_upgrade_cost(id: String):
 static func upgrade_skill(id: String) -> bool:
 	var cost = skill_upgrade_cost(id)
 	if cost == null:
-		Hud.pop("이미 끝까지 익힌 기술입니다.", "📖")
+		Hud.pop("이미 끝까지 익힌 스킬입니다.", "📖")
 		return false
 	var g: Dictionary = GameState.growth
 	if g.points < cost:
@@ -103,6 +115,6 @@ static func upgrade_skill(id: String) -> bool:
 		return false
 	g.points -= cost
 	g.ranks[id] = Skills.rank(id) + 1
-	Hud.pop("[%s] %d단. 위력 ↑ 대기 시간 ↓" % [Skills.defs()[id].name, g.ranks[id]], "📖")
+	Hud.pop("[%s] %d단. 위력 ↑ 재사용 대기 ↓" % [Skills.defs()[id].name, g.ranks[id]], "📖")
 	Sfx.play("level")
 	return true

@@ -46,6 +46,7 @@ const EFFECTS := {
 	"SPARKLE": { img = "p_star", life = 0.7, from = 0.35, to = 0.05, spin = 2, additive = true, rise = 90 },    # 떠오르는 반짝임
 	"EMBER": { img = "p_spark", life = 0.5, from = 0.35, to = 0.9, spin = 1.5, additive = true },               # 튀는 불티
 	"FALLING_STAR": { img = "p_flame", life = 0.55, from = 1.5, to = 0.8, spin = 0.4, additive = true, rise = -460, light = { r = 260, color = "#ff9a3c" } },   # 하늘에서 떨어지는 운석
+	"PILLAR": { img = "p_streak", life = 1.2, from = 0.9, to = 1.15, spin = 0, additive = true, stretch = Vector2(2.8, 3.2), light = { r = 260, color = "#fff2b0" } },   # 솟는 빛기둥 (레벨 업)
 	"WHIRL": { img = "p_twirl", life = 0.5, from = 0.7, to = 2.2, spin = 7, additive = true },                  # 소용돌이
 	"METEOR": { img = "star", life = 0.34, from = 0.8, to = 0.12, spin = 1.2, additive = true, light = { r = 200, color = "#fff2b0" } },
 }
@@ -125,6 +126,7 @@ class Effect:
 			var xf := Transform2D(0, o)
 			if d.get("rise"): xf = xf.translated_local(Vector2(0, -d.rise * k))
 			if d.get("flat"): xf = xf.scaled_local(Vector2(1, 0.5))   # 바닥에 누운 원
+			if d.get("stretch"): xf = xf.scaled_local(d.stretch)       # 가로세로를 따로 늘인 그림 (빛기둥)
 			xf = xf.rotated_local(angle + k * d.spin)
 			ci.draw_set_transform_matrix(xf)
 			# 흰 그림을 color 로 물들인다 (2D판은 물들인 사본을 만들지만 곱하기로 같은 색이 나온다)

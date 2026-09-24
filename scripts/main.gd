@@ -63,7 +63,7 @@ func _ready() -> void:
 		GameState.quests.tracked = "m0"
 		Quests.changed()
 		# 떨어지던 밤 → 까만 화면에 "제 1 장 · 웨스턴 마을" → 눈을 뜨고 촌장과 첫 대화
-		Skills.later(500, func(): Prologue.start(func(): Hud.show_chapter_card("제 1 장", "웨스턴 마을", func(): Dialogue.start(elder, "TALK"))))
+		Skills.later(500, func(): Prologue.start(func(): Hud.show_chapter_card("제1장", "웨스턴 마을", func(): Dialogue.start(elder, "TALK"))))
 
 
 ## 저장하고 처음 화면으로 (다른 기록을 불러오거나 새 용을 만들러)

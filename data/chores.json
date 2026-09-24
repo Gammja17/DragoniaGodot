@@ -4,7 +4,7 @@
    "id": "c_slime",
    "title": "미끈한 것들",
    "min": 1,
-   "note": "빨래터에 슬라임이 자꾸 기어든다. 여섯 마리만 치워 주면 빨래 한 번 대신 해 주겠다. — 포코",
+   "note": "빨래터에 슬라임이 자꾸 기어들어! 여섯 마리만 치워 주면 내가 빨래 한 번 해 줄게! — 포코",
    "goal": {
     "type": "kill",
     "target": "SLIME",
@@ -20,6 +20,10 @@
    "id": "c_goblin",
    "title": "시끄러운 고블린",
    "min": 2,
+   "when": {
+    "$fn": "s => !(s.story.dead || []).includes('Gron')",
+    "$at": "CHORES.c_goblin.when"
+   },
    "note": "숲의 고블린 놈들 때문에 낮잠을 못 자겠다. 다섯 마리만 조용히 시켜라. — 그론",
    "goal": {
     "type": "kill",
@@ -52,7 +56,7 @@
    "id": "c_meat",
    "title": "부엌이 비었다",
    "min": 1,
-   "note": "고기 다섯 덩이. 누가 가져오든 값은 쳐 준다. 낚시로 잡은 것도 받는다. — 엘더",
+   "note": "고기 다섯 덩이만 구해 다오. 누가 가져오든 값은 쳐 주마. 낚시로 잡은 것도 괜찮단다. — 엘더",
    "goal": {
     "type": "collect",
     "count": 5
@@ -96,6 +100,10 @@
    "id": "c_chest",
    "title": "숲의 보물",
    "min": 3,
+   "when": {
+    "$fn": "s => !(s.story.dead || []).includes('Gron')",
+    "$at": "CHORES.c_chest.when"
+   },
    "note": "옛 용들이 묻어 둔 상자가 숲에 남아 있다. 다섯 개만 찾아 열어 봐라. 내용물은 네 거다. — 그론",
    "goal": {
     "type": "chest",
@@ -110,7 +118,30 @@
    "id": "c_upgrade",
    "title": "모루를 데워 둬라",
    "min": 4,
+   "when": {
+    "$fn": "s => !(s.story.dead || []).includes('Gron')",
+    "$at": "CHORES.c_upgrade.when"
+   },
    "note": "모루가 식으면 못 쓴다. 비늘 두 번만 두드리고 가라. 값은 깎아 준다. — 그론",
+   "goal": {
+    "type": "upgrade",
+    "count": 2
+   },
+   "reward": {
+    "gold": 60,
+    "meat": 2,
+    "xp": 140
+   }
+  },
+  {
+   "id": "c_upgrade_ember",
+   "title": "모루가 식지 않게",
+   "min": 4,
+   "when": {
+    "$fn": "s => (s.story.dead || []).includes('Gron') && s.day - (s.story.deathDay || {}).Gron >= 3",
+    "$at": "CHORES.c_upgrade_ember.when"
+   },
+   "note": "아저씨가 늘 그랬거든. 모루는 식으면 못 쓴다고. 비늘 두 번만 두드리고 가. 수고비는 챙겨 줄게. — 엠버",
    "goal": {
     "type": "upgrade",
     "count": 2
@@ -125,7 +156,7 @@
    "id": "c_tag",
    "title": "놀아 줄 용 구함",
    "min": 1,
-   "note": "술래잡기 두 판! 이기면 내 간식 줌! 지면 안 줌! — 포코",
+   "note": "술래잡기 두 판 하자! 이기면 내 간식 줄게! 지면 안 줘! — 포코",
    "goal": {
     "type": "tag",
     "count": 2
@@ -154,6 +185,10 @@
    "id": "c_raid",
    "title": "망루 교대",
    "min": 5,
+   "when": {
+    "$fn": "s => !(s.story.route === 'dark' && s.quests.done.includes('m7d')) && !s.story.endingSeen",
+    "$at": "CHORES.c_raid.when"
+   },
    "note": "습격 두 번만 대신 막아 다오. 이번 주는 손이 모자라다. — 엘더",
    "goal": {
     "type": "raid",

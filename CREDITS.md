@@ -27,6 +27,19 @@ CC BY-SA 에셋(`behemoth`, `bone`)을 수정한 결과물은 같은 CC BY-SA 3.
 | `cave.png` (굴 속 바위 바닥·검은 구멍·돌덩이) | 같은 "Zelda-like tilesets and sprites" by ArMM1998 (CC0) | OpenGameArt |
 | `inner.png` (굴에 놓는 살림살이) | 〃 | OpenGameArt |
 
+## 결투장 그림 (`assets/sprites/arena/`)
+
+이 게임을 위해 VARCO 3D 워크플로우의 이미지 생성(gpt-image-2.5-flare)으로 만들었다. 위 `village.png` 일부를 그림체 참고로 넣었고,
+자홍색 바탕을 지운 뒤 게임 픽셀 크기로 줄였다 (세 배로 키워 찍는다).
+
+| 파일 | 무엇 |
+|---|---|
+| `morgath_grave.png` | 모르가스의 무덤: 용 무늬를 새긴 선돌과 돌무더기, 얼음 결정, 뼈 |
+| `egg_wall.png`, `egg_nest.png` | 글라시아의 알 벽 (얼음 속의 알) · 녹은 뒤의 눈 둥지 (같은 그림에서 얼음만 녹이도록 고쳐 그림) |
+| `twin_nest.png` | 잘고라 형제의 둥지: 구멍 둘, 못 박은 팽이 |
+| `beast_bones.png` | 바실의 사구: 모래에 묻힌 짐승 뼈와 부러진 창 셋 |
+| `mark_monolith.png` | 이그나르의 결투장: 하늘 용의 표식을 새긴 흑요석 돌 |
+
 ## 효과 (`assets/vfx/`)
 
 | 파일 | 원작 | 출처 |
@@ -89,6 +102,9 @@ CC BY-SA 에셋(`behemoth`, `bone`)을 수정한 결과물은 같은 CC BY-SA 3.
 | `hurt1~3.ogg`, `boom1~3.ogg`, `die1~3.ogg`, `bigdie1~2.ogg`, `warn.ogg`, `thud1~2.ogg`, `glass1~3.ogg` | "Impact Sounds" by Kenney — `impactPunch_heavy`, `impactPlate_heavy`, `impactSoft_heavy`, `impactBell_heavy`, `impactWood_heavy`, `impactGlass` | CC0 | https://kenney.nl/assets/impact-sounds |
 | `pickup.ogg`, `chest.ogg`, `quest1~3.ogg`, `whoosh1~3.ogg` | "RPG Audio" by Kenney — `handleSmallLeather`, `metalLatch`, `bookFlip1~3`, `cloth1~3` | CC0 | https://kenney.nl/assets/rpg-audio |
 | `slash1~2.ogg`, `coin.ogg`, `ui.ogg` | "RPG Audio" by Kenney — `knifeSlice`, `handleCoins`, `metalClick` | CC0 | https://kenney.nl/assets/rpg-audio |
+| `boss/howl.ogg`, `boss/monster_04.ogg`, `boss/roar_02.ogg`, `boss/scream_01.ogg`, `boss/scream_02.ogg`, `boss/breath.ogg` (보스 울음) | "80 CC0 creature SFX" by rubberduck | CC0 | https://opengameart.org/content/80-cc0-creature-sfx |
+| `boss/roar_04~06.ogg`, `boss/die_03.ogg` (보스 울음) | "80 CC0 creature SFX #2" by rubberduck | CC0 | https://opengameart.org/content/80-cc0-creture-sfx-2 |
+| `boss/monster_roar.wav` (바실의 포효. 가장 센 3.5초를 한 채널로 잘라 냄) | "CC0 Deep Monster Roar" by trazzz123 | CC0 | https://opengameart.org/content/cc0-deep-monster-roar |
 
 나머지 효과음 40여 종은 파일 없이 WebAudio 로 그때그때 만든다 (`src/systems/audio.js`).
 

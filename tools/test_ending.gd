@@ -94,7 +94,11 @@ func _fight_and_choose(b: Boss) -> void:
 		_advance()
 	await _wait(1.0)
 	print("[싸움] 깨어남=%s 막대=%s" % [b.awake, Hud.current.get_node("BossBar").visible])
-	b.take_damage(b.hp + 1)
+	# 마지막 판 앞에서 카이론이 내려앉는 장면이 끼므로 (한 방에 쓰러뜨려도 그 판부터 다시), 무릎 꿇을 때까지 친다
+	for i in 3:
+		if b.lingering or b.dying > 0: break
+		b.take_damage(b.hp + 1)
+		await _play_until(func(): return b.lingering or (not b.yielding and not Cutscene.on), 20)
 	await _play_until(func(): return b.lingering, 10)
 	print("[무릎] 남음=%s m6=%s" % [b.lingering, GameState.quests.active.get("m6")])
 	await _play_until(func(): return GameState.story.get("choices", {}).has("ev_ignar_fall") or Ending.playing, 40)
@@ -144,7 +148,7 @@ func _advance() -> void:
 	for i in labels.size():
 		var l: String = labels[i]
 		if _route == "dark" and l.begins_with("…계속 말해"): want = i
-		if _route == "redeem" and l.begins_with("같이 가자"): want = i
+		if _route == "redeem" and l.find("같이 가자") >= 0: want = i   # 말로 하는 선택지는 따옴표로 묶여 있다
 		if _route == "guardian" and l == "끝낸다": want = i
 	box._choose(want)
 

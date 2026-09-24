@@ -62,7 +62,7 @@ static func add_momentum(n: float) -> void:
 	var now := tier()
 	var p = GameState.player
 	if now > before and p:
-		_once("flowTier", "기세: 맞지 않고 계속 맞히면 게이지가 차고 숨결이 세진다. 아슬아슬하게 대시로 피하면(간발) 한꺼번에 많이 찬다.", "🔥")
+		_once("flowTier", "기세: 맞지 않고 계속 맞히면 게이지가 차고 브레스가 세진다. 아슬아슬하게 대시로 피하면(간발) 한꺼번에 많이 찬다.", "🔥")
 		Vfx.spawn_effect("AURA", p.x, p.y - 40, { size = 0.8 + now * 0.3, color = TIER_COLORS[now] })
 		if now == 3:
 			Vfx.spawn_text(p.x, p.y - 120 * p.stage.scale, "절정!", TIER_COLORS[now], 18)
@@ -133,7 +133,7 @@ static func try_perfect_dodge(p) -> void:
 		if not _boss_attacking(b) or b.stagger > 0: continue
 		b.stagger = 2.4; b.opening = true
 		Vfx.spawn_text(b.x, b.y - 90 * b.def.get("scale", 1), "빈틈!", "#9fe3ff", 20)
-		_once("flowBoss", "빈틈! 보스의 큰 공격을 간발로 피하면 잠깐 비틀거린다. 그동안 두 배로 맞는다.", "💥")
+		_once("flowBoss", "빈틈! 보스의 큰 공격을 아슬아슬하게 피하면(간발) 보스가 잠깐 비틀거린다. 그동안은 보스가 피해를 두 배로 입는다.", "💥")
 	# 유물 '폭풍의 눈': 간발로 피한 자리에 번개가 떨어진다
 	if Relics.has("STORM_EYE"):
 		for e in E.enemies + E.humans + E.bosses:

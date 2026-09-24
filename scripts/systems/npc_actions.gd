@@ -113,7 +113,7 @@ static func open_hub(npc, skip_errand := false) -> bool:
 
 	# 인사말 앞에 지금 무얼 하고 있었는지를 한 줄 깔아 둔다. 내 굴까지 따라 들어왔다면 굴 구경평부터 한다
 	var text := _greeting(npc, talk, tier)
-	if Den.in_my_den(): text = "%s\n\n%s" % [Den.visit_line(), text]
+	if Den.in_my_den(): text = Den.home_greeting(npc, text)
 	elif npc.doing: text = "(%s.)\n\n%s" % ["자다가 부스스 눈을 뜬다" if _asleep(npc) else npc.doing, text]   # 코를 골던 용이 곧바로 멀쩡히 인사하지 않게
 	if running:   # 힌트가 있으면 힌트로 ('그 자리에 가 있기 0/1' 처럼 어디인지 없는 목표 글 대신). 숫자는 셀 게 여럿일 때만
 		var total := Quests.step_total(running)

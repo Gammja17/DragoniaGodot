@@ -18,8 +18,15 @@ static func _show(baby, kid: Dictionary, text: String, options: Array) -> void:
 ## 애정 단계(0~2)에 맞는 대사 하나
 static func _line(kid: Dictionary, kind: String) -> String:
 	var talk: Dictionary = Data.get_module("npcTalk").KID_TALK[kid.personality]
-	var tier := 2 if kid.affection >= 60 else 1 if kid.affection >= 25 else 0
-	return talk[kind][mini(tier, talk[kind].size() - 1)].pick_random()
+	var tier := mini(2 if kid.affection >= 60 else 1 if kid.affection >= 25 else 0, talk[kind].size() - 1)
+	# 제 부모를 남 부르듯 하는 줄('포코 삼촌' · '엘더 할아버지')은 뺀다.
+	# 그 단계에 남는 줄이 없으면 한 단계 아래 줄을 쓴다
+	var parent := Kids.parent_of(kid)
+	var nm: String = Names.npc(parent) if parent != "" else ""
+	for t in range(tier, -1, -1):
+		var fit: Array = talk[kind][t].filter(func(l): return nm == "" or not l.contains(nm))
+		if not fit.is_empty(): return fit.pick_random()
+	return talk[kind][tier].pick_random()
 
 
 static func open_hub(baby) -> void:

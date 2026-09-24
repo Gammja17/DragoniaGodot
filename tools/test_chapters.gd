@@ -26,6 +26,7 @@ func _ready() -> void:
 	await _chapter3()
 	await _chapter4()
 	await _chapter5()
+	await _chapter6()
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit()
 
@@ -287,6 +288,27 @@ func _chapter5() -> void:
 	# 다시 식음: 수군거림이 돈다
 	var ember = World.any_npc("Ember")
 	_check("5장", "다시 식음: 엠버가 수군거림을 전한다", _greets(ember, Data.get_module("npcTalk").NPC_TALK.Ember, "속성 여럿 가진 애가"))
+
+
+## 6장 본편은 H 몫. 여기서는 8장이 기대는 다짐과, 이름을 밝히는 자리가 앞의 선택을 읽는지만 본다
+func _chapter6() -> void:
+	var G := GameState
+	var m6w = Quests.by_id("m6w")
+	_check("6장", "장례: 카이론 '다시는 마을을 비우지 않겠소'", JSON.stringify(m6w.steps).contains("다시는 마을을 비우지 않겠소"))
+	# 이름을 밝히는 장면: p1 을 끝냈고(later), m3 에서 물었다(press)
+	G.quests.choices.m3 = "press"
+	Chronicle.play_scene("전쟁", m6w.reward.scene)
+	await _play_until(_idle, 30)
+	_check("6장", "p1 을 읽는다 ('이제는 이르지 않구나')", _saw("이제는 이르지 않구나"))
+	_check("6장", "m3=press 를 읽는다 (기다린 줄은 안 나옴)", _saw("이름만은 묻지 말아 달라고") and not _saw("묻지 않고 기다려 주었지"))
+	_check("6장", "이그나르 = 엘더가 말한 예외", _saw("내가 말한 예외가 그 아이란다"))
+	# 그론이 떠난 뒤 엠버의 줄 (S2 · S5)
+	G.story.dead = ["Gron"]
+	var ember = World.any_npc("Ember")
+	_check("6장", "엠버 인사: 망치질 → 대장간이 덜 조용해", NpcActions._retold(ember, "야, 네가 오면 아저씨 망치질이 부드러워져. 진짜야. 자주 좀 와라.").contains("덜 조용해"))
+	_check("6장", "엠버 이야기: '이제 그 소리 들을 일도 없네'", NpcActions._retold(ember, "나 언젠가 아저씨보다 잘 만들 거야. 비밀도 아니야, 맨날 대놓고 말하거든. 그럼 아저씨가 '백 년은 이르다' 그래.").contains("들을 일도 없네"))
+	G.story.dead = []
+	_check("6장", "밤손님: '여긴 하나도 안 변했군'", JSON.stringify(_event("ev_messenger").lines).contains("하나도 안 변했군"))
 
 
 # ---------- 도구 ----------

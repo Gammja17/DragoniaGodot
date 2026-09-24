@@ -94,7 +94,8 @@ func _parents() -> void:
 	for i in 200:
 		if KidActions._line(kid, "chat").contains("포코"): hits += 1
 		if KidActions._line(kid2, "chat").contains("포코"): hits2 += 1
-	_check("아이 대사: 포코의 아이는 '포코 삼촌'이라 안 부른다", hits == 0 and hits2 > 0, "포코의 아이 %d/200 · 카이론의 아이 %d/200" % [hits, hits2])
+	# C 가 KID_TALK 에서 '포코 삼촌' 줄을 뺐다. 카이론의 아이 쪽(hits2)은 이제 0 이어도 된다
+	_check("아이 대사: 포코의 아이는 '포코 삼촌'이라 안 부른다", hits == 0, "포코의 아이 %d/200 · 카이론의 아이 %d/200" % [hits, hits2])
 	kid.personality = "PLAYFUL"; kid.affection = 80
 	var learn := KidActions._line(kid, "learn")
 	_check("아이 대사: 한 줄뿐인 단계에서 빠지면 한 단계 아래 줄", not learn.contains("포코"), learn)
@@ -225,6 +226,10 @@ func _guests() -> void:
 	var tiamat = World.any_npc("Tiamat")
 	var haru = World.any_npc("Haru")
 	poco.relation = 60; tiamat.relation = 60; haru.relation = 90
+	# 반겨 맞아 호감이 오르면 인연 장면(B)이 예약되어 대화창이 열린 채 남는다. 여기서는 손님만 본다
+	if not GameState.story.get("bonds"): GameState.story.bonds = []
+	for nm in ["Poco", "Tiamat", "Haru"]:
+		for tier in [1, 2, 3]: GameState.story.bonds.append("%s:%d" % [nm, tier])
 	await _evening(3)
 	_check("살 만하다(8점)에는 손님이 없다", _guest() == "", _guest())
 	GameState.denDecor.append({ id = "FIREPLACE", tx = 15, ty = 1 })

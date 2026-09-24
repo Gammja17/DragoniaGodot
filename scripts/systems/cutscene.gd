@@ -311,7 +311,7 @@ static func camera_target(cam_h: float):
 ## 카메라 박자의 대상이 지금 어디 있나
 static func _point(to) -> Vector2:
 	if to is Vector2: return to
-	if to is Object and is_instance_valid(to): return Vector2(to.x, to.y - 20)
+	if is_instance_valid(to): return Vector2(to.x, to.y - 20)   # 'is Object' 는 이미 치워진 용에 쓰면 오류가 난다
 	return _origin
 
 

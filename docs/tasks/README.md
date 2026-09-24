@@ -113,18 +113,18 @@ git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/Drag
 
 | 세션 | 하는 일 | 크기 | 언제 | 폴더 · 브랜치 |
 |---|---|---|---|---|
-| A | 보스 연출 · 결투장 | 중 | 지금 (이 세션) | DragoniaGodot-boss · improve/boss |
-| B | 조건·구조 고치기 + 확인된 버그 | 중 | 지금 | DragoniaGodot-fix · improve/fix |
-| C | 이야기 다시 쓰기 (1~5장, 7~8장) + 고룡 조건 | 대 | 지금 | DragoniaGodot-story · improve/story |
-| D | 해 질 녘 폭포: 몰래 다가가기 | 중 | 지금 | DragoniaGodot-tryst · improve/tryst |
-| E | 생활: 굴 손님 · 짝과 사는 굴 · 달맞이 모임 | 중 | 지금 | DragoniaGodot-life · improve/life |
-| HUD | 화면 알림 정리 | — | 원래 폴더에서 진행 중 | DragoniaGodot · improve/depth-flow |
+| A | 보스 연출 · 결투장 | 중 | 끝 · 합침 | DragoniaGodot-boss · improve/boss |
+| B | 조건·구조 고치기 + 확인된 버그 | 중 | 끝 · 합침 | DragoniaGodot-fix · improve/fix |
+| C | 이야기 다시 쓰기 (1~5장, 7~8장) + 고룡 조건 | 대 | 끝 · 합침 | DragoniaGodot-story · improve/story |
+| D | 해 질 녘 폭포: 몰래 다가가기 | 중 | 끝 · 합침 | DragoniaGodot-tryst · improve/tryst |
+| E | 생활: 굴 손님 · 짝과 사는 굴 · 달맞이 모임 | 중 | 끝 · 합침 | DragoniaGodot-life · improve/life |
+| HUD | 화면 알림 정리 | — | 끝 · 합침 | DragoniaGodot · improve/depth-flow |
 | F | 처음 하는 사람 안내 · 일지의 지금까지 이야기 · 에필로그의 생활 줄 | 중 | B·C 뒤 | |
 | G | 원정대 (함께 싸우는 동료) | 대 | A·B·HUD 뒤 | |
 | H | 6장 전쟁 | 대 | C·G 뒤 | |
 
-- 지금 한꺼번에 돌릴 수 있는 것은 A~E 다섯이다.
-- 세션을 덜 열고 싶으면 D와 E를 뒤로 미룬다. 서로 기다리는 일이 없어서 어느 것을 먼저 해도 된다.
+- A~E와 HUD는 모두 끝나서 `improve/story-depth`에 합쳤다 (6절).
+- 이제 F와 G를 함께 돌릴 수 있다. H는 G 뒤에 한다.
 
 ---
 
@@ -132,7 +132,7 @@ git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/Drag
 
 | 세션 | 스크립트 | 데이터 · 문서 |
 |---|---|---|
-| A | `entities/boss.gd`, `systems/boss_show.gd`, `systems/cutscene.gd`, `entities/prop.gd`, `render/pixel.gd`, `tools/test_boss.gd`. 보스 피해 조정에 필요할 때만 `systems/combat.gd`, `entities/projectile.gd`, `entities/enemy.gd` | `enemies.json`의 BOSSES, `tiles.json`의 PROP_SPRITES, `maps.json`의 MORGATH_LAIR · ZALGORA_LAIR · GLACIA_LAIR · BASIL_LAIR · IGNAR_LAIR |
+| A | `entities/boss.gd`, `systems/boss_show.gd`, `systems/cutscene.gd`, `entities/prop.gd`, `render/pixel.gd`, `tools/test_boss.gd`. 보스 피해 조정에 필요할 때만 `systems/combat.gd`, `entities/projectile.gd`, `entities/enemy.gd` | `enemies.json`의 BOSSES, `tiles.json`의 PROP_SPRITES, `maps.json`의 MORGATH_LAIR · ZALGORA_LAIR · GLACIA_LAIR · BASIL_LAIR · IGNAR_LAIR. 하면서 더 맡은 것: `icons.json`의 DRAGON_SKULL · BONES · RIB, `assets/sfx/boss/`, `assets/sprites/arena/`, `CREDITS.md`의 보스 울음 · 결투장 그림 줄 |
 | B | `systems/npc_actions.gd`, `quests.gd`, `guide.gd`, `growth.gd`, `delve.gd`, `raid.gd`, `training.gd`, `romance.gd`, `chores.gd`, `chatter.gd`, `weather.gd`, `save.gd`, `core/game_state.gd`, `ui/journal_panel.gd`, `ui/title.gd` | `chores.json`, `romance.json`, `training.json`, `chatter.json`, `dialogues.json`, `routines.json` |
 | C | `systems/story.gd`, `chronicle.gd`, `chapters.gd`, `prologue.gd`, `ending.gd` | `npcTalk.json`, `chronicle.json`, `quests.json`, `story.json`, `chapters.json`, `npcs.json`, `elements.json`, `ceremony.json`, `ceremony_lines.json`, `ending.json`, `maps.json`의 SNOW_RIDGE, `docs/lore.md` (D 몫으로 뗀 항목은 빼고) |
 | D | 새로 만드는 파일 (`systems/sneak.gd`, 필요한 씬, `tools/test_sneak`) | `chronicle.json`의 ev_tryst · ev_tryst_mine, `quests.json`의 s1, `npcTalk.json`의 NPC_TALK.Mira.topics[3], `maps.json`의 FALLS. 새 항목은 이것들 바로 뒤에 넣는다 |
@@ -332,6 +332,8 @@ git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/Drag
 - 호감으로 누가 따라나설지, 얼마나 세게 싸울지를 정한다.
 - 이야기가 누가 따라왔는지 알게 한다.
 - 쓰러지면 작은 값을 치르게 한다 (`dragon.gd:557`).
+- 이그나르전 마지막 판에는 카이론이 내려와 끝까지 같이 싸운다 (A: 컷씬 `{ stay = "Kairon" }` · `Boss.ally`). 함께 싸우는 틀은 여기서부터 넓힌다.
+- 누가 따라나서는지(동행)는 C가 지금 흐름대로 두었다. 지금 흐름에서 시작한다.
 
 **H. 6장 전쟁 (C·G 뒤)**
 - lore 6-1 전체를 게임에 넣는다.
@@ -341,6 +343,7 @@ git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/Drag
 - 잿빛 비늘과 발톱 자국을 조사한다. 화살표 없이 찾는다.
 - 베르단이 빈 마을을 치고 그론이 죽는다.
 - 증거를 들고 두 촌장 앞에서 화해를 얻어 낸다.
+- C가 넣은 장례의 다짐 줄은 남긴다. 8장에서 카이론이 이그나르에게 가지 않는 까닭("그날 뒤로 이 마을을 비우지 않기로 했다")이 이 줄에 걸려 있다.
 
 ### HUD 세션에게
 1. 커밋하기 전에 `scripts/systems/story.gd` 220행 맨 앞에 잘못 들어간 "w" 한 글자를 지운다. 지금 그대로 두면 이 스크립트가 읽히지 않는다.
@@ -372,3 +375,28 @@ C:\Users\Dev\Desktop\DragoniaGodot-depth\docs\tasks\README.md 를 읽고 [B] 카
 2절 파일 주인 표에서 B 칸에 없는 파일은 고치지 마.
 처음에는 할 일을 순서대로 정리해서 보여 주고, 코드를 바꿀 때마다 변경분을 먼저 보여 줘.
 ```
+
+---
+
+## 6. 합친 뒤 (2026-09-24)
+
+HUD와 B가 먼저 합쳐져 있었고, 나머지는 끝난 순서대로 D → E → A → C를 합쳤다.
+
+**합치며 고친 것**
+- `conditions.gd`: B · C · D 블록을 모두 남겼다. 부르는 순서는 `_build_chronicle`(끝에 D 블록) → `_build_fix`(B) → `_build_c`(C)다. C는 `merge(…, true)`로 앞의 같은 키를 덮는다.
+- `npc_actions.gd`: 내 굴 인사는 E의 `Den.home_greeting`을, 자는 용 · 퀘스트 힌트 · 쉬자는 말은 B 것을 남겼다.
+- `gathering.json`: D가 폭포에 놓은 숨을 바위(9.89, 10.82)가 together · redeem 모임의 나라 자리 [10,11]과 겹쳤다. 나라를 첫 모임 때 자리인 [9,11]로 옮겼다.
+- `tools/test_life`: 굴 손님을 반겨 호감이 오르면 B의 인연 장면이 떠서, 창 없는 시험이 그 자리에서 멈췄다. 시험에서는 인연 장면을 본 것으로 적어 둔다. C가 KID_TALK에서 '포코 삼촌' 줄을 뺐으므로, 카이론의 아이가 그 줄을 말하는지는 더 보지 않는다.
+- `cutscene.gd`: 카메라가 보던 용이 장면 도중에 치워지면 매 프레임 오류가 나던 것.
+- 보스 장면(A)을 C의 장면에 맞췄다.
+  - 모르가스 등장 첫 줄에 누리를 찾는 내 속말을 넣었다. C의 장면에서 모르가스가 "싸우는 내내 뭔가를 찾아 두리번거리더구나"라고 한다.
+  - 글라시아의 "그렇게 말했느냐"를 뺐다. C의 장면 첫 줄이 같은 말을 묻는다.
+  - 카이론이 형에게 하는 말을 하오체로 바꿨다 ("…오랜만이오, 형"). C의 대사가 그렇다.
+  - 이그나르의 대화창 대사에서 「」를 뺐다. C의 이그나르 대사가 그렇다. 싸움 중 자막은 그대로 「」다.
+
+**남은 것**
+1. `training.json` TRIPS.hollow: 카이론이 모르가스를 "우리 스승님"이라 부른다. 모르가스는 엘더의 스승이다.
+2. s1에서 고른 것(cover · warn · tell)을 뒤에서 읽는 줄이 없다. tell은 미라가 "내 입으로 말씀드릴게"라고 한 채 끝나고, 받는 장면이 없다.
+3. 수군거림은 지금 인사(npcTalk SITUATION_LINES의 chill · family)로만 들린다. B가 `chatter.json` 잡담에도 `when`을 달 수 있게 했으니, 마을 용끼리 수군대는 줄을 한두 개 깐다.
+4. 옛 세이브: m4 대목이 [성체 되기 → 모르가스 → 장면 → 폭포]에서 [모르가스 → 소이 → 폭포]로 바뀌었다. 3장 도중 세이브는 대목 번호가 어긋난다. main에 합치기 전에, 불러올 때 대목을 옮겨 주는 줄을 넣는다. m5a는 대목 수가 같고, 새 첫 대목은 얼음 능선(SNOW_RIDGE)에 가면 풀린다.
+5. 닿지 않는 코드: `growth.gd`의 "삼원룡" 칸, `relics.gd` 머리 주석, `conditions.gd`에서 의식 대사를 만드는 반복문의 "3" · "4" (`ceremony.json`에는 의식이 1 · 2만 남았다). 해는 없다.

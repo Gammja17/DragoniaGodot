@@ -16,7 +16,7 @@ func _ready() -> void:
 	for id in ["TAIL_SWIPE", "METEOR"]: Skills.learn(id, true)
 	for id in Relics.table().keys().slice(0, 4): Relics.grant(id, p.x, p.y)
 	GameState.quests.active.m0 = { step = 2, n = 0 }
-	for t in ["quests", "map", "bag", "folk", "skills", "growth", "relics", "codex", "record", "sound"]:
+	for t in ["quests", "story", "map", "bag", "folk", "skills", "growth", "relics", "codex", "record", "sound"]:
 		j.toggle_tab(t)
 		await get_tree().process_frame
 		print("[%s] 보임=%s 목록 %d줄" % [t, j.visible, j._list.get_child_count()])

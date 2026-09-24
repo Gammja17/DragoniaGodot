@@ -60,7 +60,7 @@
    "needs": "ev_morgath",
    "name": "옛 수호룡 모르가스",
    "title": "달빛 골짜기의 주인",
-   "species": "BONE",
+   "species": "BOSS",
    "colors": {
     "body": "#ffffff",
     "wing": "#ffffff"
@@ -201,13 +201,14 @@
      "who": "나",
      "text": "(나를… 누구로 보는 거지?)"
     }
-   ]
+   ],
+   "look": 0
   },
   "ZALGORA": {
    "needs": "ev_zalgora",
    "name": "쌍두룡 잘고라",
    "title": "환영의 밀림을 차지한 폭군",
-   "species": "HYDRA",
+   "species": "BOSS",
    "colors": {
     "body": "#a3262b",
     "wing": "#e0a020"
@@ -334,13 +335,14 @@
       }
      ]
     }
-   ]
+   ],
+   "look": 1
   },
   "GLACIA": {
    "needs": "ev_glacia",
    "name": "봉우리의 글라시아",
    "title": "예순 개의 알을 품은 용",
-   "species": "WYVERN",
+   "species": "BOSS",
    "colors": {
     "body": "#cfeaff",
     "wing": "#7fb8ff"
@@ -520,13 +522,14 @@
       }
      ]
     }
-   ]
+   ],
+   "look": 2
   },
   "BASIL": {
    "needs": "ev_basil",
    "name": "모래 폭군 바실",
    "title": "죽은 사구의 포식자",
-   "species": "BEHEMOTH",
+   "species": "BOSS",
    "colors": {
     "body": "#c9a24a",
     "wing": "#8a5a2a"
@@ -654,7 +657,8 @@
       }
      ]
     }
-   ]
+   ],
+   "look": 3
   },
   "IGNAR": {
    "needs": "ev_ignar",

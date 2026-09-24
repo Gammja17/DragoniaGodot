@@ -86,7 +86,7 @@ static func save_game() -> void:
 		v = 1,
 		savedAt = Time.get_unix_time_from_system() * 1000,
 		player = {
-			config = { name = p.config.get("name"), species = p.species, colors = p.colors, accessory = p.config.get("accessory"), look = p.look },
+			config = { name = p.config.get("name"), species = p.species, colors = p.colors, accessory = p.config.get("accessory"), look = p.preset if p.species == "HERO" else p.look },
 			level = p.level, xp = p.xp, maxXp = p.max_xp, hp = p.hp, maxHp = p.max_hp, hunger = p.hunger,
 			meat = p.inventory.meat, gold = p.gold, x = p.x, y = p.y, carrying = p.carrying,
 			stageIndex = p.stage_index, elements = p.elements, element = p.element, skills = p.skills, slots = p.slots,

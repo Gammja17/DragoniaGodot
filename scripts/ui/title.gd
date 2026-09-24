@@ -2,15 +2,12 @@ class_name Title
 extends Control
 ## 처음 화면. 2D판 ui/customizer.js + 세이브 칸 셋.
 ##   [기록]      칸 셋. 이어 하기 · 새로 시작 · 지우기
-##   [새 용]     이름 · 외형 30가지 · 장신구 · (옛 종족은) 몸과 날개 색 → 눈을 뜬다
+##   [새 용]     이름 · 주인공 프리셋 다섯(자라는 모습 세 단계) · 장신구 · 몸 · 날개 · 문양 색 → 눈을 뜬다
 ##   [되묻기]    차 있는 칸을 덮어쓰거나 지울 때 한 번 더 묻는다
 ## 고른 것은 Launch 에 담아 게임 씬(main.tscn)으로 넘긴다.
 
 const LOOK_CELL := preload("res://scenes/ui/look_cell.tscn")
 const GAME := "res://scenes/main.tscn"
-# 색을 바꿀 수 있는 옛 종족 4 (한 장짜리 새 외형 26 뒤에 붙는다).
-# 머리 둘 달린 종은 '쌍두룡'이라 부르지 않는다. 그 이름은 형제가 한 몸이 된 잘고라의 것이다
-const CLASSIC := [["WESTERN", "서양룡 (색 변경 가능)"], ["WYVERN", "와이번 (색 변경 가능)"], ["HYDRA", "히드라 (색 변경 가능)"], ["BEHEMOTH", "베히모스 (색 변경 가능)"]]
 const ACCESSORIES := [null, "PLUME", "FLOWER", "LEAF", "HELM", "HAT", "CROWN"]
 
 @onready var _slots: PanelContainer = $Center/Column/Slots
@@ -20,13 +17,15 @@ const ACCESSORIES := [null, "PLUME", "FLOWER", "LEAF", "HELM", "HAT", "CROWN"]
 @onready var _look_name: Label = $Center/Column/Create/Lines/Body/Left/LookName
 @onready var _preview: Control = $Center/Column/Create/Lines/Body/Left/Stage/Portrait
 @onready var _gallery: ScrollContainer = $Center/Column/Create/Lines/Body/Right/Gallery
+@onready var _grow: Control = $Center/Column/Create/Lines/Body/Right/Grow
 @onready var _colors: Control = $Center/Column/Create/Lines/Body/Left/Colors
 @onready var _body: ColorPickerButton = $Center/Column/Create/Lines/Body/Left/Colors/Body/Pick
 @onready var _wing: ColorPickerButton = $Center/Column/Create/Lines/Body/Left/Colors/Wing/Pick
+@onready var _mark: ColorPickerButton = $Center/Column/Create/Lines/Body/Left/Colors/Mark/Pick
 @onready var _name: LineEdit = $Center/Column/Create/Lines/Body/Left/Name
 
 var _slot := 1
-var _choice := { species = "LOOK", look = 0 }
+var _choice := { species = "HERO", look = 0 }
 var _cells := []
 var _on_yes: Callable
 
@@ -43,6 +42,7 @@ func _ready() -> void:
 	$Center/Column/Confirm/Lines/Buttons/No.pressed.connect(func(): _show(_slots))
 	_body.color_changed.connect(func(_c): _recolor())
 	_wing.color_changed.connect(func(_c): _recolor())
+	_mark.color_changed.connect(func(_c): _recolor())
 	_build_gallery()
 	_show(_slots)
 
@@ -54,7 +54,11 @@ func _show(page: Control) -> void:
 	# 새 용 판은 키가 커서, 낮은 화면(휴대폰)에서는 제목을 접고 외형 목록을 줄인다
 	var h := get_viewport_rect().size.y
 	for n in ["Logo", "Subtitle", "Gap"]: $Center/Column.get_node(n).visible = page != _create or h >= 600
-	_gallery.custom_minimum_size.y = clampf(h - 250, 150, 280)
+	var low := h < 520   # 휴대폰 가로: 무대를 줄이고 이름 칸 글씨도 작게 (색이 세 줄이라 왼쪽이 길다)
+	var left := $Center/Column/Create/Lines/Body/Left
+	left.get_node("Stage").custom_minimum_size.y = 96 if low else 170
+	left.get_node("NameLabel").visible = not low
+	_name.add_theme_font_size_override("font_size", 12 if low else 24)
 	if page == _create:
 		$Center/Column/Create/Lines/Head/Slot.text = "%d번 칸" % _slot
 		_name.grab_focus()
@@ -95,9 +99,9 @@ func _delete(n: int) -> void:
 # ---------- 새 용 ----------
 
 func _build_gallery() -> void:
-	var names: Array = Data.get_module("sprites").LOOK_NAMES
-	for i in names.size(): _add_cell({ species = "LOOK", look = i }, names[i])
-	for c in CLASSIC: _add_cell({ species = c[0], look = 0 }, c[1])
+	# 주인공 프리셋 다섯 (data/sprites.json HERO). 옛 종족·26종 외형은 마을 용과 아이들만 쓴다
+	var presets: Array = Data.get_module("sprites").HERO_PRESETS
+	for i in presets.size(): _add_cell({ species = "HERO", look = i }, presets[i].name)
 	_select(_cells[0])
 
 
@@ -113,22 +117,38 @@ func _select(cell: LookCell) -> void:
 	_choice = cell.value
 	for c in _cells: c.set_selected(c == cell)
 	_look_name.text = cell.look_name
-	_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), int(_choice.look))
-	_preview.queue_redraw()
+	_show_growth()
 	_colors.visible = _choice.species != "LOOK"   # 한 장짜리 외형은 색을 바꿀 수 없다
 
 
 func _colors_now() -> Dictionary:
-	return { body = "#" + _body.color.to_html(false), wing = "#" + _wing.color.to_html(false) }
+	return { body = "#" + _body.color.to_html(false), wing = "#" + _wing.color.to_html(false), mark = "#" + _mark.color.to_html(false) }
+
+
+## HERO 는 성체 칸으로 미리 보여 준다 (칸 번호 = 프리셋 × 3 + 2)
+func _preview_look(v: Dictionary) -> int:
+	return int(v.look) * 3 + 2 if v.species == "HERO" else int(v.look)
 
 
 ## 색을 바꾸면 옛 종족 칸들의 그림을 다시 칠한다
 func _recolor() -> void:
 	for c in _cells:
 		if c.value.species != "LOOK": c.setup(c.value, c.look_name, _colors_now())
-	if _choice.species != "LOOK":
-		_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), 0)
-		_preview.queue_redraw()
+	if _choice.species != "LOOK": _show_growth()
+
+
+## 큰 미리보기(성체)와 자라는 모습 세 칸 (HERO 는 프리셋 × 3 + 단계)
+func _show_growth() -> void:
+	_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), _preview_look(_choice))
+	_preview.queue_redraw()
+	var hero: bool = _choice.species == "HERO"
+	_grow.visible = hero
+	$Center/Column/Create/Lines/Body/Right/GrowLabel.visible = hero
+	if not hero: return
+	for i in 3:
+		var p: Control = _grow.get_child(i).get_node("Portrait")
+		p.sheet = DragonSprites.get_sheet("HERO", _colors_now(), int(_choice.look) * 3 + i)
+		p.queue_redraw()
 
 
 func _start() -> void:

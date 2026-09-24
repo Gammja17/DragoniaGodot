@@ -40,6 +40,7 @@ var config: Dictionary
 var species: String
 var colors: Dictionary
 var look := 0
+var preset := 0   # species HERO 의 프리셋 번호. 칸 번호(look)는 성장 단계로 고른다 (2D판 Dragon.preset)
 
 var level := 1
 var xp := 0.0
@@ -144,6 +145,8 @@ func setup(px: float, py: float, cfg: Dictionary, player := false) -> Dragon:
 	species = cfg.get("species", "WESTERN")
 	colors = cfg.get("colors", {}).duplicate()
 	look = int(cfg.get("look", 0))
+	preset = look
+	if species == "HERO": look = preset * 3 + mini(2, stage_index)
 	if not player and cfg.get("maxHp"):
 		hp = cfg.maxHp; max_hp = cfg.maxHp
 	sheet = DragonSprites.get_sheet(species, colors, look)
@@ -167,6 +170,12 @@ func light():
 
 func update(dt: float) -> void:
 	if chat_fade > 0: chat_fade -= dt * 0.3
+	if species == "HERO":   # 자라면 다음 단계 그림으로 (저장을 불러온 뒤에도 여기서 맞춰진다)
+		var want := preset * 3 + mini(2, stage_index)
+		if want != look:
+			look = want
+			sheet = DragonSprites.get_sheet(species, colors, look)
+			animator = SpriteSheet.Animator.new(sheet)
 	hover_y = sin(GameState.game_time * 2 + anim_phase) * 6 if sheet.flying else 0.0
 	# 날아오르는 중이면 몸이 천천히 떠오르고, 내려앉으면 내려온다 (그리기는 전부 hover_y 를 쓴다)
 	if is_player:
@@ -1110,7 +1119,7 @@ func _draw() -> void:
 		t = GameState.game_time + anim_phase, moving = moving,
 		attacking = animator.name == "attack" and not animator.done,
 		hurt = maxf(0, 1 - animator.t * 4) if animator.name == "hit" and not animator.done else 0.0,
-		shape = stage.get("shape") if is_player else null,   # 자라면서 몸 비율이 바뀌는 건 내 용뿐이다 (마을 용은 다 성체)
+		shape = stage.get("shape") if is_player and species != "HERO" else null,   # 자라면서 몸 비율이 바뀌는 건 내 용뿐이다 (마을 용은 다 성체). HERO 는 단계마다 그림이 따로 있다
 	}
 	SpriteSheet.draw_frame(self, sheet, f, 0, body_y - dive_height, sc, motion, _outline)
 	_draw_accessory(sc, hover_y - dive_height)

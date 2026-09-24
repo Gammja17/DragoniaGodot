@@ -1874,7 +1874,7 @@
     {
      "side": "S",
      "to": "AUTUMN",
-     "name": "단풍 골"
+     "name": "단풍골"
     }
    ],
    "fixtures": [
@@ -2739,7 +2739,7 @@
    ]
   },
   "AUTUMN": {
-   "name": "단풍 골",
+   "name": "단풍골",
    "biome": "AUTUMN",
    "cw": 20,
    "ch": 15,
@@ -2777,7 +2777,7 @@
     {
      "side": "E",
      "to": "VOLCANO",
-     "name": "잿빛 화산"
+     "name": "잿마루"
     }
    ],
    "fixtures": [
@@ -2815,7 +2815,7 @@
    ]
   },
   "VOLCANO": {
-   "name": "잿빛 화산",
+   "name": "잿마루",
    "biome": "VOLCANO",
    "cw": 22,
    "ch": 16,
@@ -2839,7 +2839,7 @@
     {
      "side": "W",
      "to": "AUTUMN",
-     "name": "단풍 골"
+     "name": "단풍골"
     },
     {
      "side": "E",
@@ -3010,7 +3010,7 @@
     {
      "side": "W",
      "to": "VOLCANO",
-     "name": "잿빛 화산"
+     "name": "잿마루"
     },
     {
      "side": "E",

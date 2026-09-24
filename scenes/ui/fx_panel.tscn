@@ -146,7 +146,7 @@ note = "낮에 땅 위를 지나가는 구름 그림자와 밤의 반딧불이."
 layout_mode = 2
 key = "weather"
 label = "비 · 눈 · 불티"
-note = "비·폭풍의 빗줄기와 번갯불, 설원의 눈, 화산의 불티. 꺼도 날씨의 효과(숨결 세기)는 그대로다."
+note = "비·폭풍의 빗줄기와 번갯불, 설원의 눈, 화산의 불티. 꺼도 날씨의 효과(브레스 세기)는 그대로다."
 
 [node name="Reset" type="Button" parent="Frame/Lines/Body" index="2"]
 layout_mode = 2

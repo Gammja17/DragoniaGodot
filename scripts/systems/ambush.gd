@@ -114,14 +114,14 @@ static func on_captain_down(cap) -> void:
 		{ who = "나", text = "(집 하나하나, 망루, 굴 입구까지 다 맞다. 전에 티아맷이 짚은 대로, 이것도 하늘에서 내려다보고 그린 것이다. 그때 주운 것보다 훨씬 자세하다.)" },
 		{ who = "나", text = "(구석에 인간의 글자가 아닌 것이 적혀 있다. 발톱으로 긁은 자국 같은데, 무슨 뜻인지는 모르겠다.)" },
 	] if first else [
-		{ who = "나", text = "(베르단이 또 물러났다. 부하들이 끌고 가면서 이쪽을 노려본다. 저 자는 포기하는 법을 모르는 것 같다.)" },
+		{ who = "나", text = "(베르단이 또 물러났다. 부하들이 끌고 가면서 이쪽을 노려본다. 저 자는 포기할 줄을 모르는 것 같다.)" },
 	]
 	Chronicle.play_scene("사냥꾼 대장", lines, func():
 		if first:
 			Chronicle.add_clue("map")
 			Hud.pop("일지 [기록]에 단서가 적혔다: 하늘에서 본 지도", "📖")
 		if not Relics.owns("CAPTAIN_HORN"): Relics.grant("CAPTAIN_HORN", GameState.player.x, GameState.player.y)
-		else: RelicOffer.offer("베르단이 떨어뜨리고 간 것")
+		else: RelicOffer.offer("베르단이 떨어뜨리고 간 짐에서")
 		GameState.raidTimer = maxf(GameState.raidTimer, 180)   # 대장이 다쳤으니 한동안 습격이 뜸하다
 		Save.save_game())
 

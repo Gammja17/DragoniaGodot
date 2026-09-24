@@ -515,7 +515,7 @@ static func update_portals() -> void:
 		return
 	# 하늘길. 날고 있어야 건넌다 (Z)
 	if gate.portal.get("needsFlight") and not p.flying:
-		nag.call("여기서부터는 하늘이다. 날아야 건넌다." if p.stage_index >= 2 else "여기서부터는 하늘이다. 성체가 되어야 날 수 있다.", "☁️")
+		nag.call("여기서부터는 하늘이다. [Z]로 날아올라야 건널 수 있다." if p.stage_index >= 2 else "여기서부터는 하늘이다. 성체가 되어야 날 수 있다.", "☁️")
 		return
 	var spot = null
 	if gate.portal.get("spot"): spot = Vector2(gate.portal.spot.x, gate.portal.spot.y + 84)   # 굴에서 나올 때는 들어갔던 입구 앞에 선다

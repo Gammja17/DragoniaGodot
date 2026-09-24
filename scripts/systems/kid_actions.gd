@@ -45,7 +45,7 @@ static func open_hub(baby) -> void:
 	if kid.get("lastTrainDay") != GameState.day and kid.stage != "ADULT": opts.append({ label = "훈련시킨다 (하루 한 번)", on_select = func(): _train(baby, kid, back) })
 	if kid.stage != "BABY" and baby.element != p.element:
 		var el: Dictionary = Data.get_module("elements").ELEMENTS[p.element]
-		opts.append({ label = "%s 숨결을 가르친다" % el.name, on_select = func():
+		opts.append({ label = "%s 속성을 가르친다" % el.name, on_select = func():
 			baby.element = p.element
 			Particles.burst(baby.x, baby.y - 30, el.color, 1, 16)
 			_show(baby, kid, _line(kid, "learn"), [{ label = "잘했어!", on_select = back }]) })

@@ -84,7 +84,7 @@ func harvest() -> void:
 	var p = GameState.player
 	p.hunger = minf(100, p.hunger + 30)
 	p.hp = minf(p.max_hp, p.hp + 15)
-	Hud.pop("달콤한 열매를 먹었습니다. (허기 +30, 체력 +15)", "🍒")
+	Hud.pop("달콤한 열매를 먹었습니다. (배부름 +30, 체력 +15)", "🍒")
 
 
 ## 보물상자 열기 (type 'CHEST'). chest_id 로 열린 상자를 기억한다

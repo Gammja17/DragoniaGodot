@@ -73,7 +73,7 @@ func _render() -> void:
 				_item(id, "%s (가진 것 %d개)" % [F[id].note, Den.owned(id)], false, func():
 					Sfx.play("ui")
 					_hold(id))
-			empty = "아직 가진 살림살이가 없다. [엮는다] 에서 만들어 보자."
+			empty = "아직 가진 살림살이가 없다. [엮는다]에서 만들어 보자."
 		"craft":
 			for id in F:
 				_item(id, Den.cost_text(id), not Den.can_afford(id), func():

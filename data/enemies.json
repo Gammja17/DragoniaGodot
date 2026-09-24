@@ -119,7 +119,7 @@
   "ZALGORA": {
    "needs": "ev_zalgora",
    "name": "쌍두룡 잘고라",
-   "title": "환영의 밀림의 폭군",
+   "title": "환영의 밀림을 차지한 폭군",
    "species": "HYDRA",
    "colors": {
     "body": "#a3262b",
@@ -342,7 +342,7 @@
    "phases": [
     {
      "at": 1,
-     "name": "첫 숨결",
+     "name": "타고난 불",
      "patterns": [
       "AIMED",
       "FLAME_WALL",
@@ -351,8 +351,8 @@
     },
     {
      "at": 0.66,
-     "name": "빼앗은 숨결",
-     "say": "「네가 받았다는 그 숨결들이 나한테는 하나도 주어지지 않았다.」",
+     "name": "빼앗은 속성",
+     "say": "「너는 다 받았다지. 나는 하나도 받아 본 적이 없다.」",
      "summon": [
       "CULTIST",
       "MAGMA_SLIME"
@@ -377,7 +377,7 @@
     }
    ],
    "kneel": true,
-   "fallen": "무릎을 꿇었다"
+   "fallen": "무릎을 꿇다"
   }
  },
  "ENEMIES": {

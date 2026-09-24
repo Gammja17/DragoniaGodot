@@ -19,7 +19,7 @@ func refresh() -> void:
 	$Frame/Lines/Body/Meta.text = "최대 %d명 · 지금 %d명" % [Data.get_module("core_config").MAX_KIDS, GameState.kids.size()]
 	var empty: Label = $Frame/Lines/Body/Empty
 	empty.visible = GameState.kids.is_empty()
-	empty.text = "아직 아이가 없다. 짝에게 말을 걸어 [마음] → 아이 이야기를 꺼내 보자." if GameState.partner \
+	empty.text = "아직 아이가 없다. 짝에게 말을 걸어 [♥ 마음을 전한다] → [우리… 아이를 가질까?]를 골라 보자." if GameState.partner \
 		else "아직 아이가 없다. 마음이 통하는 용과 짝이 되면 둥지에 알을 품을 수 있다."
 	for k in GameState.kids:
 		var row: Control = ROW.instantiate()

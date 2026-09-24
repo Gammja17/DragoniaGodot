@@ -29,7 +29,7 @@ static func has_perk(flag: String) -> bool:
 
 static func grant_points(n: int, why := "") -> void:
 	GameState.growth.points += n
-	if why != "": Hud.pop("%s. 성장 포인트 +%d ([G] 성장)" % [why, n], "🌟")
+	if why != "": Hud.pop("%s. 성장 포인트 +%d ([G] 성장 나무에서 쓴다)" % [why, n], "🌟")
 
 
 ## 이미 쓴 포인트의 합. 옛 세이브를 불러올 때 남은 포인트를 되짚는 데 쓴다
@@ -50,7 +50,7 @@ static func reconcile_points() -> void:
 	GameState.growth.points = maxi(0, earned - _spent_points())
 
 
-const STAGE_LABEL := ["해츨링", "어린 용", "성체", "고룡", "삼원룡"]
+const STAGE_LABEL := ["아기 용", "어린 용", "성체", "고룡", "삼원룡"]
 
 
 static func _nodes_by_id() -> Dictionary: return Data.get_module("growth").NODES_BY_ID
@@ -95,7 +95,7 @@ static func skill_upgrade_cost(id: String):
 static func upgrade_skill(id: String) -> bool:
 	var cost = skill_upgrade_cost(id)
 	if cost == null:
-		Hud.pop("이미 끝까지 익힌 기술입니다.", "📖")
+		Hud.pop("이미 끝까지 익힌 스킬입니다.", "📖")
 		return false
 	var g: Dictionary = GameState.growth
 	if g.points < cost:
@@ -103,6 +103,6 @@ static func upgrade_skill(id: String) -> bool:
 		return false
 	g.points -= cost
 	g.ranks[id] = Skills.rank(id) + 1
-	Hud.pop("[%s] %d단. 위력 ↑ 대기 시간 ↓" % [Skills.defs()[id].name, g.ranks[id]], "📖")
+	Hud.pop("[%s] %d단. 위력 ↑ 재사용 대기 ↓" % [Skills.defs()[id].name, g.ranks[id]], "📖")
 	Sfx.play("level")
 	return true

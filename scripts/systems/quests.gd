@@ -99,7 +99,7 @@ static func goal_text(g: Dictionary) -> String:
 			var nm: String = "인간 사냥꾼" if g.target == "HUNTER" else Data.get_module("enemies").ENEMIES.get(g.target, {}).get("name", g.target)
 			return "%s %d%s 처치" % [nm, n, "명" if g.target == "HUNTER" else "마리"]   # 사람은 '명' (습격 알림과 같게)
 		"killAny": return "아무 적이나 %d마리 처치" % n
-		"elite": return "정예 몬스터 %d마리 처치" % n
+		"elite": return "금빛 정예 %d마리 처치" % n
 		"boss": return "%s 처치" % Data.get_module("enemies").BOSSES[g.id].name
 		"stage": return "[%s] 단계까지 자라기" % Data.get_module("elements").STAGES[int(g.index)].name
 		"collect": return "고기 %d개 모으기" % n
@@ -114,9 +114,9 @@ static func goal_text(g: Dictionary) -> String:
 		"raid": return "마을 습격 %d회 격퇴" % n
 		"spar": return "대련 %d회 승리" % n
 		"tag": return "술래잡기 %d회 승리" % n
-		"upgrade": return "비늘 단련 %d회" % n
+		"upgrade": return "대장간 단련 %d회" % n
 		"chest": return "보물상자 %d개 개봉" % n
-		"delve": return "굴의 지하 %d층까지 내려가기" % n
+		"delve": return "옛 굴 지하 %d층까지 내려가기" % n
 	return "목표"
 
 
@@ -133,7 +133,7 @@ static func reward_text(q: Dictionary) -> String:
 	if r.get("xp"): parts.append("경험치 %d" % r.xp)
 	if r.get("gold"): parts.append("%dG" % r.gold)
 	if r.get("meat"): parts.append("고기 %d" % r.meat)
-	if r.get("relation"): parts.append("호감도 상승")
+	if r.get("relation"): parts.append("호감 상승")
 	return " · ".join(parts) if not parts.is_empty() else "-"
 
 
@@ -329,11 +329,11 @@ static func suggestion():
 			var p = Routine.plan_for(q.giver)
 			if p and not where.has(p.mapName): where.append(p.mapName)
 		return { who = side[0].giver, main = false, title = "누군가 할 말이 있는 눈치다",
-			goal = "마을 용들에게 말을 걸어 보자. 머리 위에 ! 가 뜬 용이 있다" + (" (%s 쪽)" % " · ".join(where.slice(0, 2)) if not where.is_empty() else "") }
+			goal = "마을 용들에게 말을 걸어 보자. 머리 위에 '!'가 뜬 용이 있다" + (" (%s 쪽)" % " · ".join(where.slice(0, 2)) if not where.is_empty() else "") }
 	var t = training.line.call()
 	if t: return { who = "Kairon", title = "오늘의 수련", goal = t.goal if t.get("goal") else "카이론을 찾아간다" }
 	if all().any(func(q): return q.get("auto") and _ready_quest(q)):
-		return { who = null, title = "세상을 돌아다녀 보자", goal = "숲길·호수를 걷다 보면 다음 이야기가 열린다. 굴을 파 보거나 마을 용들과 이야기해도 좋다" }
+		return { who = null, title = "세상을 돌아다녀 보자", goal = "숲길·호수를 걷다 보면 다음 이야기가 열린다. 옛 굴을 탐험해 보거나 마을 용들과 이야기해도 좋다" }
 	return { who = null, title = "한숨 돌리자", goal = "굴을 꾸미거나, 게시판의 잡일을 맡거나, 마을 용들과 이야기해 보자" }
 
 

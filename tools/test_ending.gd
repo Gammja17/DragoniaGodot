@@ -144,7 +144,7 @@ func _advance() -> void:
 	for i in labels.size():
 		var l: String = labels[i]
 		if _route == "dark" and l.begins_with("…계속 말해"): want = i
-		if _route == "redeem" and l.begins_with("같이 가자"): want = i
+		if _route == "redeem" and l.find("같이 가자") >= 0: want = i   # 말로 하는 선택지는 따옴표로 묶여 있다
 		if _route == "guardian" and l == "끝낸다": want = i
 	box._choose(want)
 

@@ -108,7 +108,7 @@ static func open_board() -> void:
 		var ch = _by_id(id)
 		if not ch: continue
 		if room > 0: opts.append({ label = "📄 %s — %s (%s)" % [ch.title, Quests.goal_text(ch.goal), _reward_line(ch.reward)], on_select = func(): _read(ch) })
-		else: opts.append({ label = "📄 %s (손이 모자란다)" % ch.title, on_select = func(): _board("한 번에 두 장까지만 떼어 갈 수 있다. 하던 것부터 끝내라.") })
+		else: opts.append({ label = "📄 %s (이미 두 장을 떼어 왔다)" % ch.title, on_select = func(): _board("한 번에 두 장까지만 떼어 갈 수 있다. 하던 것부터 끝내라.") })
 	opts.append({ label = "돌아선다", on_select = _close })
 	_board("%d일째 아침에 붙은 쪽지들이다.\n(잡일은 이야기와 상관없다. 하고 싶을 때만 떼어 가면 된다.)" % GameState.day, opts)
 
@@ -140,7 +140,7 @@ static func _drop(ch: Dictionary) -> void:
 			_c().taken.erase(ch.id)
 			Save.save_game()
 			open_board() },
-		{ label = "계속 한다", on_select = open_board },
+		{ label = "계속한다", on_select = open_board },
 	])
 
 

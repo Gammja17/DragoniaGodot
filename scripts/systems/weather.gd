@@ -25,8 +25,8 @@ static func update(dt: float) -> void:
 		var nxt := "CLEAR" if w.type != "CLEAR" else "STORM" if r < rainy * 0.3 else "RAIN" if r < rainy else "CLEAR"
 		if nxt != w.type:
 			w.type = nxt
-			if nxt == "RAIN": Hud.pop("비가 내리기 시작합니다. (화염 ↓ 번개 ↑)", "🌧️")
-			if nxt == "STORM": Hud.pop("폭풍이 몰려옵니다! (화염 ↓ 번개 ↑)", "⛈️")
+			if nxt == "RAIN": Hud.pop("비가 내리기 시작합니다. (불 ↓ 번개 ↑)", "🌧️")
+			if nxt == "STORM": Hud.pop("폭풍이 몰려옵니다! (불 ↓ 번개 ↑)", "⛈️")
 		w.timer = Util.rand_range(70, 130) if nxt == "CLEAR" else Util.rand_range(40, 70)
 	w.intensity += (TARGET[w.type] - w.intensity) * minf(1, dt * 0.5)
 	if w.flash > 0: w.flash -= dt * 2.5

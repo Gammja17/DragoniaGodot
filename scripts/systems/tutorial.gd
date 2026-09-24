@@ -9,7 +9,7 @@ static func _hints() -> Array:
 	return [
 		{ id = "fight", icon = "🔥",
 		  when = func(s): return s.map_id != "VILLAGE" and s.entities.enemies.any(func(e): return e.type != "PREY" and Util.dist(e, s.player) < 420),
-		  text = "마우스로 겨누고 클릭하면 숨결이 나간다. 꾹 누르면 계속 나가고, [Shift]로 피한다." },
+		  text = "마우스로 겨누고 클릭하면 브레스가 나간다. 꾹 누르면 계속 나가고, [Shift]로 피한다." },
 		{ id = "dummy", icon = "🎯",
 		  when = func(s): return s.map_id == "VILLAGE" and s.entities.enemies.any(func(e): return e.type == "DUMMY"),
 		  text = "허수아비를 마우스로 겨누고 클릭. 꾹 누르면 계속 나간다. [Shift]를 탁 누르면 대시로 피한다." },
@@ -18,7 +18,7 @@ static func _hints() -> Array:
 		  text = "배가 고프다. [C]로 고기를 먹는다." },
 		{ id = "dusk", icon = "🌙",
 		  when = func(s): return s.day == 1 and s.dayTime > 0.78 and s.dayTime < 0.9,
-		  text = "해가 진다. 마을 서쪽 내 굴에 들어가, 둥지에서 [Space]로 잔다." },
+		  text = "해가 진다. 마을 서쪽 내 굴에 들어가, 잠자리에서 [Space]로 잔다." },
 	]
 
 

@@ -65,7 +65,7 @@ func _refresh_buffs(p) -> void:
 	if GameState.rally > 0: buffs.append(["용의 함성", false])
 	if GameState.blessingDay == GameState.day: buffs.append(["엘더의 축복", false])
 	if p.slow_timer > 0: buffs.append(["둔화", true])
-	if p.hunger_level == 2: buffs.append(["굶주림 (이속·공속 저하)", true])
+	if p.hunger_level == 2: buffs.append(["굶주림 (움직임·브레스가 느려짐)", true])
 	elif p.hunger_level == 1: buffs.append(["출출함 (조금 느려짐)", true])
 	var key := ",".join(buffs.map(func(b): return b[0]))
 	if key == _buff_key: return

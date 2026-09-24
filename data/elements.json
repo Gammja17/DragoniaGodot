@@ -1,7 +1,7 @@
 {
  "ELEMENTS": {
   "FIRE": {
-   "name": "화염",
+   "name": "불",
    "key": "1",
    "color": "#ff9a3c",
    "damage": 8,
@@ -42,7 +42,7 @@
    "desc": "짧은 사거리의 세 갈래 불길. 맞은 적을 불태운다"
   },
   "ICE": {
-   "name": "냉기",
+   "name": "얼음",
    "key": "2",
    "color": "#7fd4ff",
    "damage": 15,
@@ -179,7 +179,7 @@
     "type": "WET",
     "duration": 4.5
    },
-   "desc": "적을 밀어내는 물줄기. 젖은 적은 번개와 냉기에 약해진다"
+   "desc": "적을 밀어내는 물줄기. 젖은 적은 번개와 얼음에 약해진다"
   },
   "EARTH": {
    "name": "땅",
@@ -212,7 +212,7 @@
     "type": "STUN",
     "duration": 0.7
    },
-   "desc": "느리고 묵직한 바위. 맞은 적이 잠깐 기절하고, 얼거나 굳은 적은 부서진다"
+   "desc": "느리고 묵직한 바위. 맞은 적이 잠깐 기절하고, 얼었거나 기절한 적은 부서진다"
   },
   "GRASS": {
    "name": "풀",
@@ -316,7 +316,7 @@
   },
   "GRASS": {
    "WET": {
-    "name": "무성",
+    "name": "우거짐",
     "mult": 1.3,
     "poison": 4
    }
@@ -325,7 +325,7 @@
  "STAGES": [
   {
    "id": "HATCHLING",
-   "name": "해츨링",
+   "name": "아기 용",
    "minLevel": 1,
    "scale": 0.55,
    "damage": 0.8,
@@ -343,7 +343,7 @@
    "scale": 0.78,
    "damage": 1,
    "speed": 1,
-   "unlock": "더 센 숨결",
+   "unlock": "더 센 브레스",
    "shape": {
     "head": 1.11,
     "body": 0.92,
@@ -357,7 +357,7 @@
    "scale": 1,
    "damage": 1.3,
    "speed": 1.05,
-   "unlock": "짝 맺기 · 비행 (Z)"
+   "unlock": "짝 맺기 · 비행 [Z]"
   },
   {
    "id": "ELDER",
@@ -379,7 +379,7 @@
    "scale": 1.3,
    "damage": 2.2,
    "speed": 1.15,
-   "unlock": "필살기 [X] 삼원 융합 브레스",
+   "unlock": "필살기 [X] 융합 브레스",
    "needsAllElements": true,
    "shape": {
     "head": 0.9,

@@ -76,7 +76,7 @@ func _process(dt: float) -> void:
 	# 추적창 맨 아래 줄: 누르면 가는지, 가는 중인지
 	var t = Guide.target()
 	var nav: bool = GameState.nav != null
-	_go.text = "🧭 걸어가는 중… (누르거나 방향키로 멈춤)" if nav else "🧭 누르면 %s까지 알아서 간다" % (t.label if t.label else "그곳") if t else ""
+	_go.text = "🧭 걸어가는 중… (누르거나 직접 움직이면 멈춤)" if nav else "🧭 누르면 %s까지 알아서 간다" % (t.label if t.label else "그곳") if t else ""
 	_go.visible = _go.text != ""
 	_go.add_theme_color_override("font_color", COLD if nav else PARCH_DIM)
 	_style.border_color = COLD if nav else _left

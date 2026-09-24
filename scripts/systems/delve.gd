@@ -54,7 +54,7 @@ static func enter(id: String) -> void:
 	GameState.dungeon = { id = id, depth = 1, seed = randi() % 1000000000, entryPos = Vector2(p.x, p.y), best = 0 }
 	Sfx.play("evolve")
 	Hud.fade_screen("%s 지하 1층" % def.name, func(): _build_floor(1), func():
-		Hud.pop("%s에 들어섰다. 더 깊이 내려갈수록 보상이 커진다. [E] 구멍으로 오르내린다." % def.name, "🕯️"))
+		Hud.pop("%s에 들어섰다. 더 깊이 내려갈수록 보상이 커진다. 구멍 앞에서 [E]로 오르내린다." % def.name, "🕯️"))
 
 
 static func _build_floor(depth: int) -> void:
@@ -191,7 +191,7 @@ static func try_interact() -> bool:
 		var rec := _record(mouth.cave_id)
 		var goal = _next_milestone(mouth.cave_id)
 		var note: String = ("\n\n(지금까지 지하 %d층까지 내려가 봤다." % rec.best if rec.best else "\n\n(아직 들어가 본 적이 없다.") \
-			+ (" 지하 %d층에 처음 닿으면 %s.)" % [goal.depth, goal.text] if goal else " 이 굴에서 처음으로 얻을 것은 다 얻었다.)") \
+			+ (" 지하 %d층에 처음 닿으면 받는 것: %s.)" % [goal.depth, goal.text] if goal else " 이 굴에서 처음으로 얻을 것은 다 얻었다.)") \
 			+ "\n(층마다 파수꾼이 [옛 비늘돌]을 품고 있다. 대장간에서 쓴다.)"
 		_ask(def.name, def.intro + note, [
 			{ label = "🕯️ 들어간다", on_select = func(): enter(mouth.cave_id) },

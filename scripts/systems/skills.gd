@@ -69,7 +69,7 @@ static func learn(id: String, silent := false) -> bool:
 			break
 	if free: p.slots[free] = id   # 빈 칸이 있으면 바로 장착
 	if not silent:
-		Hud.pop("새 스킬 [%s] 습득!" % defs()[id].name + (" ([%s] 칸에 장착)" % free if free else " ([K] 스킬 나무에서 장착)"), "📖")
+		Hud.pop("새 스킬 [%s] 습득!" % defs()[id].name + (" ([%s] 칸에 끼웠다)" % free if free else " ([K] 스킬 나무에서 끼울 수 있다)"), "📖")
 		Sfx.play("quest")
 	check_unlocks(true)   # 이 스킬이 다른 각성 스킬의 조건이었을 수도 있다
 	return true
@@ -102,12 +102,12 @@ static func check_unlocks(silent := false) -> void:
 static func use_slot(p, slot: String) -> void:
 	var id = p.slots[slot]
 	if not id:
-		Hud.pop("[%s] 칸이 비어 있습니다. [B] 스킬 나무에서 장착하세요." % slot, "📖")
+		Hud.pop("[%s] 칸이 비어 있습니다. [K] 스킬 나무에서 끼우세요." % slot, "📖")
 		return
 	if p.cooldowns.get(id, 0) > 0 or p.channels.any(func(c): return c.get("lock")): return
 	p.cooldowns[id] = cooldown(id); p.cd_max[id] = p.cooldowns[id]   # 스킬은 대기 시간만 쓴다 (허기는 안 든다)
 	if Relics.has("ECHO_SHELL") and randf() < 0.25:
-		p.cooldowns[id] = 0.4; Hud.pop("메아리! 기술이 바로 돌아왔다.", "🐚")
+		p.cooldowns[id] = 0.4; Hud.pop("메아리! 스킬이 바로 돌아왔다.", "🐚")
 	p.animator.play("attack")
 	cast(id, p, cast_mult(id))
 

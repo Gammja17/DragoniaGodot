@@ -109,7 +109,7 @@ static func open_hub(npc, skip_errand := false) -> bool:
 	if Den.in_my_den(): text = "%s\n\n%s" % [Den.visit_line(), text]
 	elif npc.doing: text = "(%s.)\n\n%s" % [npc.doing, text]
 	if running: text += "\n\n(%s: %s %d/%d)" % [running.title, Quests.step_goal_text(running), Quests.progress(running), Quests.step_total(running)]
-	elif not skip_errand and Quests.held_offer(npc): text += "\n\n(하던 일부터 끝내고 오라는 눈치다.)"
+	elif not skip_errand and Quests.held_offer(npc): text += "\n\n(부탁할 일이 있는 눈치지만, 지금 맡은 일부터 끝내고 오라는 듯하다.)"
 	show(npc, text, opts)
 	return true
 
@@ -121,7 +121,7 @@ static func _own_menu(npc, nm: String):
 	if nm == "Elder": return { label = "✨ 축복을 청한다", on_select = func(): _blessing(npc) }
 	if nm == "Kairon": return { label = "🎓 가르침을 청한다", on_select = func(): show(npc, "뭘 배우러 왔냐.", Story.master_options(npc) + [{ label = "돌아간다", on_select = back }]) }
 	if nm == "Tiamat": sub.append({ label = "⚔️ 대련을 신청한다", on_select = func(): _start_spar(npc) })
-	if nm == "Poco": sub.append({ label = "🎾 술래잡기 하자!", on_select = func(): _start_tag(npc) })
+	if nm == "Poco": sub.append({ label = "🎾 술래잡기하자!", on_select = func(): _start_tag(npc) })
 	# 마을 아이들: 성체가 돼야 놀아 줄 수 있다. 놀아 주면 부모의 호감도 같이 오른다
 	var kp = _talk().KID_NPC_PLAY.get(nm)
 	if kp:
@@ -133,7 +133,7 @@ static func _own_menu(npc, nm: String):
 				if rode: back.call()
 				else: _kid_play(npc, kp, "ride") })
 			sub.append({ label = "📖 하늘 이야기를 들려준다", on_select = func(): _kid_play(npc, kp, "story") })
-			sub.append({ label = "🎾 술래잡기 하자!", on_select = func(): _start_tag(npc) })
+			sub.append({ label = "🎾 술래잡기하자!", on_select = func(): _start_tag(npc) })
 	if nm == "Gron": sub.append({ label = "🔨 모루 앞에 선다", on_select = func(): _open_forge(npc) })
 	if nm == "Ember" and Routine.is_dead("Gron"): sub.append({ label = "🔨 모루 앞에 선다", on_select = func(): _ember_forge(npc) })
 	# 동행. 짝도 오늘은 혼자 다녀오겠다고 할 수 있다. 토라진 짝은 사과가 먼저다 (마음 메뉴)
@@ -153,7 +153,7 @@ static func _own_menu(npc, nm: String):
 		sub.append({ label = "🤝 같이 모험을 떠나자", on_select = func(): _set_companion(npc, true) })
 	if sub.is_empty(): return null
 	if sub.size() == 1: return sub[0]
-	return { label = "🤝 함께 하자고 한다", on_select = func(): show(npc, "(무엇을 함께 할까.)", sub + [{ label = "돌아간다", on_select = back }]) }
+	return { label = "🤝 함께하자고 한다", on_select = func(): show(npc, "(무엇을 함께할까.)", sub + [{ label = "돌아간다", on_select = back }]) }
 
 
 ## 잡담·선물 묶음
@@ -207,10 +207,10 @@ static func _heart_menu(npc) -> void:
 	elif dates >= 3 and npc.relation >= 80:
 		sub.append({ label = "♥ 마음을 고백한다", on_select = func(): _confess(npc) })
 	elif npc.relation >= _date_threshold(npc) and dates < 3:
-		if npc.last_date_day == GameState.day: sub.append({ label = "(오늘은 이미 함께 있었다. %d/3)" % dates, on_select = hub })
+		if npc.last_date_day == GameState.day: sub.append({ label = "(오늘은 이미 데이트했다. 데이트 %d/3)" % dates, on_select = hub })
 		else: sub.append({ label = "♥ 데이트를 신청한다 (%d/3)" % dates, on_select = func(): _go_on_date(npc) })
 	elif dates >= 3:
-		sub.append({ label = "(마음은 통한 것 같은데, 아직 한마디가 모자라다)", on_select = hub })
+		sub.append({ label = "(마음은 통한 것 같다. 조금 더 가까워지면 고백할 수 있겠다.)", on_select = hub })
 	sub.append({ label = "돌아간다", on_select = hub })
 	if sub.size() == 2:
 		sub[0].on_select.call()
@@ -364,7 +364,7 @@ static func _kid_play(npc, kp: Dictionary, kind: String) -> void:
 			var par = World.any_npc(pn)
 			if par: add_relation(par, 3)
 		for i in 3: Vfx.spawn_effect("HEART", npc.x + Util.rand_range(-30, 30), npc.y - 50 - Util.rand_range(0, 30), { color = "#ffd07a", size = 1 })
-		Hud.pop("%s하고 놀아 줬다. %s의 호감도 조금 올랐다." % [Names.npc(npc.config.name), "·".join(kp.parents.map(Names.npc))], "🐉")
+		Hud.pop("%s하고 놀아 줬다. %s의 호감이 조금 올랐다." % [Names.npc(npc.config.name), "·".join(kp.parents.map(Names.npc))], "🐉")
 		Sfx.play("quest"))
 
 
@@ -419,7 +419,7 @@ static func _family_talk(npc) -> void:
 	var nest = nests[0] if not nests.is_empty() else null
 	var back := [{ label = "그래.", on_select = func(): open_hub(npc) }]
 	if not GameState.den.get("built"):
-		show(npc, "아직 둥지가 없잖아. 굴에 둥지부터 짓자. (둥지에서 [T]. 나뭇가지 8, 30G)", back)
+		show(npc, "아직 둥지가 없잖아. 굴에 둥지부터 짓자. (내 굴 잠자리 앞에서 [E]. 나뭇가지 8개, 30G)", back)
 		return
 	# 둥지는 내 굴 안에만 있다 (밖에서는 GameState.denNest 에 상태만 들고 다닌다)
 	if not nest:
@@ -432,7 +432,7 @@ static func _family_talk(npc) -> void:
 		show(npc, "우리 집, 이미 북적북적해. 이 아이들부터 잘 키우자.", back)
 		return
 	if npc.last_egg_day and GameState.day - npc.last_egg_day < 7:
-		show(npc, "조금만 더 있다가. 몸을 추슬러야 해. (이레에 한 번. %d일 뒤)" % (7 - (GameState.day - npc.last_egg_day)), back)
+		show(npc, "조금만 더 있다가. 몸을 추슬러야 해. (알은 7일에 한 번. %d일 뒤에 다시)" % (7 - (GameState.day - npc.last_egg_day)), back)
 		return
 	play_lines(npc, _talk().FAMILY_TALK[npc.config.name], func():
 		npc.last_egg_day = GameState.day
@@ -458,7 +458,7 @@ static func _entrust_egg(npc) -> void:
 		"내가 맡으마. 사흘이면 깰 게야. 그때 데려다주마.",
 	], func():
 		Vfx.spawn_effect("RING", npc.x, npc.y, { size = 1.2 })
-		Hud.pop("엘더에게 알을 맡겼습니다. 사흘 뒤 아침에 데려옵니다.", "🥚"))
+		Hud.pop("엘더에게 알을 맡겼습니다. 사흘 뒤 아침, 깨어난 아기를 엘더가 데려옵니다.", "🥚"))
 
 
 ## 짝을 데리고 다닐지 정한다. 짝인 것은 그대로고 따라다니기만 끈다
@@ -493,7 +493,7 @@ static func _blessing(npc) -> void:
 	p.hp = p.max_hp
 	p.hunger = 100.0
 	Vfx.spawn_effect("RING", p.x, p.y - 40, { size = 2 })
-	Hud.pop("엘더의 축복: 오늘 하루 경험치 +25%, 체력·허기 회복", "✨")
+	Hud.pop("엘더의 축복: 오늘 하루 경험치 +25%, 체력·배부름 가득", "✨")
 	show(npc, "고대의 바람이 네 날개를 밀어 주기를.", [{ label = "감사합니다.", on_select = close }])
 
 
@@ -508,7 +508,7 @@ static func _mat_line() -> String:
 static func _ember_forge(npc) -> void:
 	var death_day: int = GameState.story.get("deathDay", {}).get("Gron", GameState.day)
 	if GameState.day - death_day < 3:
-		show(npc, "…부싯돌은 멀쩡한데 불이 안 붙어. 미안한데 며칠만 있다가 다시 와 줄래.", [{ label = "기다릴게.", on_select = func(): open_hub(npc) }])
+		show(npc, "…부싯돌은 멀쩡한데 불이 안 붙어. 미안한데 며칠만 있다가 다시 와 줄래?", [{ label = "기다릴게.", on_select = func(): open_hub(npc) }])
 		return
 	if Relics.owns("GRON_PLATE"):
 		_open_forge(npc)
@@ -533,7 +533,7 @@ static func _open_forge(npc) -> void:
 	opts.append({ label = "💰 골드로 산다 (소지금 %dG)" % GameState.player.gold, on_select = func(): _open_goods(npc) })
 	opts.append({ label = "돌아간다", on_select = func(): open_hub(npc) })
 	var line := "불은 피워 놨으니까 재료만 가져와. 아저씨만큼은 못 해도 내가 해 볼게." if npc.config.name == "Ember" else "모루는 달궈 뒀다. 재료는 네가 가져와라."
-	show(npc, "%s\n\n[가진 소재] %s" % [line, _mat_line()], opts)
+	show(npc, "%s\n\n[가진 재료] %s" % [line, _mat_line()], opts)
 
 
 static func _forge_one(npc, recipe: Dictionary) -> void:
@@ -587,8 +587,8 @@ static func _go_spar(npc) -> void:
 
 static func _begin_spar(npc) -> void:
 	GameState.activity = { type = "SPAR", npc = npc, hp = SPAR_HP, max = SPAR_HP, timer = 1.5 }
-	npc.say("봐주지 않는다!")
-	Hud.pop("대련 시작! 티아맷의 기력을 모두 깎으세요. (체력 25% 아래로 떨어지면 패배)", "⚔️")
+	npc.say("안 봐줄 거야!")
+	Hud.pop("대련 시작! 티아맷의 기력을 모두 깎으세요. (내 체력이 25% 아래로 떨어지면 패배)", "⚔️")
 
 
 # ---------- 포코: 술래잡기 ----------
@@ -597,7 +597,7 @@ static func _start_tag(npc) -> void:
 	close()
 	GameState.activity = { type = "TAG", npc = npc, time = TAG_TIME, max = TAG_TIME, juke = 0.0, jukeAngle = 0.0 }
 	npc.say("나 잡아 봐라~!")
-	Hud.pop("술래잡기! %d초 안에 %s 잡으세요. (Shift 달리기)" % [TAG_TIME, Util.josa(Names.npc(npc.config.name), "을", "를")], "🏃")
+	Hud.pop("술래잡기! %d초 안에 %s 잡으세요. ([Shift]를 누르고 있으면 달린다)" % [TAG_TIME, Util.josa(Names.npc(npc.config.name), "을", "를")], "🏃")
 
 
 static func _end_activity(win: bool) -> void:

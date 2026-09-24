@@ -232,7 +232,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Elements" index="0"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "숨결 1 / 3"
+text = "속성 1 / 3"
 
 [node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Elements" index="1"]
 layout_mode = 2

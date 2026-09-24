@@ -69,16 +69,16 @@
   "epi_falls": { "title": "", "lines": [
    { "who": "나", "text": "(폭포 아래에는 이제 달이 밝지 않은 밤에도 불이 피었다.)", "do": [{ "bgm": "lake" }, { "cam": "look:PROP:CAMPFIRE", "time": 1.6 }] },
    { "who": "Yuan", "text": "…또 왔군. 오늘은 약초 핑계도 안 대나.", "do": [{ "cam": "auto" }] },
-   { "who": "Mira", "text": "약초는 이제 구름마루에도 있잖아. 어디서 나는지 네가 알려 줬으면서." },
+   { "who": "Mira", "text": "약초라면 이제 구름마루에 올라가서 캐도 되잖아. 어디서 나는지 네가 다 알려 줬으면서." },
    { "who": "Yuan", "text": "……", "do": [{ "emote": "Yuan", "icon": "…" }] },
    { "who": "Yuan", "text": "경계는 이제 하루 한 번만 돈다. …남는 시간엔 여기 있지." },
    { "who": "Riun", "text": "(불가 건너편에서 리운이 잔을 들어 보였다.) 아랫마을 촌장, 오늘은 누가 먼저 취하는지 봅시다." },
-   { "who": "Elder", "text": "허허… 이 나이에 내기라니. 무릎이 시려서 오래는 못 앉아 있는단다… 한 잔만 하자꾸나." }
+   { "who": "Elder", "text": "허허… 이 나이에 내기라니. 무릎이 시려서 오래는 못 앉아 있단다… 한 잔만 하자꾸나." }
   ] },
   "epi_tower": { "title": "", "lines": [
    { "who": "Tiamat", "text": "오늘 밤도 조용해.", "do": [{ "bgm": "none" }, { "cam": "look:PROP:TOWER", "time": 1.2 }, { "cam": "auto" }] },
    { "who": "Tiamat", "text": "…나팔을 안 부는 밤이 이렇게 긴 줄 몰랐어." },
-   { "who": "Poco", "text": "누나, 그럼 이제 자도 돼? 있잖아, 나 오늘은 모루 밑 말고 내 굴에서 잘래. …그래도 되지? 그치?", "do": [{ "move": "Poco", "to": "near:Tiamat" }] },
+   { "who": "Poco", "text": "누나, 그럼 이제 자도 돼? 있잖아, 나 오늘은 누나 옆 말고 내 굴에서 잘래. …그래도 되지? 그치?", "do": [{ "move": "Poco", "to": "near:Tiamat" }] },
    { "who": "Tiamat", "text": "…그래. 들어가 자. 오늘은 내가 볼게.", "do": [{ "emote": "Tiamat", "icon": "♥" }] },
    { "who": "Tiamat", "text": "(포코가 뛰어가자, 티아맷은 여느 밤처럼 망루 위에서 이름을 하나씩 불렀다. 아홉 번째 이름을 부를 때, 목소리가 조금 덜 떨렸다.)", "do": [{ "exit": "Poco" }, { "wait": 0.8 }, { "tone": "warm" }] }
   ] },
@@ -111,7 +111,7 @@
   { "kind": "head", "text": "잿마루" },
   { "kind": "line", "text": "{Ignar} · {Vesna}" },
   { "kind": "gap" },
-  { "kind": "head", "text": "옛 이야기의 용들" },
+  { "kind": "head", "text": "옛이야기의 용들" },
   { "kind": "line", "text": "모르가스 · 리크와 로크 · 글라시아 · 바실" },
   { "kind": "gap" },
   { "kind": "head", "text": "그림" },

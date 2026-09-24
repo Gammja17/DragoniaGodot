@@ -95,7 +95,7 @@ static func go_outing(then = null) -> void:
 			partner.relation = minf(100, partner.relation + 6)
 			GameState.player.hp = GameState.player.max_hp
 			Vfx.spawn_effect("HEART", GameState.player.x, GameState.player.y - 90, { color = "#ff7aa8", size = 1.4 })
-			Hud.pop("가족 나들이를 다녀왔습니다. 아이들의 애정과 성장, 짝의 호감이 올랐습니다.", "🧺")
+			Hud.pop("가족 나들이를 다녀왔습니다. 아이들은 정이 깊어지고 조금 자랐습니다. 짝의 호감도 올랐습니다.", "🧺")
 			Save.save_game()
 			if then: then.call()))
 

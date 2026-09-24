@@ -158,6 +158,15 @@
     "VOLCANO_PATH",
     "IGNAR_LAIR"
    ],
+   "hold": {
+    "IGNAR_LAIR": {
+     "when": {
+      "$fn": "s => s.player.stageIndex >= 3 || !!s.bossesDefeated.IGNAR",
+      "$at": "CHAPTERS.c8.hold.IGNAR_LAIR.when"
+     },
+     "text": "정상에서 내리꽂는 바람이 날개를 뒤로 밀어낸다. 성체의 날개로는 저 바람을 못 뚫는다."
+    }
+   },
    "blocked": ""
   }
  ]

@@ -277,6 +277,12 @@ static func _build_c() -> void:
 		"chapters:CHAPTERS.c7.hold.ASH_CITY.when": func(s): return _boss(s, "BASIL"),
 		# 세이란의 물점: 리운과 이야기를 마치면 그 자리(구름마루)에서 이어진다
 		"chronicle:CHRONICLE.ev_seiran_water.when": func(c): return c.map == "CLOUDTOP" and c.active.call("m5c") and int(c.s.quests.active.m5c.step) >= 3,
+
+		# ---- 8장: 잿마루 ----
+		# 정상의 바람은 고룡의 날개로만 뚫린다 (힌트로만 말하던 것을 길로도)
+		"chapters:CHAPTERS.c8.hold.IGNAR_LAIR.when": func(s): return s.player.stage_index >= 3 or _boss(s, "IGNAR"),
+		# 잿마루에서 그날 밤의 밤손님을 알아본다
+		"chronicle:CHRONICLE.ev_heukdan.when": func(c): return c.map == "VOLCANO" and c.s.story.get("events", []).has("ev_volcano") and c.flag.call("messenger"),
 	}, true)
 
 

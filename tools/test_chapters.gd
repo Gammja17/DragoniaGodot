@@ -28,6 +28,7 @@ func _ready() -> void:
 	await _chapter5()
 	await _chapter6()
 	await _chapter7()
+	await _chapter8()
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit()
 
@@ -359,6 +360,61 @@ func _chapter7() -> void:
 	Quests.turn_in(m5c, World.any_npc("Elder"), null)
 	await _play_until(_idle, 40)
 	_check("7장", "엘더의 사과가 그날 밤의 다짐을 받는다 (p1)", _saw("이번에는 다르게 기르겠다고 했었지"))
+
+
+func _chapter8() -> void:
+	var G := GameState
+	# 삼원룡은 없다: 고룡이 마지막 단계, 의식은 1·2단계뿐
+	var stages: Array = Data.get_module("elements").STAGES
+	_check("8장", "단계는 넷 (고룡이 마지막)", stages.size() == 4 and stages[-1].id == "ELDER")
+	_check("8장", "의식은 1·2단계뿐", Data.get_module("ceremony").RITES.keys() == ["1", "2"])
+	for id in ["r1", "e1", "w1"]:
+		_check("8장", "%s 는 본편 (건네받은 속성)" % id, Quests.by_id(id).act == "main")
+	# 하늘이 붉던 날: 카이론이 가지 않는 까닭은 장례의 다짐
+	World.travel_to("VILLAGE")
+	G.dayTime = 0.4
+	await _play_until(func(): return G.story.events.has("ev_ignar") and _idle(), 40)
+	_check("8장", "카이론: '이 마을을 비우지 않기로 했다'", _saw("이 마을을 비우지 않기로 했다") and not _saw("못 가오"))
+	_check("8장", "m6 이 걸린다", G.quests.active.has("m6"))
+	# 정상은 고룡의 날개로만
+	_check("8장", "고룡 전: 정상 막힘", not Chapters.map_open(G, "IGNAR_LAIR") and Chapters.blocked_text(G, "IGNAR_LAIR").contains("바람"))
+	# 잿마루: 흑단을 알아보고, 베스나가 꽃과 '받은 것'을 말한다
+	if not G.story.has("flags"): G.story.flags = {}
+	G.story.flags.messenger = true
+	World.travel_to("VOLCANO")
+	await _play_until(func(): return G.story.events.has("ev_heukdan") and _idle(), 40)
+	_check("8장", "흑단: '그날 밤 말은 전했지'", _saw("그날 밤 말은 전했지"))
+	var m6 = Quests.by_id("m6")
+	if int(G.quests.active.m6.step) < 1: Quests.complete_step(m6)
+	Quests.complete_step(m6)
+	await _play_until(_idle, 40)
+	_check("8장", "베스나: 불탄 도시의 꽃", _saw("해마다 한 번씩 남쪽 도시에"))
+	_check("8장", "베스나: 받은 것으로도 되는지", _saw("받은 것으로도 되는지"))
+	# 빈 둥지: 세 마을이 건넨 속성이 없으면 깨어나지 않는다
+	World.travel_to("SKY_RUINS")
+	await _wait(0.5)
+	await _play_until(_idle, 20)
+	var nest = null
+	for x in G.entities.props:
+		if x.type == "RUIN": nest = x
+	var p = G.player
+	p.stage_index = 2
+	p.elements = ["FIRE", "ICE", "THUNDER"]
+	if nest:
+		p.x = nest.x; p.y = nest.y + 40
+	_check("8장", "속성 셋(불·얼음·번개)만으로는 안 깨어난다", Story.try_awaken() and p.stage_index == 2)
+	p.elements = ["FIRE", "ICE", "THUNDER", "GRASS", "EARTH", "WATER"]
+	Story.try_awaken()
+	await _play_until(func(): return p.stage_index == 3 and G.questScenes.is_empty() and _idle(), 40)
+	_check("8장", "건네받은 셋을 품으면 고룡 (레벨 상관없이)", p.stage_index == 3 and _saw("건네받은 것들이 나를 여기까지 키웠다"))
+	_check("8장", "빈 둥지에 카이론은 안 온다 (마을을 비우지 않는다)", not _saw("스승이다."))
+	_check("8장", "고룡 뒤: 정상 열림", Chapters.map_open(G, "IGNAR_LAIR"))
+	# 대면: 꿈속 목소리 · 무늬 · 지도를 흘린 것 (선택지 글은 test_ending 이 고르는 그대로)
+	var meet := JSON.stringify(_event("ev_ignar_meet"))
+	_check("8장", "대면: 꿈에서 말을 걸었다 · 무늬가 증거 · 지도", meet.contains("들리더냐") and meet.contains("무늬가 증거") and meet.contains("지도를 쥐여 준 것도 나다"))
+	_check("8장", "대면: '제 숨결 없이' 대신 '불씨 하나만 쥐고'", not meet.contains("숨결") and meet.contains("불씨 하나만 쥐고"))
+	var fall := JSON.stringify(_event("ev_ignar_fall"))
+	_check("8장", "무릎: 카이론이 곁에 있다 · 선택지 글 유지", fall.contains("카이론, 너도 보고 있구나") and fall.contains("같이 가자") and fall.contains("끝낸다"))
 
 
 # ---------- 도구 ----------

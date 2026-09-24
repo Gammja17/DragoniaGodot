@@ -253,6 +253,20 @@ static func _build_c() -> void:
 		# ---- 4장: 굶는 계절 ----
 		# 뿌리골의 부탁은 쌍두룡을 보낸 뒤에 ("쌍두룡을 보내 준 게 너라고 들었단다")
 		"quests:QUESTS.r1.needs": func(s): return _boss(s, "ZALGORA"),
+
+		# ---- 5장: 맡긴 알 ----
+		# 모임에서 사절을 보내기로 정하고 사흘째, 한여름에 눈이 온다 (사절이 봉우리 문턱에 닿았다). 모임 날을 모르면(옛 세이브) 바로
+		"chronicle:CHRONICLE.7.when": func(c): return c.map == "VILLAGE" and c.done.call("m5g") and not c.done.call("m5a") and not c.active.call("m5a") \
+			and c.day - int(c.s.story.get("eventDay", {}).get("ev_gathering", -99)) >= 3,
+		# 얼어붙은 망루에서 다친 사절 둘을 찾는다
+		"chronicle:CHRONICLE.32.when": func(c): return c.map == "SNOW_RIDGE" and c.active.call("m5a") and not c.boss.call("GLACIA"),
+		# 도란과 미루의 알 소식은 눈이 그친 뒤에 (눈이 쏟아지는 한가운데 태평한 소식이 끼어들던 것)
+		"chronicle:CHRONICLE.23.when": func(c): return c.map == "VILLAGE" and c.done.call("m5a") and c.hour >= 7 and c.hour < 18 \
+			and not c.s.raid.active and not c.flag.call("couple_egg"),
+		# 마을의 시선: 봉우리의 알이 하나도 안 남았다는 걸 안 뒤로 수군거림이 돈다
+		"npcTalk:SITUATION_LINES.chill.when": func(s, _n = null): return s.quests.done.has("m5a") and not s.quests.done.has("m6w"),
+		# 그론을 보낸 뒤: 수군거림을 처음 꺼낸 이가 먼저 와서 사과한다
+		"npcTalk:SITUATION_LINES.family.when": func(s, _n = null): return s.quests.done.has("m6w") and not s.quests.done.has("m5c"),
 	}, true)
 
 

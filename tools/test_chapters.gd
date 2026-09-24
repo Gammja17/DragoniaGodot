@@ -25,6 +25,7 @@ func _ready() -> void:
 	await _chapter2()
 	await _chapter3()
 	await _chapter4()
+	await _chapter5()
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit()
 
@@ -210,6 +211,82 @@ func _chapter4() -> void:
 	G.story.bossDay = { ZALGORA = G.day }
 	var soi = World.any_npc("Soi")
 	_check("4장", "고기 인사 (소이)", _greets(soi, Data.get_module("npcTalk").NPC_TALK.Soi, "두 점이나"))
+
+
+func _chapter5() -> void:
+	var G := GameState
+	# 4장 끝: 스무 해 만의 달맞이 모임에서 봉우리의 알을 데려오기로 정한다
+	var m5g = Quests.by_id("m5g")
+	Quests.accept(m5g)
+	World.travel_to("FALLS")
+	await _wait(0.5)
+	G.dayTime = 0.88
+	await _play_until(func(): return G.story.events.has("ev_gathering") and _idle(), 40)
+	_check("5장", "모임: 봉우리의 아이들을 데려오자", _saw("봉우리의 아이들을 데려옵시다"))
+	_check("5장", "모임: 왜 지금 (울음이 멎은 뒤 냉기가 짙어짐)", _saw("냉기가 도리어 짙어졌소"))
+	_check("5장", "모임: 사절 유안·티아맷", _saw("구름마루에서는 유안이 가오") and _saw("웨스턴에서는 제가 가요"))
+	_check("5장", "하루는 두 번째 만남 (폭포에서 봤지?)", _saw("폭포에서 봤지?"))
+	World.travel_to("CLOUDTOP")
+	await _play_until(func(): return Quests.is_complete(m5g) and _idle(), 30)
+	Quests.turn_in(m5g, World.any_npc("Seiran"), null)
+	await _play_until(_idle, 30)
+	_check("5장", "세이란: 물이 흐려 (물점은 7장)", _saw("물이 흐려") and not G.story.clues.has("sky"))
+	# 모임 사흘째에야 한여름 눈이 온다
+	World.travel_to("VILLAGE")
+	G.dayTime = 0.4
+	await _wait(3.0)
+	_check("5장", "모임 다음 날엔 아직 눈이 안 온다", not G.story.events.has("ev_glacia"))
+	G.day += 3
+	await _play_until(func(): return G.story.events.has("ev_glacia") and _idle(), 40)
+	_check("5장", "한여름 눈: 카이론이 나선다 (제자 때문에)", _saw("이번에는 안 빠지오") and G.quests.active.has("m5a"))
+	_check("5장", "t2 를 안 했으면 '돌려보냈던 아이'", _saw("내가 돌려보냈던 아이고") and not _saw("가르치기 시작한 아이"))
+	_check("5장", "엘더가 카이론에게 스승의 말을 맡긴다", _saw("스승님 말씀을 그분께 전해 주게"))
+	# 얼음 능선: 무너진 망루의 사절 둘
+	World.travel_to("SNOW_RIDGE")
+	await _play_until(func(): return G.story.events.has("ev_snow_ridge") and _idle(), 40)
+	_check("5장", "망루: 유안이 티아맷을 덮었다", _saw("웨스턴 용을요"))
+	_check("5장", "망루: '미라한테는… 다친 거 말하지 마라'", _saw("미라한테는"))
+	_check("5장", "망루: 알 껍데기 조각 얘기는 없다", not _saw("알 껍데기 조각"))
+	# 봉우리: 글라시아의 고백과 알 예순 개
+	World.travel_to("GLACIA_LAIR")
+	await _wait(0.5)
+	var b = null
+	for x in G.entities.bosses:
+		if x.id == "GLACIA": b = x
+	_check("5장", "봉우리에 글라시아가 있다", b != null)
+	if b:
+		G.player.hp = G.player.max_hp
+		G.player.x = b.x; G.player.y = b.y + 300
+		await _play_until(func(): return b.awake and _idle(), 20)
+		var t := Time.get_ticks_msec()
+		while not G.bossesDefeated.get("GLACIA", false) and Time.get_ticks_msec() - t < 20000:
+			if _idle() and b.dying <= 0: b.take_damage(b.hp + 1)
+			await get_tree().process_frame
+			_advance()
+		await _play_until(func(): return _saw("두 마을 쪽으로 똑같이") and _idle(), 90)
+	_check("5장", "글라시아가 그이의 말을 받는다", _saw("미안한 건 나다"))
+	_check("5장", "품는 법을 잊었다 (얼린 까닭)", _saw("품는 법을 잊었다"))
+	_check("5장", "누이의 알 · 서로 탓 · 카이론", _saw("누이 거다") and _saw("스무 해 전에도 꼭 이렇게 시작했다"))
+	# 도란과 미루의 알 소식은 눈이 그친 뒤에
+	var ctx := Chronicle.context()
+	ctx.map = "VILLAGE"; ctx.hour = 10.0
+	var egg_when: Callable = _event("ev_couple_egg").when
+	_check("5장", "m5a 전엔 도란·미루 알 소식 없음", not egg_when.call(ctx))
+	# 마을: 포코 → 엘더
+	World.travel_to("VILLAGE")
+	await _wait(0.5)
+	var poco = World.any_npc("Poco")
+	G.player.x = poco.x - 120; G.player.y = poco.y
+	await _play_until(func(): return Quests.is_complete(Quests.by_id("m5a")) and _idle(), 40)
+	Quests.turn_in(Quests.by_id("m5a"), World.any_npc("Elder"), null)
+	await _play_until(_idle, 40)
+	_check("5장", "엘더↔카이론: 알을 끌어안고 잠드셨소", _saw("알을 끌어안고 잠드셨소"))
+	ctx = Chronicle.context()
+	ctx.map = "VILLAGE"; ctx.hour = 10.0
+	_check("5장", "m5a 뒤엔 도란·미루 알 소식", egg_when.call(ctx))
+	# 다시 식음: 수군거림이 돈다
+	var ember = World.any_npc("Ember")
+	_check("5장", "다시 식음: 엠버가 수군거림을 전한다", _greets(ember, Data.get_module("npcTalk").NPC_TALK.Ember, "속성 여럿 가진 애가"))
 
 
 # ---------- 도구 ----------

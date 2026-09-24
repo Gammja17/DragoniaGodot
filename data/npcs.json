@@ -3,6 +3,7 @@
   {
    "name": "Elder",
    "personality": "WISE",
+   "startRelation": 15,
    "role": "ELDER",
    "canPartner": true,
    "elder": true,
@@ -42,6 +43,7 @@
   {
    "name": "Poco",
    "personality": "PLAYFUL",
+   "startRelation": 15,
    "canPartner": true,
    "species": "CAST",
    "look": 2,
@@ -119,6 +121,7 @@
   {
    "name": "Ember",
    "personality": "PLAYFUL",
+   "startRelation": 15,
    "canPartner": false,
    "species": "CAST",
    "look": 6,
@@ -138,6 +141,7 @@
   {
    "name": "Mira",
    "personality": "WISE",
+   "startRelation": 15,
    "canPartner": false,
    "species": "CAST",
    "look": 7,

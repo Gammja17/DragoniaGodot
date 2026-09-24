@@ -68,6 +68,7 @@ static func _build() -> void:
 	_build_story()
 	_build_talk()
 	_build_chronicle()
+	_build_c()
 
 
 # ---- 자주 쓰는 것들 ----
@@ -224,3 +225,13 @@ static func _build_chronicle() -> void:
 	for i in w: _table["chronicle:CHRONICLE.%d.when" % i] = w[i]
 	_table["chronicle:CHRONICLE.15.choice.options.1.when"] = func(c): return c.flag.call("messenger")
 	_table["chronicle:CHRONICLE.16.choice.options.1.when"] = func(c): return c.clueCount >= 4
+
+
+# ---- [세션 C] 이야기 다시 쓰기 ----
+## 이야기 쪽에서 새로 넣거나 바꾼 조건. 앞의 표와 키가 같으면 여기 것이 이긴다
+## (여러 세션이 이 파일을 같이 고친다. 합칠 때 부딪히지 않게, 바꾼 조건도 원래 줄은 두고 여기서 덮는다)
+static func _build_c() -> void:
+	_table.merge({
+		# 마을의 시선: 첫 습격을 같이 막기 전까지, 하늘에서 떨어진 아이를 꺼리는 용들이 있다
+		"npcTalk:SITUATION_LINES.wary.when": func(s, _n = null): return s.raid.count == 0,
+	}, true)

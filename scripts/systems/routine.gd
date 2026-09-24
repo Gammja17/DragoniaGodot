@@ -52,7 +52,8 @@ static func plan_for(name: String, hour := -1.0):
 	var slot := slot_at_hour(base, hour)
 	var home = Den.partner_home(name, slot)   # 같이 사는 짝이 잘 자리 (내 굴). 아니면 null
 	if home == null: home = Den.guest_slot(name, hour)   # 오늘 저녁 내 굴에 놀러 온 손님
-	var gather := Gathering.is_gather_now() and Gathering.GATHER_SPOTS.has(name)
+	var spot = Gathering.spot_of(name) if Gathering.is_gather_now() else null   # 모임에서 앉을 자리 (이야기에 따라 바뀐다)
+	var gather: bool = spot != null
 	# 길잡이를 마치기 전에는 촌장이 마을을 뜨지 않는다. 처음 온 아이가 헤매지 않게
 	# (모임 날 밤만은 예외다 — 촌장이 빠진 모임은 모임이 아니다)
 	if name == "Elder" and not gather and not GameState.tutorial.get("finished", false):
@@ -61,7 +62,7 @@ static func plan_for(name: String, hour := -1.0):
 				slot = d
 				break
 	# 달이 가장 밝은 밤에는 두 마을이 모두 폭포 아래로 내려온다
-	if gather: slot = { map = Gathering.GATHER_MAP, spot = Gathering.GATHER_SPOTS[name], doing = "달 밝은 밤의 모임에 나와 있다" }
+	if gather: slot = { map = Gathering.GATHER_MAP, spot = spot, doing = Gathering.doing_of(name) }
 	var own = variant if variant != null else r
 	if GameState.raid.active and own.get("raid"): slot = own.raid   # 마을이 불타는 것보다 급한 모임은 없다
 	if GameState.raid.active and GameState.raid.get("kind") == "war" and WAR_AWAY.has(name):
@@ -178,6 +179,7 @@ static func update(dt: float, get_npc: Callable) -> void:
 			if npc.walk_to.get("leave"): npc.remove = true   # 나가려던 문 앞에서 끝내 막혔으면 나간 셈 친다 (굴 입구는 바위 틈에 있기도 하다)
 			npc.walk_to = null
 			npc.set_meta("walk_stuck", 0.0)
+	Gathering.update(dt)   # 모임이 선 폭포: 이 단계에 처음 온 밤의 장면 · 주고받는 말
 
 	_tick -= dt
 	if _tick > 0: return

@@ -254,10 +254,10 @@ static func _pick_guest() -> String:
 	var last_day := -9999
 	for d in g.last.values(): last_day = maxi(last_day, int(d))
 	if GameState.day - last_day < every: return ""
-	# 모임 날 · 전쟁 중 · 그론을 보내고 엿새 · 잿빛 날개 길 끝에는 아무도 놀러 오지 않는다
-	if Gathering.is_gather_day() or Gathering.at_war() or GameState.raid.active: return ""
+	# 모임 날 · 두 마을 사이가 얼어붙어 모임도 멈춘 때(봉우리의 눈 · 전쟁 · 잿빛 날개 길) · 그론을 보내고 엿새에는
+	# 아무도 놀러 오지 않는다
+	if Gathering.is_gather_day() or Gathering.paused() or GameState.raid.active: return ""
 	if Routine.is_dead("Gron") and GameState.day - int(GameState.story.get("deathDay", {}).get("Gron", 0)) < 6: return ""
-	if GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): return ""
 	var best := ""
 	var best_day := INF
 	for id in dens():

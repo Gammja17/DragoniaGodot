@@ -16,6 +16,25 @@ const VISIT_LINES := {
 	3: ["(들어오자마자 눕고 싶은 얼굴이다.)", "(자랑할 만하다는 듯 여기저기 둘러본다.)"],
 	4: ["(이제 누가 봐도 내 집이라는 듯 천천히 둘러본다.)", "(이만한 굴은 마을에 몇 없다는 얼굴이다.)"],
 }
+# 같이 사는 짝 (Routine). 제 굴에서 자던 칸에는 내 굴 잠자리 곁에서 잔다.
+# 제 굴에서 자지 않는 짝은 잠자는 칸이 시작하는 시각을 hours 에 적는다 (티아맷은 밤에 망루를 지키고 아침에 잔다)
+const PARTNER_HOME := {
+	spot = [10, 6],
+	doing = "굴 한쪽에 몸을 말고 잠들어 있다",
+	hours = { "Tiamat": [7], "Ignar": [0, 22] },
+	doings = { "Tiamat": "밤 망루를 마치고 들어와 곯아떨어져 있다" },
+}
+# 내 굴에서 짝에게 말을 걸면 인사 앞에 붙는 한 줄. 자고 있었으면 sleeping, 나와 같이 들어왔으면 아늑함 단계마다
+const PARTNER_LINES := {
+	sleeping = "(굴 한쪽에서 자고 있다가, 인기척에 눈을 뜬다.)",
+	tiers = [
+		"(휑한 돌바닥을 둘러보더니 한숨을 쉰다. 둘이 살려면 살림부터 들여야겠다는 얼굴이다.)",
+		"(잠자리 한쪽을 벌써 제 자리로 정해 둔 모양이다. 아직 살림은 단출하다.)",
+		"(굴에 들어서자 날개를 느슨하게 접는다. 이제 제법 둘이 사는 굴 같다.)",
+		"(들어오자마자 제 자리에 가서 기대앉는다. 밖보다 여기가 편하다는 얼굴이다.)",
+		"(들어서자 옆자리를 슬쩍 내어 준다. 누가 봐도 둘이 사는 집이다.)",
+	],
+}
 
 static var _last_valid := false
 static var _last_tile = null
@@ -44,16 +63,16 @@ static func decor_of(map_id: String) -> Array:
 	return spec.get("decor", []).map(func(d): return { id = d[0], tx = d[1], ty = d[2] })
 
 
-## 아늑함 점수와 단계 { score, name, note }
+## 아늑함 점수와 단계 { score, name, note, tier(단계 번호 0~) }
 static func cozy_of(map_id: String) -> Dictionary:
 	var n := 0
 	for d in decor_of(map_id):
 		if furniture().has(d.id): n += int(furniture()[d.id].cozy)
 	var tiers: Array = Data.get_module("furniture").COZY_TIERS
-	var t: Array = tiers[0]
-	for c in tiers:
-		if n >= c[0]: t = c
-	return { score = n, name = t[1], note = t[2] }
+	var tier := 0
+	for i in tiers.size():
+		if n >= tiers[i][0]: tier = i
+	return { score = n, name = tiers[tier][1], note = tiers[tier][2], tier = tier }
 
 
 ## 방 안쪽 타일 좌표 → 월드 좌표 (칸 한가운데, 발끝 기준)
@@ -156,14 +175,27 @@ static func cozy_rest() -> Dictionary:
 	return { heal = minf(0.5, c.score * 0.012), tier = c }
 
 
-## 내 굴에서 말을 걸면, 인사 대신 굴에 대한 한마디부터
-static func visit_line() -> String:
-	var c := cozy_of(MY_DEN)
-	var tiers: Array = Data.get_module("furniture").COZY_TIERS
-	var tier := 0
-	for i in tiers.size():
-		if tiers[i][1] == c.name: tier = i
-	return VISIT_LINES.get(tier, VISIT_LINES[0]).pick_random()
+## 내 굴에서 말을 걸면 인사 앞에 한 줄을 붙인다 (NpcActions). 같이 사는 짝과, 따라 들어온 용이 다르다
+static func home_greeting(npc, greeting: String) -> String:
+	var tier: int = cozy_of(MY_DEN).tier
+	var line: String
+	if npc == GameState.partner:
+		var plan = Routine.plan_for(npc.config.name)
+		var asleep: bool = npc.state == "WANDER" and plan != null and plan.map == MY_DEN
+		line = PARTNER_LINES.sleeping if asleep else PARTNER_LINES.tiers[mini(tier, PARTNER_LINES.tiers.size() - 1)]
+	else:
+		line = VISIT_LINES.get(tier, VISIT_LINES[0]).pick_random()
+	return "%s\n\n%s" % [line, greeting]
+
+
+## 같이 사는 짝이 지금 잘 자리 (Routine 이 일과 칸 대신 쓴다). 그 용이 짝이 아니거나 잘 칸이 아니면 null.
+## 따라다니는 짝은 늘 내 곁이라 일과를 타지 않는다. 토라진 짝은 굴을 나가 제 굴에서 잔다 (Romance)
+static func partner_home(name: String, slot: Dictionary):
+	var partner = GameState.partner
+	if not partner or partner.config.get("name") != name or partner.state != "WANDER": return null
+	if Romance.is_sulking(partner): return null
+	if slot.map != den_of(name) and not PARTNER_HOME.hours.get(name, []).has(int(slot.get("h", -1))): return null
+	return { map = MY_DEN, spot = PARTNER_HOME.spot, doing = PARTNER_HOME.doings.get(name, PARTNER_HOME.doing) }
 
 
 ## 이 굴에 들어갈 수 있나 (남의 굴은 사이가 어느 정도 되어야). 못 들어가면 그 까닭

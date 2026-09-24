@@ -106,7 +106,7 @@ static func open_hub(npc, skip_errand := false) -> bool:
 
 	# 인사말 앞에 지금 무얼 하고 있었는지를 한 줄 깔아 둔다. 내 굴까지 따라 들어왔다면 굴 구경평부터 한다
 	var text := _greeting(npc, talk, tier)
-	if Den.in_my_den(): text = "%s\n\n%s" % [Den.visit_line(), text]
+	if Den.in_my_den(): text = Den.home_greeting(npc, text)
 	elif npc.doing: text = "(%s.)\n\n%s" % [npc.doing, text]
 	if running: text += "\n\n(%s: %s %d/%d)" % [running.title, Quests.step_goal_text(running), Quests.progress(running), Quests.step_total(running)]
 	elif not skip_errand and Quests.held_offer(npc): text += "\n\n(부탁할 일이 있는 눈치지만, 지금 맡은 일부터 끝내고 오라는 듯하다.)"

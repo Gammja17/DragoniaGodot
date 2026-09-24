@@ -824,14 +824,15 @@ func _draw_top() -> void:
 	Fonts.draw_centered(_top, Fonts.bold(), "z z z", 0, -130 * sc + sin(GameState.game_time * 2) * 4, 12, Color.WHITE)
 
 
-## 바실의 등에 박힌 오래된 창끝 셋 (def.spears 는 몸 크기 1일 때의 자리). 빈틈이면 빛난다
+## 바실의 등에 박힌 오래된 창끝 셋 (def.spears 는 몸 크기 1일 때의 자리, 왼쪽을 보는 그림 기준). 빈틈이면 빛난다
 func _draw_spears() -> void:
 	var sc: float = def.scale
 	var t := GameState.game_time
+	var mirror := -1.0 if animator.frame(facing).get("flip", false) else 1.0   # 오른쪽을 보면 그림이 뒤집힌다
 	for s in def.spears:
-		var px: float = float(s[0]) * sc
+		var px: float = float(s[0]) * sc * mirror
 		var py: float = float(s[1]) * sc
-		if opening: Pixel.draw_glow(_top, px, py - 8, 24, Color("#ffd38a"), 0.55 + sin(t * 12) * 0.2)
-		var tip := PackedVector2Array([Vector2(px - 4, py), Vector2(px + 1, py - 16), Vector2(px + 4, py)])
+		if opening: Pixel.draw_glow(_top, px, py - 5 * sc, 12 * sc, Color("#ffd38a"), 0.55 + sin(t * 12) * 0.2)
+		var tip := PackedVector2Array([Vector2(px - 3 * sc, py), Vector2(px + 0.5 * sc * mirror, py - 12 * sc), Vector2(px + 3 * sc, py)])
 		_top.draw_colored_polygon(tip, Color("#fff2c0") if opening else Color("#b8c0c8"))
 		_top.draw_polyline(tip, Color("#2a2420"), 2.0)

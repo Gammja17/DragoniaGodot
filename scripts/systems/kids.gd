@@ -70,3 +70,4 @@ static func rename(kid: Dictionary, nm: String) -> void:
 
 static func toggle_mode(kid: Dictionary) -> void:
 	kid.mode = "STAY" if kid.mode == "FOLLOW" else "FOLLOW"
+	if kid.get("entity"): kid.entity.home = null   # 머물 곳을 지금 자리(굴 안이면 둥지)로 다시 잡는다

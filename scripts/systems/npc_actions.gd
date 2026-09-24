@@ -20,21 +20,28 @@ static func close() -> void:
 	DialogueBox.current.hide_dialogue()
 
 
-## 호감도를 올린다. 단계가 올라가면 그 인물의 장면을 하나 예약한다 (지금 대화가 끝난 뒤 Chronicle 이 꺼내 준다)
+## 호감도를 올린다. 단계가 올라가면 그 인물의 장면을 하나 예약한다 (지금 대화가 끝난 뒤 Chronicle 이 꺼내 준다).
+## 호감을 올리는 곳은 모두 여기를 거친다. 그래도 단계를 건너뛴 적이 있으면 못 본 장면은 다음에 호감이 오를 때 꺼낸다
 static func add_relation(npc, amount: float) -> void:
-	var before := relation_tier(npc.relation)
 	npc.relation = clampf(npc.relation + amount, 0, 100)
-	var after := relation_tier(npc.relation)
+	if amount > 0: _book_bond(npc)
+
+
+## 지금 단계까지 열렸는데 아직 못 본 장면을 아래 단계부터 하나 예약한다. 기다리는 장면이 있으면 다음 기회에
+## (예약은 한 자리뿐이라, 습격을 막고 여럿이 한꺼번에 단계를 넘으면 하나만 남고 나머지는 영영 사라졌다)
+static func _book_bond(npc) -> void:
+	if GameState.pendingBond: return
 	var nm: String = npc.config.name
-	var bonds: Dictionary = _talk().BOND_SCENES
-	var scenes = bonds.get(nm)
 	# 장면 표는 단계("1"~"3")를 열쇠로 쓴다 (배열로 읽어서 서른 장면이 하나도 안 나오던 것)
-	if after <= before or not scenes or not scenes.get(str(after)): return
-	var key := "%s:%d" % [nm, after]
+	var scenes = _talk().BOND_SCENES.get(nm)
+	if not scenes: return
 	if not GameState.story.get("bonds"): GameState.story.bonds = []
-	if GameState.story.bonds.has(key): return
-	GameState.story.bonds.append(key)
-	GameState.pendingBond = { name = nm, tier = after }
+	for tier in range(1, relation_tier(npc.relation) + 1):
+		var key := "%s:%d" % [nm, tier]
+		if not scenes.get(str(tier)) or GameState.story.bonds.has(key): continue
+		GameState.story.bonds.append(key)
+		GameState.pendingBond = { name = nm, tier = tier }
+		return
 
 
 static func show(npc, text: String, options: Array) -> void:
@@ -107,19 +114,39 @@ static func open_hub(npc, skip_errand := false) -> bool:
 	# 인사말 앞에 지금 무얼 하고 있었는지를 한 줄 깔아 둔다. 내 굴까지 따라 들어왔다면 굴 구경평부터 한다
 	var text := _greeting(npc, talk, tier)
 	if Den.in_my_den(): text = "%s\n\n%s" % [Den.visit_line(), text]
-	elif npc.doing: text = "(%s.)\n\n%s" % [npc.doing, text]
-	if running: text += "\n\n(%s: %s %d/%d)" % [running.title, Quests.step_goal_text(running), Quests.progress(running), Quests.step_total(running)]
+	elif npc.doing: text = "(%s.)\n\n%s" % ["자다가 부스스 눈을 뜬다" if _asleep(npc) else npc.doing, text]   # 코를 골던 용이 곧바로 멀쩡히 인사하지 않게
+	if running:   # 힌트가 있으면 힌트로 ('그 자리에 가 있기 0/1' 처럼 어디인지 없는 목표 글 대신). 숫자는 셀 게 여럿일 때만
+		var total := Quests.step_total(running)
+		text += "\n\n(%s: %s%s)" % [running.title, Quests._hint_or_goal(running), " %d/%d" % [Quests.progress(running), total] if total > 1 else ""]
+	elif not skip_errand and Quests.rest_offer(npc): text += "\n\n(할 이야기가 더 있는 눈치지만, 오늘은 그만 쉬고 내일 아침에 보자는 듯하다.)"
 	elif not skip_errand and Quests.held_offer(npc): text += "\n\n(부탁할 일이 있는 눈치지만, 지금 맡은 일부터 끝내고 오라는 듯하다.)"
 	show(npc, text, opts)
 	return true
+
+
+## 지금 자는 칸인가 (data/routines.json 에서 sleep 이 붙은 칸). 하던 일(doing) 글로 그 칸을 찾는다
+static func _asleep(npc) -> bool:
+	var r = Routine.routines().get(npc.config.name)
+	if not r or not npc.doing: return false
+	var days: Array = [r.day] + r.get("variants", []).map(func(v): return v.day)
+	if r.get("after"): days.append(r.after.day)
+	for d in days:
+		for s in d:
+			if s.get("sleep") and s.doing == npc.doing: return true
+	return false
 
 
 ## NPC 고유 행동 묶음. 없으면 null
 static func _own_menu(npc, nm: String):
 	var back := func(): open_hub(npc)
 	var sub := []
-	if nm == "Elder": return { label = "✨ 축복을 청한다", on_select = func(): _blessing(npc) }
-	if nm == "Kairon": return { label = "🎓 가르침을 청한다", on_select = func(): show(npc, "뭘 배우러 왔냐.", Story.master_options(npc) + [{ label = "돌아간다", on_select = back }]) }
+	# 촌장의 축복 · 스승의 가르침. 짝이 아니면 이것 하나뿐이고, 짝이면 아래의 동행 · 나들이와 한데 묶는다
+	# (여기서 곧장 돌려주던 탓에 엘더나 카이론이 짝이면 동행 · 나들이 메뉴가 아예 없었다)
+	var own = null
+	if nm == "Elder": own = { label = "✨ 축복을 청한다", on_select = func(): _blessing(npc) }
+	if nm == "Kairon": own = { label = "🎓 가르침을 청한다", on_select = func(): show(npc, "뭘 배우러 왔냐.", Story.master_options(npc) + [{ label = "돌아간다", on_select = back }]) }
+	if own and npc != GameState.partner: return own
+	if own: sub.append(own)
 	if nm == "Tiamat": sub.append({ label = "⚔️ 대련을 신청한다", on_select = func(): _start_spar(npc) })
 	if nm == "Poco": sub.append({ label = "🎾 술래잡기하자!", on_select = func(): _start_tag(npc) })
 	# 마을 아이들: 성체가 돼야 놀아 줄 수 있다. 놀아 주면 부모의 호감도 같이 오른다
@@ -275,10 +302,11 @@ static func _bring_to_quest(npc, q: Dictionary) -> void:
 static func _report_quest(npc, q: Dictionary) -> void:
 	var finish := func(choice_id):
 		close()
-		Quests.turn_in(q, npc, choice_id)
+		var big := Quests.turn_in(q, npc, choice_id)
 		if Ending.takes_over(q): return
 		_play_queued(func():
 			Save.save_game()
+			if big: return   # 큰 대목을 마친 자리에서는 다음 부탁을 꺼내지 않는다. 그날은 생활할 틈이다 (Quests.resting)
 			var nxt = Quests.offer_for(npc)
 			if nxt and is_instance_valid(npc): _hear_quest(npc, nxt))
 	if not q.get("choice"):
@@ -452,9 +480,11 @@ static func _entrust_egg(npc) -> void:
 		return
 	GameState.player.carrying = null
 	GameState.eggSitting = { day = GameState.day, genes = Kids.mix_genes(GameState.player, GameState.partner) }
+	# 성체부터는 제 둥지에서 품을 수 있다 (Dragon._put_egg_in_nest). 그 뒤로는 '아직 어렵다'고 하지 않는다
+	var grown: bool = GameState.player.stage_index >= 2
 	play_lines(npc, [
 		"알이구나. 어디서 주워 왔느냐.",
-		"네 몸으로는 아직 품기 어렵단다. 알은 품는 이의 체온을 닮아 가거든…",
+		"이제 네 몸으로도 품을 수 있을 텐데… 그래도 이 늙은이한테 맡기겠다면야, 허허." if grown else "네 몸으로는 아직 품기 어렵단다. 알은 품는 이의 체온을 닮아 가거든…",
 		"내가 맡으마. 사흘이면 깰 게야. 그때 데려다주마.",
 	], func():
 		Vfx.spawn_effect("RING", npc.x, npc.y, { size = 1.2 })
@@ -539,7 +569,9 @@ static func _open_forge(npc) -> void:
 static func _forge_one(npc, recipe: Dictionary) -> void:
 	var cost := Forge.cost_of(recipe)
 	if not Forge.can_afford(cost):
-		show(npc, "재료가 모자라다. %s에는 이만큼 든다.\n\n%s\n\n(앞의 숫자가 가진 것, 뒤가 드는 것이다)" % [recipe.name, Forge.cost_text(cost)],
+		# 그론이 떠난 뒤로는 엠버가 모루를 맡는다. 말투도 엠버의 것으로
+		var short := "재료가 모자라. %s에는 이만큼 들어." if npc.config.name == "Ember" else "재료가 모자라다. %s에는 이만큼 든다."
+		show(npc, (short + "\n\n%s\n\n(앞의 숫자가 가진 것, 뒤가 드는 것이다)") % [recipe.name, Forge.cost_text(cost)],
 			[{ label = "모아 오겠다", on_select = func(): _open_forge(npc) }])
 		return
 	show(npc, "%s\n\n드는 재료: %s" % [recipe.flavor, Forge.cost_text(cost)], [
@@ -555,7 +587,8 @@ static func _open_goods(npc) -> void:
 		Forge.buy(item)
 		_open_goods(npc) })
 	opts.append({ label = "돌아간다", on_select = func(): _open_forge(npc) })
-	show(npc, "돈으로 사겠다면 말리진 않는다. 비싸게 받을 뿐이지. (소지금 %dG)" % GameState.player.gold, opts)
+	var line := "돈으로 사겠다면 안 말릴게. 좀 비싸긴 해." if npc.config.name == "Ember" else "돈으로 사겠다면 말리진 않는다. 비싸게 받을 뿐이지."
+	show(npc, "%s (소지금 %dG)" % [line, GameState.player.gold], opts)
 
 
 # ---------- 티아맷: 대련 ----------
@@ -635,7 +668,7 @@ static func _end_activity(win: bool) -> void:
 		Quests.notify("tag")
 	else:
 		npc.say(kp.tagLose if kp else "헤헤, 내가 이겼다!")
-		Hud.pop("시간 초과! %s가 도망쳤습니다." % Names.npc(npc.config.name), "⏱️")
+		Hud.pop("시간 초과! %s 도망쳤습니다." % Util.josa(Names.npc(npc.config.name), "이", "가"), "⏱️")
 
 
 ## 놀이 중인 NPC의 움직임. Dragon 의 _update_npc 가 부른다

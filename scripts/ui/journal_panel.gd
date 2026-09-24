@@ -212,15 +212,19 @@ func _render_folk() -> void:
 	var hour := floori(t)
 	var minute := floori(fmod(t, 1.0) * 60 / 10.0) * 10
 	_section("%d일째 %02d:%02d · %s" % [GameState.day, hour, minute, NightEvents.day_phase_name()], [])
-	# 달 밝은 밤의 모임
-	var moon := _note("")
-	moon.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	if Gathering.is_gather_now():
-		moon.text = "🌕 지금 구름 폭포에서 달맞이 모임이 열리고 있다. 두 마을 용들이 모두 내려와 있다."
-		moon.add_theme_color_override("font_color", Color("#ffd84a"))
-	elif Gathering.is_gather_day(): moon.text = "🌕 오늘 밤이 모임이다. 해가 지면 구름 폭포로."
-	else: moon.text = "🌘 다음 달맞이 모임까지 %d일. 달이 가장 밝은 밤, 구름 폭포에서." % Gathering.days_to_gather()
-	var tiers := [[75, "연인"], [50, "절친"], [25, "친구"], [10, "아는 사이"], [0, "낯선 사이"]]
+	# 달맞이 모임. 엘더가 첫 모임(m5g)을 알려 주기 전에는 모임이 있는 줄도 모르고,
+	# 스무 해 끊겼던 모임은 그 첫 모임 때 다시 서므로 그 전에는 날짜를 세지 않는다 (여드레째 밤이 와도 아무도 가지 않는다)
+	if Gathering.is_gather_day() or Gathering.invited_up():
+		var moon := _note("")
+		moon.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		if Gathering.is_gather_now():
+			moon.text = "🌕 지금 구름 폭포에서 달맞이 모임이 열리고 있다. 두 마을 용들이 모두 내려와 있다."
+			moon.add_theme_color_override("font_color", Color("#ffd84a"))
+		elif not Gathering.invited_up(): moon.text = "🌕 오늘 밤, 스무 해 만에 달맞이 모임이 다시 선다. 해가 지면 구름 폭포 아래로."
+		elif Gathering.is_gather_day(): moon.text = "🌕 오늘 밤이 달맞이 모임이다. 해가 지면 구름 폭포 아래로."
+		else: moon.text = "🌘 다음 달맞이 모임까지 %d일. 달이 가장 밝은 밤이면 두 마을이 구름 폭포 아래에 모인다." % Gathering.days_to_gather()
+	# 사이 단계는 대화창 머리 · 사이 장면 제목과 같은 문턱이다. 짝이 된 용만 '짝'
+	var tiers := [[75, "절친"], [50, "친구"], [25, "아는 사이"], [0, "낯선 사이"]]
 	for r in Routine.roster():
 		if r.east and not Gathering.knows_cloudtop(): continue   # 아직 만나지 않은 마을의 용은 적지 않는다
 		var card: PanelContainer = FOLK_CARD.instantiate()
@@ -230,6 +234,7 @@ func _render_folk() -> void:
 			if r.relation >= tt[0]:
 				tier = tt[1]
 				break
+		if GameState.partner and GameState.partner.config.name == r.name: tier = "짝"
 		card.get_node("Lines/Head/Name").text = r.label
 		card.get_node("Lines/Head/Job").text = "%s · %s" % [r.job, tier]
 		card.get_node("Lines/Where").text = ("📍 " if r.near else "") + r.where

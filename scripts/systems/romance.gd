@@ -29,8 +29,12 @@ static func _lines(npc):
 static func _choices() -> Dictionary: return Data.get_module("romance").LOVE_CHOICES
 
 
-static func _fill(text: String, rival: String) -> String:
-	return text.replace("{rival}", Names.npc(rival))
+## {rival} 자리에 말하는 용이 그 용을 부르는 말을 넣는다 (LOVE_LINES.<용>.calls. 없으면 이름).
+## 나라는 엘더를 '우리 아빠', 카이론은 '영감'이라 부른다. {name} 은 그 용의 이름으로 바뀐다
+static func _fill(npc, text: String, rival: String) -> String:
+	var t = _lines(npc)
+	var word: String = t.get("calls", {}).get(rival, "{name}") if t else "{name}"
+	return text.replace("{rival}", word.replace("{name}", Names.npc(rival)))
 
 
 ## 이 용의 지금 마음 상태. 시간이 지난 것은 걷어 낸다
@@ -142,7 +146,7 @@ static func intercept(npc, ui: Dictionary) -> bool:
 				var gold := 40 + nth * 20
 				GameState.player.gold += gold
 				GameState.player.inventory.meat += 2
-				npc.relation = minf(100, npc.relation + 5)
+				NpcActions.add_relation(npc, 5)
 				Vfx.spawn_effect("HEART", npc.x, npc.y - 80, { color = "#ff7aa8", size = 1.4 })
 				Hud.pop("짝이 된 지 %d일째. %s의 선물: %dG, 고기 2개" % [nth * 10, Names.npc(nm), gold], "💝")
 				Save.save_game())
@@ -154,8 +158,8 @@ static func _jealous_partner(npc, rival: String, ui: Dictionary) -> void:
 	var t = _lines(npc)
 	var other = World.any_npc(rival)
 	var jp: Array = t.jealousPartner
-	var lead := jp.slice(0, -1).map(func(x): return _fill(x, rival))
-	ui.play_lines.call(npc, lead, func(): ui.show.call(npc, _fill(jp[-1], rival), [
+	var lead := jp.slice(0, -1).map(func(x): return _fill(npc, x, rival))
+	ui.play_lines.call(npc, lead, func(): ui.show.call(npc, _fill(npc, jp[-1], rival), [
 		{ label = _choices().sorry, on_select = func():
 			if other: _cool(other)
 			_sulk(npc, ui, null) },
@@ -173,11 +177,11 @@ static func _jealous_rival(npc, rival: String, ui: Dictionary) -> void:
 	var t = _lines(npc)
 	var other = World.any_npc(rival)
 	var jr: Array = t.jealousRival
-	var lead := jr.slice(0, -1).map(func(x): return _fill(x, rival))
-	ui.play_lines.call(npc, lead, func(): ui.show.call(npc, _fill(jr[-1], rival), [
+	var lead := jr.slice(0, -1).map(func(x): return _fill(npc, x, rival))
+	ui.play_lines.call(npc, lead, func(): ui.show.call(npc, _fill(npc, jr[-1], rival), [
 		{ label = _choices().pickYou, on_select = func():
 			if other and other != GameState.partner: _cool(other)
-			npc.relation = minf(100, npc.relation + 6)
+			NpcActions.add_relation(npc, 6)
 			Vfx.spawn_effect("HEART", npc.x, npc.y - 80, { color = "#ff7aa8", size = 1.2 })
 			ui.close.call()
 			Save.save_game() },
@@ -210,7 +214,7 @@ static func apologize(npc, ui: Dictionary) -> void:
 	ui.play_lines.call(npc, t.makeup, func():
 		L().mood.erase(npc.config.name)
 		npc.state = "PARTNER_FOLLOW"
-		npc.relation = minf(100, npc.relation + 8)
+		NpcActions.add_relation(npc, 8)
 		Vfx.spawn_effect("HEART", npc.x, npc.y - 80, { color = "#ff7aa8", size = 1.4 })
 		Hud.pop("%s하고 화해했습니다. 다시 함께 다닙니다." % Names.npc(npc.config.name), "💞")
 		Save.save_game())
@@ -278,7 +282,7 @@ static func vowed(npc) -> bool:
 static func make_vow(npc, ui: Dictionary) -> void:
 	ui.play_lines.call(npc, _lines(npc).vow, func():
 		L().vow = { with = npc.config.name, day = GameState.day }
-		npc.relation = 100.0
+		NpcActions.add_relation(npc, 100)   # 끝까지 (100 에서 멈춘다)
 		for i in 10: Vfx.spawn_effect("HEART", npc.x + (randf() - 0.5) * 160, npc.y - 40 - randf() * 90, { color = "#ff7aa8", size = 1.2 })
 		Vfx.spawn_effect("RING", npc.x, npc.y - 40, { size = 2.2, color = "#ffd0e0" })
 		if not Relics.owns("VOW_RING"): Relics.grant("VOW_RING", GameState.player.x, GameState.player.y)

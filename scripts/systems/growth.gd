@@ -46,8 +46,20 @@ static func _spent_points() -> int:
 ## 세이브를 불러왔을 때 지금까지 쌓였어야 할 포인트를 채워 준다 (레벨·단계를 복원한 뒤에 부른다)
 static func reconcile_points() -> void:
 	var p = GameState.player
-	var earned: int = (p.level - 1) * POINTS_PER_LEVEL + p.stage_index * POINTS_PER_STAGE
+	var earned: int = (p.level - 1) * POINTS_PER_LEVEL + p.stage_index * POINTS_PER_STAGE + _delve_points()
 	GameState.growth.points = maxi(0, earned - _spent_points())
+
+
+## 옛 굴에서 처음 닿은 깊이로 받은 포인트 (Delve.MILESTONES). 레벨·단계만 세면 불러올 때마다 이것이 사라졌다
+static func _delve_points() -> int:
+	var recs = GameState.story.get("delve")
+	if not recs: return 0
+	var sum := 0
+	for id in recs:
+		var claimed: Array = recs[id].get("claimed", [])
+		for m in Delve.MILESTONES:
+			if m.get("points") and claimed.has(m.depth): sum += int(m.points)
+	return sum
 
 
 const STAGE_LABEL := ["아기 용", "어린 용", "성체", "고룡", "삼원룡"]

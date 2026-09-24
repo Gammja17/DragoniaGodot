@@ -95,7 +95,7 @@ static func save_game() -> void:
 		mapId = GameState.map_id, visited = GameState.visited,
 		villageLayout = 2,   # 마을이 34×24 로 넓어진 뒤의 세이브 (불러올 때 서 있던 자리를 믿어도 된다)
 		elderTutorialDone = GameState.elderTutorialDone, tutorial = GameState.tutorial,
-		weather = GameState.weather.type,
+		weather = "STORM" if Weather.stormy() else GameState.weather.type,
 		quests = GameState.quests, chores = GameState.chores,
 		bossesDefeated = GameState.bossesDefeated,
 		raidCount = GameState.raid.count, upgrades = GameState.upgrades, openedChests = GameState.openedChests, blessingDay = GameState.blessingDay,
@@ -137,7 +137,8 @@ static func apply(data: Dictionary) -> void:
 	G.quests = Quests.migrate(data.get("quests", {}) if data.get("quests") else {})
 	G.chores = data.chores if data.get("chores") else { day = 0, offers = [], taken = {}, done = [] }
 	G.questScenes = []
-	G.weather.type = data.weather
+	G.weather.type = "RAIN" if data.weather == "STORM" else data.weather   # 폭풍은 번개 치는 센 비다 (Weather)
+	G.weather.storm = data.weather == "STORM"
 	G.raid.count = data.get("raidCount", 0)
 	G.upgrades = data.get("upgrades", {})
 	G.openedChests = data.get("openedChests", {})

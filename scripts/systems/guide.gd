@@ -74,7 +74,8 @@ static func _boss_place(id: String):
 		for f in World.maps()[mid].get("fixtures", []):
 			if f.t == "BOSS" and f.id == id:
 				var p := World.at(f.at)
-				return { map = mid, x = p.x, y = p.y, label = "결투장" }
+				# 모르가스의 무덤 · 쌍두룡의 둥지가 '결투장'일 리 없다. 가리키는 보스의 이름을 단다
+				return { map = mid, x = p.x, y = p.y, label = Data.get_module("enemies").BOSSES.get(id, {}).get("name", Names.map(mid)) }
 	return null
 
 

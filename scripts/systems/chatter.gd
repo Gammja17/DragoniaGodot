@@ -19,7 +19,9 @@ static func update(dt: float) -> void:
 			if who and is_instance_valid(who) and not who.remove: who.say(line[1])
 			_running.t = 2.6
 		return
-	if not ["VILLAGE", "CLOUDTOP", "ROOTVALE", "STONEBACK", "VOLCANO"].has(GameState.map_id) or GameState.raid.active or GameState.isDialogueOpen or GameState.tour or GameState.prologue: return
+	# 수련장도 친다: 카이론과 나라는 아침마다 거기 있다 (나라가 마을에 거의 없어 나라가 끼는 잡담이 하나도 안 나오던 것).
+	# 대련 · 술래잡기 · 수련 중에는 그 판에 든 용이 딴소리를 하지 않게 쉰다
+	if not ["VILLAGE", "CLOUDTOP", "ROOTVALE", "STONEBACK", "VOLCANO", "DOJO"].has(GameState.map_id) or GameState.raid.active or GameState.isDialogueOpen or GameState.tour or GameState.prologue or GameState.activity: return
 	_timer -= dt
 	if _timer > 0: return
 	_timer = Util.rand_range(50, 90)   # 예전엔 18~32초. 말풍선이 쉴 새 없이 떠서 줄였다
@@ -31,7 +33,8 @@ static func update(dt: float) -> void:
 		var a: String = c.pair[0]
 		var b: String = c.pair[1]
 		return here.has(a) and here.has(b) and not Routine.is_dead(a) and not Routine.is_dead(b) \
-			and Util.dist(here[a], here[b]) < 320 and Util.dist(here[a], GameState.player) < 900)
+			and Util.dist(here[a], here[b]) < 320 and Util.dist(here[a], GameState.player) < 900 \
+			and (not c.get("when") or c.when.call(GameState)))   # 이야기가 흘러 맞지 않게 된 잡담은 빠진다
 	if options.is_empty(): return
 	var c: Dictionary = options.pick_random()
 	_running = { lines = c.lines, i = 0, t = 0.0, npcs = { c.pair[0]: here[c.pair[0]], c.pair[1]: here[c.pair[1]] } }

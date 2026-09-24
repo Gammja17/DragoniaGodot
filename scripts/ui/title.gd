@@ -8,8 +8,9 @@ extends Control
 
 const LOOK_CELL := preload("res://scenes/ui/look_cell.tscn")
 const GAME := "res://scenes/main.tscn"
-# 색을 바꿀 수 있는 옛 종족 4 (한 장짜리 새 외형 26 뒤에 붙는다)
-const CLASSIC := [["WESTERN", "서양룡 (색 변경 가능)"], ["WYVERN", "와이번 (색 변경 가능)"], ["HYDRA", "쌍두룡 (색 변경 가능)"], ["BEHEMOTH", "베히모스 (색 변경 가능)"]]
+# 색을 바꿀 수 있는 옛 종족 4 (한 장짜리 새 외형 26 뒤에 붙는다).
+# 머리 둘 달린 종은 '쌍두룡'이라 부르지 않는다. 그 이름은 형제가 한 몸이 된 잘고라의 것이다
+const CLASSIC := [["WESTERN", "서양룡 (색 변경 가능)"], ["WYVERN", "와이번 (색 변경 가능)"], ["HYDRA", "히드라 (색 변경 가능)"], ["BEHEMOTH", "베히모스 (색 변경 가능)"]]
 const ACCESSORIES := [null, "PLUME", "FLOWER", "LEAF", "HELM", "HAT", "CROWN"]
 
 @onready var _slots: PanelContainer = $Center/Column/Slots

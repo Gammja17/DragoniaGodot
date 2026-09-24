@@ -68,6 +68,7 @@ static func _build() -> void:
 	_build_story()
 	_build_talk()
 	_build_chronicle()
+	_build_fix()   # [세션 B]
 
 
 # ---- 자주 쓰는 것들 ----
@@ -224,3 +225,21 @@ static func _build_chronicle() -> void:
 	for i in w: _table["chronicle:CHRONICLE.%d.when" % i] = w[i]
 	_table["chronicle:CHRONICLE.15.choice.options.1.when"] = func(c): return c.flag.call("messenger")
 	_table["chronicle:CHRONICLE.16.choice.options.1.when"] = func(c): return c.clueCount >= 4
+
+
+# ---- [세션 B] 조건·구조 고치기 ----
+## 게시판 쪽지 · 잡담 · 일과의 갈래. 새 항목의 경로는 번호 대신 id 로 짓는다
+static func _build_fix() -> void:
+	_table.merge({
+		# 게시판: 그론의 쪽지는 그가 떠난 뒤로 붙지 않는다. 모루 쪽지는 불이 다시 붙은 뒤(사흘) 엠버가 붙인다
+		"chores:CHORES.c_goblin.when": func(s): return not _dead(s, "Gron"),
+		"chores:CHORES.c_chest.when": func(s): return not _dead(s, "Gron"),
+		"chores:CHORES.c_upgrade.when": func(s): return not _dead(s, "Gron"),
+		"chores:CHORES.c_upgrade_ember.when": func(s): return _dead(s, "Gron") and s.day - int(s.story.get("deathDay", {}).get("Gron", s.day)) >= 3,
+		# 게시판: 결말을 본 뒤로는 습격이 오지 않는다 (Raid._still_coming 과 같은 판단. Raid 를 부르면 Data 가 서기 전에 지도 스크립트까지 끌려와 튕긴다)
+		"chores:CHORES.c_raid.when": func(s): return not (s.story.get("route") == "dark" and s.quests.done.has("m7d")) and s.story.get("endingSeen", "") == "",
+		# 잡담: 미라가 폭포 일을 털어놓은(s1) 뒤로 엘더가 모르는 척 묻지 않는다
+		"chatter:CHATTER.elder_mira_falls.when": func(s): return not s.quests.done.has("s1"),
+		# 일과: 어둠의 길 끝에 나라가 떠난 뒤의 스승
+		"routines:ROUTINES.Kairon.variants.after_dark.when": func(s): return s.story.get("route") == "dark" and s.quests.done.has("m7d"),
+	})

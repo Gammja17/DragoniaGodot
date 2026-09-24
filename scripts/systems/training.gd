@@ -46,7 +46,7 @@ static func _choose():
 	if L == 0: return "DRILL" if can_drill else null      # 첫 수련은 늘 기본기다
 
 	# 어제 습격을 막았거나 날이 궂으면 쉬어 간다
-	var rough: bool = GameState.story.get("yesterday", {}).get("raid", false) or ["RAIN", "SNOW"].has(GameState.weather.type)
+	var rough: bool = GameState.story.get("yesterday", {}).get("raid", false) or GameState.weather.type == "RAIN"   # 폭풍도 RAIN 이다 (Weather)
 	if rough and last != "REST" and _next_rest(): return "REST"
 	if can_drill and (last != "DRILL" or L < 3): return "DRILL"   # 처음 세 기본기는 이어서 배워도 된다
 
@@ -62,9 +62,12 @@ static func _choose():
 	return list[int(_log().count) % list.size()]
 
 
-## 오늘의 일과. 스승을 소개받기 전(ch1)이면 null
+## 오늘의 일과. 스승을 소개받기 전(ch1)이거나 어둠의 길 끝(m7d) 뒤면 null
 static func todays_plan():
 	if not GameState.story.scenes.has("ch1"): return null
+	# 스승을 쓰러뜨리고 마을 문을 열었다. 수련장 문은 아침마다 열려 있어도 더는 아무도 들어가지 않는다
+	# (그 뒤로도 매일 일과를 권하고, 떠난 나라를 불러와 허수아비 내기를 시키던 것)
+	if GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): return null
 	var plan = GameState.story.get("plan")
 	if plan and plan.day == GameState.day: return plan
 	if plan and plan.stage == "active": _end_company()       # 어제 것을 못 끝내고 날이 넘어갔다
@@ -171,7 +174,7 @@ static func _end_company() -> void:
 	var npc = _master()
 	if npc and GameState.companion == npc:
 		GameState.companion = null
-		npc.state = "WANDER"
+		npc.state = "PARTNER_FOLLOW" if npc == GameState.partner else "WANDER"   # 짝이면 다시 짝으로 따라다닌다
 		npc.passive = false
 
 
@@ -182,7 +185,7 @@ static func _finish(plan: Dictionary, lines) -> void:
 	var reward := func():
 		_end_company()
 		p.gain_xp(30 + p.level * 15)
-		if npc: npc.relation = minf(100, npc.relation + 4)
+		if npc: NpcActions.add_relation(npc, 4)
 		Hud.pop("오늘의 수련을 마쳤다: %s" % _plan_title(plan), "🎓")
 		Sfx.play("quest")
 		Save.save_game()
@@ -209,7 +212,7 @@ static func _watch(npc, plan: Dictionary, d: Dictionary) -> void:
 		_close()
 		Chronicle.play_scene(d.title, d.cheer[nm] + d.done, func():
 			var who = World.any_npc(nm)
-			if who: who.relation = minf(100, who.relation + 5)
+			if who: NpcActions.add_relation(who, 5)
 			_finish(plan, null))
 	_ask(npc, d.prompt, [
 		{ label = "%s 응원한다" % Util.josa(Names.npc("Nara"), "을", "를"), on_select = func(): cheer.call("Nara") },
@@ -250,6 +253,10 @@ static func update() -> void:
 		if not GameState.activity: plan.stage = "done" if GameState.story.get("lessonDay") == GameState.day else "offered"
 		return
 	if not npc or GameState.companion != npc: return
+	# 보스가 사는 곳까지는 따라가지 않는다 (둥지까지 따라와 말없이 보스를 쏘던 것)
+	if _boss_lair(GameState.map_id):
+		_turn_back(npc, plan)
+		return
 	# 구경만 하는 날: 제자가 죽게 생겼을 때만 나선다
 	npc.passive = bool(d.get("passive", false)) and p.hp > p.max_hp * 0.35
 
@@ -268,6 +275,31 @@ static func update() -> void:
 		_finish(plan, d.done)
 	# 굴에서는 장면을 틀지 않는다. 밖에 나오면 마무리한다
 	if plan.kind == "DELVE" and plan.get("reached") and not GameState.dungeon: _finish(plan, d.done.slice(1))
+
+
+## 아직 쓰러지지 않은 보스가 사는 지도인가 (옛 수호룡의 무덤 · 화산 정상 같은 곳)
+static func _boss_lair(id: String) -> bool:
+	for f in World.maps().get(id, {}).get("fixtures", []):
+		if f.t == "BOSS" and not GameState.bossesDefeated.get(f.id, false): return true
+	return false
+
+
+## 스승이 보스의 둥지 앞에서 돌아선다. 오늘 수련은 다시 청하면 처음부터 한다
+static func _turn_back(npc, plan: Dictionary) -> void:
+	_end_company()
+	plan.stage = "offered"
+	plan.n = 0
+	plan.erase("spawned")
+	plan.erase("reached")
+	npc.say("여긴 수련하러 올 데가 아니다. 오늘 수련은 다음에 마저 하자.")
+	Hud.pop("오늘의 수련을 멈췄다. 카이론에게 다시 청하면 처음부터 한다.", "🎓")
+	if npc == GameState.partner: return   # 짝으로서는 곁에 남는다. 수련만 접는다
+	# 들어온 문으로 걸어 나간다 (걷는 동안은 싸움에 끼지 않고, 문에 닿으면 이 지도에서 빠진다)
+	var gate = null
+	for p in GameState.entities.props:
+		if p.portal and (gate == null or Util.dist(npc, p) < Util.dist(npc, gate)): gate = p
+	if gate: npc.walk_to = { x = gate.x, y = gate.y, leave = true }
+	else: npc.remove = true
 
 
 static func _is_wild(id: String) -> bool:

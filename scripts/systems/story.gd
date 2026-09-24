@@ -65,7 +65,6 @@ static func next_trial():
 	var st: Dictionary = _stages()[int(t.stage)]
 	t.blocked = null
 	if p.level < st.minLevel: t.blocked = "아직 이르다. 몸이 더 여물어야 버틴다. (레벨 %d 필요 · 지금 %d)" % [st.minLevel, p.level]
-	elif st.get("needsAllElements") and p.elements.size() < 3: t.blocked = "세 속성을 모두 제 것으로 만든 뒤의 이야기다."
 	elif t.get("needs") and not t.needs.call(GameState): t.blocked = t.why
 	return t
 
@@ -96,6 +95,10 @@ static func start_lesson(npc, lesson: Dictionary) -> void:
 
 
 # ---------- 고룡의 깨어남 ----------
+## 고룡(마지막 단계)이 되려면 품어야 하는 것: 세 마을이 스스로 건넨 속성. 레벨은 보지 않는다.
+## 이그나르가 빼앗아 간 마을들(뿌리골·바윗골)과, 나란히 서기로 한 구름마루다 (docs/lore.md 정한 것)
+const GIFTS := { GRASS = "뿌리골의 풀", EARTH = "바윗골의 땅", WATER = "구름마루의 물" }
+
 ## 구름 위 폐허의 빈 둥지 앞에서 [Space]. 처리했으면 true
 static func try_awaken() -> bool:
 	if GameState.map_id != "SKY_RUINS": return false
@@ -109,14 +112,14 @@ static func try_awaken() -> bool:
 	if p.stage_index < 2:
 		Hud.pop("둥지 안이 희미하게 따뜻하다. 아직 이 온기를 받을 몸이 아니다. (성체가 된 뒤에 다시 오자)", "🪹"); return true
 	var lacks := []
-	if p.elements.size() < 3: lacks.append("속성 셋 (지금 %d)" % p.elements.size())
-	if p.level < _stages()[3].minLevel: lacks.append("레벨 %d (지금 %d)" % [_stages()[3].minLevel, p.level])
+	for el in GIFTS:
+		if not p.elements.has(el): lacks.append(GIFTS[el])
 	if not lacks.is_empty():
-		Hud.pop("둥지 안이 따뜻하다. 무언가 모자란다: %s" % " · ".join(lacks), "🪹"); return true
+		Hud.pop("둥지 안이 따뜻하다. 아직 품지 못한 것이 있다: %s" % " · ".join(lacks), "🪹"); return true
 	Chronicle.play_scene("빈 둥지", [
 		{ who = "나", text = "(둥지 안에 손을 대자 돌이 따뜻했다. 삼백 년 전에도, 얼마 전에도 누가 여기서 태어났다.)" },
-		{ who = "나", text = "(품고 있던 속성들이 한꺼번에 뜨거워진다. 서로 밀어내지 않고 하나로 엮인다.)" },
-		{ who = "나", text = "(등이 갈라지는 것 같더니 날개가 한 뼘 더 자랐다. 이건 누가 시험을 내서 얻은 게 아니라, 원래 내 것이었던 것 같다.)" },
+		{ who = "나", text = "(품고 있던 속성들이 한꺼번에 뜨거워진다. 불과 얼음과 번개, 풀과 땅과 물. 서로 밀어내지 않고 하나로 엮인다.)" },
+		{ who = "나", text = "(등이 갈라지는 것 같더니 날개가 한 뼘 더 자랐다. 누가 시험을 내서 얻은 게 아니다. 건네받은 것들이 나를 여기까지 키웠다.)" },
 	], func():
 		p.evolve(3)
 		if not GameState.story.rites.has(3): GameState.story.rites.append(3)   # 목 아래 무늬가 한층 또렷해진다
@@ -377,6 +380,7 @@ static func on_flag(flag: String) -> void:
 	GameState.story.flags[flag] = true
 	match flag:
 		"gron_dead": _kill_npc("Gron")
+		"nuri_found": _warm({ Dan = 25, Soi = 25, Nuri = 15 })   # 3장: 골짜기 끝에서 누리를 데려온 날, 누리네가 마음을 연다
 		# 이그나르 앞에서 고르는 순간 결말이 흐른다 (걸어서 돌아가 보고하고 잠들 필요 없이)
 		"ignar_slain":
 			GameState.story.route = "guardian"
@@ -433,6 +437,13 @@ static func _dark_duel() -> void:
 					Quests.changed()
 				Save.save_game()),
 	})
+
+
+## 이야기가 마음을 바꾸는 날. 곁에 없어도 그 용들의 호감이 한 번에 오른다
+static func _warm(by: Dictionary) -> void:
+	for nm in by:
+		var n = World.any_npc(nm)
+		if n: NpcActions.add_relation(n, by[nm])
 
 
 ## 이야기에서 용이 죽는다. 일과와 명단에서 빠지고, 곁에 있었다면 떠난다

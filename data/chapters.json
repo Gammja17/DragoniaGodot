@@ -42,6 +42,15 @@
     "HOLLOW_DEEP",
     "MORGATH_LAIR"
    ],
+   "hold": {
+    "MORGATH_LAIR": {
+     "when": {
+      "$fn": "s => 'm4' in s.quests.active || s.quests.done.includes('m4') || !!s.bossesDefeated.MORGATH",
+      "$at": "CHAPTERS.c3.hold.MORGATH_LAIR.when"
+     },
+     "text": "무덤 쪽에서 내려오는 냉기에 발이 얼어붙는다. 골짜기 끝으로는 가지 말라던 엘더의 말이 떠오른다."
+    }
+   },
    "blocked": "거기까지 갈 일은 아직 없다."
   },
   {
@@ -118,6 +127,22 @@
     "ASH_CITY",
     "AUTUMN"
    ],
+   "hold": {
+    "STONEBACK": {
+     "when": {
+      "$fn": "s => !!s.bossesDefeated.BASIL",
+      "$at": "CHAPTERS.c7.hold.STONEBACK.when"
+     },
+     "text": "고원으로 오르는 길목의 모래가 끓고 있다. 모래 폭군이 버티는 한 저쪽으로는 못 간다."
+    },
+    "ASH_CITY": {
+     "when": {
+      "$fn": "s => !!s.bossesDefeated.BASIL",
+      "$at": "CHAPTERS.c7.hold.ASH_CITY.when"
+     },
+     "text": "모래 폭군이 둥지를 지키고 있는 한, 사막 너머로는 한 발짝도 못 간다."
+    }
+   },
    "blocked": "화산 쪽은 아직 아무도 보내 주지 않는다."
   },
   {
@@ -133,6 +158,15 @@
     "VOLCANO_PATH",
     "IGNAR_LAIR"
    ],
+   "hold": {
+    "IGNAR_LAIR": {
+     "when": {
+      "$fn": "s => s.player.stageIndex >= 3 || !!s.bossesDefeated.IGNAR",
+      "$at": "CHAPTERS.c8.hold.IGNAR_LAIR.when"
+     },
+     "text": "정상에서 내리꽂는 바람이 날개를 뒤로 밀어낸다. 성체의 날개로는 저 바람을 못 뚫는다."
+    }
+   },
    "blocked": ""
   }
  ]

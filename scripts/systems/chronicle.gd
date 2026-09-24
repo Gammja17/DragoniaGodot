@@ -62,8 +62,24 @@ static func seen_event(id: String) -> bool:
 	return GameState.story.events.has(id)
 
 
+## 큰 용을 쓰러뜨린 날을 적어 둔다 (story.bossDay). 소식을 반기는 인사는 며칠 동안만 나온다
+static func _stamp_bosses() -> void:
+	if not GameState.story.has("bossDay"): GameState.story.bossDay = {}
+	for id in GameState.bossesDefeated:
+		if GameState.bossesDefeated[id] and not GameState.story.bossDay.has(id): GameState.story.bossDay[id] = GameState.day
+
+
+## 5장의 밀회(s1 의 둘째 대목)를 본 날을 적어 둔다 (story.trystDay). 유안은 그다음 날 봉우리에 오르고, 한여름 눈은 그 뒤에 온다
+static func _stamp_tryst() -> void:
+	if GameState.story.has("trystDay"): return
+	var e = GameState.quests.active.get("s1")
+	if GameState.quests.done.has("s1") or (e != null and int(e.step) >= 2): GameState.story.trystDay = GameState.day
+
+
 ## 매 프레임 부른다. 0.8초마다 조건이 맞는 사건이 있는지 살핀다
 static func update(dt: float) -> void:
+	_stamp_bosses()
+	_stamp_tryst()
 	if _playing or Ending.playing or GameState.isDialogueOpen or GameState.dungeon or GameState.activity or GameState.raid.active: return
 	if GameState.bannerUntil and GameState.play_time < GameState.bannerUntil: return   # 지역 이름이 떠 있는 동안은 기다린다
 	if GameState.entities.bosses.any(func(b): return b.dying > 0): return   # 보스가 무너지는 동안은 기다린다 (작별은 그 뒤에)
@@ -197,7 +213,7 @@ static func _find(who):
 ## 여러 줄짜리 장면을 차례로 보여 준다. 아침 장면(Story)도 이걸 쓴다.
 ## line = { who: NPC 이름 | '나' | '???', text, look?, label?, do?, zoom?, auto? } — do·zoom·auto 는 Cutscene 의 연출 박자
 static func play_scene(title, lines: Array, then = null, cinematic := true, place = null) -> void:
-	lines = _split_directions(lines)
+	lines = _split_directions(lines.filter(func(l): return _chosen(l)))
 	# 장면이 벌어질 곳이 따로 있으면 먼저 그리로 간다
 	if place and place != GameState.map_id and not GameState.dungeon: World.travel_to(place)
 	# 말할 이들은 처음부터 무대에 올린다 — 제 차례에 불쑥 튀어나오지 않게
@@ -234,6 +250,20 @@ static func play_scene(title, lines: Array, then = null, cinematic := true, plac
 		st.i = lines.size()
 		step.call(step)
 	step.call(step)
+
+
+## 앞에서 고른 것을 읽는 줄. "chose": "m1:ask" 는 m1 마무리에서 ask 를 고른 경우에만, "t1:!count" 는 count 를 고르지 않은 경우에만,
+## "p1:*" 는 무엇이든 고른 경우(그 퀘스트를 끝낸 경우)에만, "p1:!*" 는 아직 아무것도 고르지 않은 경우에만 나온다.
+## 퀘스트 마무리의 선택(quests.choices)과 사건 끝의 선택(story.choices)을 같이 본다
+static func _chosen(l: Dictionary) -> bool:
+	if not l.has("chose"): return true
+	var at: PackedStringArray = str(l.chose).split(":")
+	var want := at[1]
+	var picked = GameState.quests.choices.get(at[0], GameState.story.get("choices", {}).get(at[0]))
+	if want == "*": return picked != null
+	if want == "!*": return picked == null
+	if want.begins_with("!"): return picked != want.substr(1)
+	return picked == want
 
 
 ## "(티아맷이 날개로 어깨를 쳤다.) 축하해." 처럼 대사에 섞인 긴 무대 지시는 해설 줄로 떼어 낸다 —

@@ -62,7 +62,7 @@ static func _delve_points() -> int:
 	return sum
 
 
-const STAGE_LABEL := ["아기 용", "어린 용", "성체", "고룡", "삼원룡"]
+const STAGE_LABEL := ["아기 용", "어린 용", "성체", "고룡"]
 
 
 static func _nodes_by_id() -> Dictionary: return Data.get_module("growth").NODES_BY_ID

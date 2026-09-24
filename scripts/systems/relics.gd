@@ -2,8 +2,8 @@ class_name Relics
 ## 2D판 systems/relics.js. 유물을 얻고 끼운다. 표는 data/systems_relics.json.
 ## 셋 중 하나 고르기(relicOffer)는 대화창을 옮길 때, 끼우고 빼는 화면은 일지를 옮길 때.
 
-# 몸이 자랄수록 유물을 더 걸 수 있다 (해츨링 · 어린 용 · 성체 · 고룡 · 삼원룡)
-const SLOTS_BY_STAGE := [1, 2, 3, 4, 4]
+# 몸이 자랄수록 유물을 더 걸 수 있다 (해츨링 · 어린 용 · 성체 · 고룡)
+const SLOTS_BY_STAGE := [1, 2, 3, 4]
 
 
 static func table() -> Dictionary:

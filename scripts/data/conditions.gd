@@ -125,8 +125,8 @@ static func _build_story() -> void:
 		"training:TRIPS.1.when": _lessons_at(3),
 		"training:TRIPS.2.when": func(s): return _boss(s, "MORGATH"),
 	}
-	# ---- ceremony.js: 승급 의식 대사. 숨결 × 구름마루를 겪었는가 조합마다 미리 뽑아 둔 것에서 이름만 채운다 ----
-	for stage in ["1", "2", "3", "4"]:
+	# ---- ceremony.js: 승급 의식 대사. 숨결 × 구름마루를 겪었는가 조합마다 미리 뽑아 둔 것에서 이름만 채운다 (의식은 1 · 2단계뿐) ----
+	for stage in ["1", "2"]:
 		t["ceremony:RITES.%s.lines" % stage] = func(c = {}):
 			var key := "%s|%s" % [c.get("element", "FIRE"), "true" if c.get("cloudtop", false) else "false"]
 			var lines: Array = Data.get_module("ceremony_lines").RITE_LINES[stage][key]

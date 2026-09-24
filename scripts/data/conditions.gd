@@ -249,6 +249,10 @@ static func _build_c() -> void:
 			and not c.active.call("m4") and not c.done.call("m4") and not c.boss.call("MORGATH"),
 		# 무덤은 누리를 찾으러 갈 때 열린다
 		"chapters:CHAPTERS.c3.hold.MORGATH_LAIR.when": func(s): return s.quests.active.has("m4") or s.quests.done.has("m4") or _boss(s, "MORGATH"),
+
+		# ---- 4장: 굶는 계절 ----
+		# 뿌리골의 부탁은 쌍두룡을 보낸 뒤에 ("쌍두룡을 보내 준 게 너라고 들었단다")
+		"quests:QUESTS.r1.needs": func(s): return _boss(s, "ZALGORA"),
 	}, true)
 
 

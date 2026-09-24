@@ -24,6 +24,7 @@ func _ready() -> void:
 	await _chapter1()
 	await _chapter2()
 	await _chapter3()
+	await _chapter4()
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit()
 
@@ -181,6 +182,34 @@ func _chapter3() -> void:
 	# 다음 날 아침: 누리와 엘더가 찾아온다 (카이론 아님)
 	_check("3장", "3장 꿈: 누리·엘더, 카이론 없음", not JSON.stringify(_scene("ch4").lines).contains("Kairon") and JSON.stringify(_scene("ch4").lines).contains("빙결 파동"))
 	_check("3장", "재 냄새 꿈: 목소리가 먼저 밝힌다", JSON.stringify(_scene("dream_ice").lines).contains("나도 너처럼 하늘에서 떨어졌다"))
+
+
+func _chapter4() -> void:
+	var G := GameState
+	World.travel_to("VILLAGE")
+	await _wait(0.5)
+	# 뿌리골의 부탁은 쌍두룡을 보낸 뒤에야
+	var r1 = Quests.by_id("r1")
+	_check("4장", "r1: 잘고라 전에는 안 나옴", not Quests._ready_quest(r1))
+	# m5: 잘고라의 마지막 · 티아맷이 같이 불러 달라는 이름 · 엘더가 기억하는 그해 겨울
+	G.quests.choices.t1 = "count"
+	var m5 = Quests.by_id("m5")
+	Quests.accept(m5)
+	Quests.complete_step(m5)
+	G.bossesDefeated.ZALGORA = true
+	Quests.complete_step(m5)
+	Quests.complete_step(m5)
+	Quests.turn_in(m5, World.any_npc("Elder"), null)
+	await _play_until(_idle, 60)
+	_check("4장", "잘고라 '둘이 붙어 버렸어' · 번개(숨 아님)", _saw("둘이 붙어 버렸어") and _saw("우리 번개였어"))
+	_check("4장", "t1=count: '같이 불러 준 것처럼'", _saw("같이 불러 준 것처럼"))
+	_check("4장", "엘더: 그해 겨울엔 먹을 게 없었다", _saw("먹을 게 하나도 없었단다"))
+	_check("4장", "r1: 잘고라 뒤에는 나옴", Quests._ready_quest(r1))
+	_check("4장", "4장 아침: 그론 '그해 겨울엔 다들 굶었다'", JSON.stringify(_scene("ch5").lines).contains("그해 겨울엔 다들 굶었다"))
+	# 고기가 돌아온 며칠: 소이가 누리 얘기를 한다
+	G.story.bossDay = { ZALGORA = G.day }
+	var soi = World.any_npc("Soi")
+	_check("4장", "고기 인사 (소이)", _greets(soi, Data.get_module("npcTalk").NPC_TALK.Soi, "두 점이나"))
 
 
 # ---------- 도구 ----------

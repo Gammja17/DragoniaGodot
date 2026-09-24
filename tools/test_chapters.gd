@@ -108,6 +108,7 @@ func _chapter2() -> void:
 	await _play_until(_idle, 40)
 	_check("2장", "m3: m1 에서 안 물은 걸 기억 ('이번엔 묻는구나')", _saw("이번엔 묻는구나"))
 	_check("2장", "m3: m1=ask 줄은 안 나옴", not _saw("둘만 알자고 했었지"))
+	_check("2장", "m3 보고 뒤: 3장에 할 일 (어른 몸이 되기)", _saw("카이론 밑에서 몸을 키우거라"))
 	# n1 끝: 나라가 마음을 바꾼다
 	var n1 = Quests.by_id("n1")
 	Quests.accept(n1)

@@ -38,6 +38,7 @@ static func reset_run() -> void:
 	Den._last_tile = null
 	Feedback._stop = 0.0
 	Feedback._flash_a = 0.0
+	Achievements.reset()
 
 
 static func continue_game(n: int) -> void:

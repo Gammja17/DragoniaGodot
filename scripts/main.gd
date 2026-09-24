@@ -179,6 +179,7 @@ func _update(dt: float) -> void:
 		Chatter.update(dt)
 	Training.update()
 	Tutorial.update()
+	Achievements.update(dt)
 
 
 ## 컷씬에서는 무대에 오른 이들만 보인다. 적이 화면을 가로지르고 딴 용이 어슬렁대면 장면이 장면 같지 않다

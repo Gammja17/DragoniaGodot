@@ -155,6 +155,7 @@ static func _pay_out(ch: Dictionary) -> void:
 	if ch.goal.type == "collect": p.inventory.meat -= _count(ch)
 	c.taken.erase(ch.id)
 	c.done.append(ch.id)
+	GameState.stats.chores = GameState.stats.get("chores", 0) + 1   # 해낸 잡일 수 (SKEAM 도전 과제. done 은 날마다 비워진다)
 	if r.get("gold"): p.gold += r.gold
 	if r.get("meat"): p.inventory.meat += r.meat
 	Hud.pop("잡일 완료: %s (%s)" % [ch.title, _reward_line(r)], "💰")

@@ -415,6 +415,7 @@ func use_ultimate() -> void:
 		Hud.pop("필살기 게이지 %d%%. 적을 맞혀 채우세요." % floori(ult), "🌈")
 		return
 	ult = 0
+	GameState.stats.fusions = GameState.stats.get("fusions", 0) + 1   # 융합 브레스를 쏜 수 (SKEAM 도전 과제)
 	beam = { time = 2.6, angle = aim_angle().angle, tick = 0.0 }
 	invuln = maxf(invuln, 0.6)
 	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 3.5, color = "#ffffff" })
@@ -582,6 +583,7 @@ func take_damage(dmg: float, _silent := false, _from = null) -> void:
 			Sfx.play("evolve")
 			return
 		# 쓰러진 값: 가진 고기 절반. 따라오던 짝 · 동료는 나를 업어다 놓고 그날은 돌아간다
+		GameState.stats.downs = GameState.stats.get("downs", 0) + 1   # 쓰러진 수 (SKEAM 도전 과제)
 		var lost := floori(inventory.meat / 2.0)
 		inventory.meat -= lost
 		var gone := Party.on_player_down()
@@ -851,6 +853,7 @@ func interact() -> void:
 		if fishing.bite > 0:
 			var n := 2 if randf() < 0.25 else 1
 			inventory.meat += n
+			GameState.stats.fish = GameState.stats.get("fish", 0) + 1   # 낚은 물고기 수 (SKEAM 도전 과제)
 			Vfx.spawn_text(x, y - 100 * stage.scale, "고기 +%d (물고기)" % n, "#9fe3ff", 16)
 			Particles.burst(fishing.x, fishing.y, "#bfe9ff", 0.7, 10)
 			gain_xp(6)

@@ -84,6 +84,7 @@ func _refresh() -> void:
 # ---------- 테스트 (뒷이야기를 확인하려고 둔 것이라 진행이 그대로 건너뛰어진다) ----------
 
 func _test_level() -> void:
+	_mark_tested()
 	var p = GameState.player
 	while p.level < 16: p.gain_xp(p.max_xp - p.xp)
 	Save.save_game()
@@ -91,6 +92,7 @@ func _test_level() -> void:
 
 
 func _test_elements() -> void:
+	_mark_tested()
 	var p = GameState.player
 	for id in Data.get_module("elements").ELEMENTS:
 		if not p.elements.has(id): p.elements.append(id)
@@ -100,9 +102,16 @@ func _test_elements() -> void:
 
 
 func _test_lessons() -> void:
+	_mark_tested()
 	GameState.story.lessons = Data.get_module("story").LESSONS.map(func(l): return l.id)
 	GameState.story.lessonDay = 0
 	for id in Data.get_module("enemies").BOSSES: GameState.bossesDefeated[id] = true
 	Hud.pop("수련과 보스 기록을 채웠다. (테스트)", "📜")
 	Save.save_game()
 	_refresh()
+
+
+## 테스트 단추로 건너뛴 판에는 표시를 남긴다. 이 판에서는 SKEAM 도전 과제를 더 알리지 않는다 (Achievements)
+func _mark_tested() -> void:
+	if not GameState.story.has("flags"): GameState.story.flags = {}
+	GameState.story.flags.tested = true

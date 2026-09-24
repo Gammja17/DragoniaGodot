@@ -10,6 +10,7 @@
 - **웹에서 하기: https://gammja17.github.io/DragoniaGodot/** — main 에 올릴 때마다 `.github/workflows/pages.yml` 이
   GitHub 서버에서 Godot 와 웹 내보내기 틀을 받아 내보내고 Pages 에 올린다 (틀은 이 PC 에 받지 않는다).
   스레드 없는 웹판(`export_presets.cfg` 의 "Web")이라 Pages 에 특별한 헤더가 없어도 돈다. 받는 크기는 약 100MB (게임 59MB 중 배경음이 51MB)
+- SKEAM(동아리 게임 상점) 도전 과제: 웹판이 SKEAM 안에서 돌면 이룬 과제를 알린다. 목록과 등록법은 `docs/skeam.md`
 
 ## 폴더
 
@@ -56,6 +57,7 @@ node tools/export_data.mjs
 - `tools/shot_talk.tscn -- hub` — 말 걸기·안내·굴 화면 찍기 (`hub` · `tip` · `den` · `cave`)
 - `tools/test_ending.tscn -- guardian` — 결말 세 갈래(`guardian` · `redeem` · `dark`)를 끝까지: 대면 → 싸움 → 무릎 → 고르기 → 저녁 → 마지막 장 → 에필로그 → 크레딧 → 자유롭게. 둘째 인자로 폴더를 주면(창을 띄워) 장면마다 사진
 - `tools/shot_scene.tscn -- demo C:/tmp/shots` — 컷씬을 장면째로 찍기 (`demo` · `event:<사건 id>` · `prologue`. 창을 띄워야 그림이 나온다)
+- `tools/test_skeam.tscn` — SKEAM 도전 과제 35개: 세이브 값으로 고르기 · 새로 세는 수(낚시 · 쓰러짐 · 융합 브레스 · 잡일) · 붉은 달 · 한 번에 하나씩 알리기 · 테스트 단추를 쓴 판
 
 ```bash
 godot --headless --path . tools/test_move.tscn

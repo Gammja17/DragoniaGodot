@@ -42,6 +42,15 @@
     "HOLLOW_DEEP",
     "MORGATH_LAIR"
    ],
+   "hold": {
+    "MORGATH_LAIR": {
+     "when": {
+      "$fn": "s => 'm4' in s.quests.active || s.quests.done.includes('m4') || !!s.bossesDefeated.MORGATH",
+      "$at": "CHAPTERS.c3.hold.MORGATH_LAIR.when"
+     },
+     "text": "무덤 쪽에서 내려오는 냉기에 발이 얼어붙는다. 골짜기 끝으로는 가지 말라던 엘더의 말이 떠오른다."
+    }
+   },
    "blocked": "거기까지 갈 일은 아직 없다."
   },
   {

@@ -377,6 +377,7 @@ static func on_flag(flag: String) -> void:
 	GameState.story.flags[flag] = true
 	match flag:
 		"gron_dead": _kill_npc("Gron")
+		"nuri_found": _warm({ Dan = 25, Soi = 25, Nuri = 15 })   # 3장: 골짜기 끝에서 누리를 데려온 날, 누리네가 마음을 연다
 		# 이그나르 앞에서 고르는 순간 결말이 흐른다 (걸어서 돌아가 보고하고 잠들 필요 없이)
 		"ignar_slain":
 			GameState.story.route = "guardian"
@@ -432,6 +433,13 @@ static func _dark_duel() -> void:
 					Quests.changed()
 				Save.save_game()),
 	})
+
+
+## 이야기가 마음을 바꾸는 날. 곁에 없어도 그 용들의 호감이 한 번에 오른다
+static func _warm(by: Dictionary) -> void:
+	for nm in by:
+		var n = World.any_npc(nm)
+		if n: NpcActions.add_relation(n, by[nm])
 
 
 ## 이야기에서 용이 죽는다. 일과와 명단에서 빠지고, 곁에 있었다면 떠난다

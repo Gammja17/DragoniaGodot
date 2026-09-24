@@ -236,4 +236,24 @@ static func _build_c() -> void:
 		"npcTalk:SITUATION_LINES.wary.when": func(s, _n = null): return s.raid.count == 0,
 		# 첫 습격을 같이 막은 뒤 한동안은, 꺼리던 용들의 말이 조금씩 풀린다 (세 번째 습격부터는 [7] 이 받는다)
 		"npcTalk:SITUATION_LINES.thaw.when": func(s, _n = null): return s.raid.count >= 1 and s.raid.count < 3,
+		# 소식을 반기는 인사는 그 일이 있고 며칠 동안만 (수십 일 뒤에도 "이겼다고?!"가 나오던 것)
+		"npcTalk:SITUATION_LINES.13.when": func(s, _n = null): return s.partner != null and s.partner != _n and _fresh(s.story.get("love", {}).get("since"), s),
+		"npcTalk:SITUATION_LINES.14.when": func(s, _n = null): return _fresh(s.story.get("bossDay", {}).get("MORGATH"), s),
+		"npcTalk:SITUATION_LINES.15.when": func(s, _n = null): return _fresh(s.story.get("bossDay", {}).get("ZALGORA"), s),
+
+		# ---- 3장: 모르가스와의 우연한 마주침 ----
+		# 골짜기에 처음 들어서면 울음이 들린다 (수호룡은 이 장면을 본 뒤에야 무덤에 나온다: enemies BOSSES.MORGATH.needs)
+		"chronicle:CHRONICLE.5.when": func(c): return c.done.call("m3") and not c.boss.call("MORGATH") and (c.map == "HOLLOW" or c.map == "HOLLOW_DEEP"),
+		# 성체가 된 날, 누리가 골짜기 끝으로 사라진다
+		"chronicle:CHRONICLE.ev_nuri_lost.when": func(c): return c.map == "VILLAGE" and c.s.story.rites.has(2) and c.done.call("m3") \
+			and not c.active.call("m4") and not c.done.call("m4") and not c.boss.call("MORGATH"),
+		# 무덤은 누리를 찾으러 갈 때 열린다
+		"chapters:CHAPTERS.c3.hold.MORGATH_LAIR.when": func(s): return s.quests.active.has("m4") or s.quests.done.has("m4") or _boss(s, "MORGATH"),
 	}, true)
+
+
+const NEWS_DAYS := 5   # 소식이 소식인 동안 (날)
+
+## 그 일이 있은 날(day)로부터 며칠 안 됐는가. 적힌 날이 없으면 아니다
+static func _fresh(day, s) -> bool:
+	return day != null and s.day - int(day) < NEWS_DAYS

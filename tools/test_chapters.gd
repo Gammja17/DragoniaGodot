@@ -23,6 +23,7 @@ func _ready() -> void:
 	_frame()
 	await _chapter1()
 	await _chapter2()
+	await _chapter3()
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit()
 
@@ -110,6 +111,78 @@ func _chapter2() -> void:
 	_check("2장", "n1: '얄미운 애는 그런 거 안 해'", _saw("얄미운 애는 그런 거 안 해"))
 
 
+func _chapter3() -> void:
+	var G := GameState
+	for id in ["m0", "m1", "m2"]:
+		if not G.quests.done.has(id): G.quests.done.append(id)
+	# 3장이 열려도 누리가 사라지기 전에는 무덤이 막혀 있다
+	_check("3장", "누리 사건 전: 무덤 막힘", not Chapters.map_open(G, "MORGATH_LAIR") and Chapters.blocked_text(G, "MORGATH_LAIR").contains("냉기"))
+	_check("3장", "골짜기는 열림", Chapters.map_open(G, "HOLLOW"))
+	# 골짜기 첫 걸음: 울음만 들리고, 카이론도 퀘스트도 없다
+	World.travel_to("HOLLOW")
+	await _play_until(func(): return G.story.events.has("ev_morgath") and _idle(), 30)
+	_check("3장", "골짜기의 울음 (카이론 없이)", _saw("첫날 밤 마을에서 들었던") and not G.quests.active.has("m4"))
+	# 성체가 된 날: 의식이 끝나자 누리가 사라진다
+	World.travel_to("VILLAGE")
+	await _wait(0.5)
+	G.player.stage_index = 2
+	if not G.story.rites.has(1): G.story.rites.append(1)
+	Story.play_rite(2)
+	await _play_until(func(): return G.story.events.has("ev_nuri_lost") and _idle(), 60)
+	_check("3장", "성체 의식: 단·소이가 떨어져 서 있다", _saw("단과 소이가 누리를 붙들고"))
+	_check("3장", "사라진 누리 → m4", G.quests.active.has("m4") and _saw("지금은 네가 제일 빠르구나"))
+	_check("3장", "이제 무덤이 열림", Chapters.map_open(G, "MORGATH_LAIR"))
+	# 무덤: 모르가스를 쓰러뜨리면 흐릿하게 남아 누리·엘더와 장면이 흐른다
+	World.travel_to("MORGATH_LAIR")
+	await _wait(0.5)
+	var b = null
+	for x in G.entities.bosses:
+		if x.id == "MORGATH": b = x
+	_check("3장", "무덤에 모르가스가 있다 (골짜기의 울음 뒤)", b != null)
+	if b:
+		G.player.max_hp = 9000; G.player.hp = 9000
+		G.player.x = b.x; G.player.y = b.y + 300
+		await _play_until(func(): return b.awake and _idle(), 20)
+		var t := Time.get_ticks_msec()
+		while not G.bossesDefeated.get("MORGATH", false) and Time.get_ticks_msec() - t < 20000:
+			if _idle() and b.dying <= 0: b.take_damage(b.hp + 1)
+			await get_tree().process_frame
+			_advance()
+		await _play_until(func(): return _saw("애가 타서 쓰러지겠구나") and _idle(), 90)
+	_check("3장", "모르가스 → 엘더 '이제 그만 미뤄라'", _saw("이제 그만 미뤄라"))
+	_check("3장", "모르가스 '늦어서 미안하다고 전해 다오'", _saw("늦어서 미안하다고"))
+	_check("3장", "누리가 무사하다", _saw("뼈 할아버지"))
+	_check("3장", "엘더의 고백: 스승 · 봉우리의 그이 · 예외는 딱 하나", _saw("젊은 나를 가르친 스승") and _saw("글라시아") and _saw("예외는 딱 하나였다"))
+	_check("3장", "얼음을 건네받음", G.player.elements.has("ICE"))
+	# 마을: 소이가 먼저 다가오고, 단·소이가 마음을 연다
+	var dan0: float = World.any_npc("Dan").relation
+	World.travel_to("VILLAGE")
+	await _wait(0.5)
+	var soi = World.any_npc("Soi")
+	G.player.x = soi.x - 120; G.player.y = soi.y
+	await _play_until(func(): return G.quests.active.has("m4") and int(G.quests.active.m4.step) >= 2 and _idle(), 40)
+	_check("3장", "단 '얼쩡대 줘라'", _saw("얼쩡대 줘라"))
+	_check("3장", "단 호감 +25", World.any_npc("Dan").relation - dan0 >= 25.0)
+	# 모르가스를 보낸 소식은 며칠만 반긴다
+	var elder = World.any_npc("Elder")
+	var etalk: Dictionary = Data.get_module("npcTalk").NPC_TALK.Elder
+	_check("3장", "며칠 안: 엘더 '스승님을 보내 드렸구나'", _greets(elder, etalk, "스승님을 보내 드렸구나"))
+	G.day += 6
+	_check("3장", "엿새 뒤: 그 인사는 안 나옴", not _greets(elder, etalk, "스승님을 보내 드렸구나"))
+	# 폭포 길이 녹았다: 세이란이 속성 둘을 알아본다
+	World.travel_to("FALLS")
+	await _play_until(func(): return G.story.events.has("ev_falls") and _idle(), 40)
+	_check("3장", "세이란 '속성이 둘이구나'", _saw("속성이 둘이구나") and not _saw("두 겹으로"))
+	var m4 = Quests.by_id("m4")
+	_check("3장", "폭포까지 가면 보고만 남는다", Quests.is_complete(m4))
+	Quests.turn_in(m4, elder, null)
+	await _play_until(_idle, 30)
+	_check("3장", "보고: 세이란 얘기 · 단서 breath", _saw("세이란이라는 아이") and G.story.clues.has("breath"))
+	# 다음 날 아침: 누리와 엘더가 찾아온다 (카이론 아님)
+	_check("3장", "3장 꿈: 누리·엘더, 카이론 없음", not JSON.stringify(_scene("ch4").lines).contains("Kairon") and JSON.stringify(_scene("ch4").lines).contains("빙결 파동"))
+	_check("3장", "재 냄새 꿈: 목소리가 먼저 밝힌다", JSON.stringify(_scene("dream_ice").lines).contains("나도 너처럼 하늘에서 떨어졌다"))
+
+
 # ---------- 도구 ----------
 
 func _check(ch: String, what: String, ok: bool) -> void:
@@ -125,6 +198,19 @@ func _event(id: String) -> Dictionary:
 	for ev in Data.get_module("chronicle").CHRONICLE:
 		if ev.id == id: return ev
 	return {}
+
+
+func _scene(id: String) -> Dictionary:
+	for sc in Data.get_module("story").SCENES:
+		if sc.id == id: return sc
+	return {}
+
+
+func _wait(sec: float) -> void:
+	var t := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - t < sec * 1000:
+		await get_tree().process_frame
+		_advance()
 
 
 ## 인사는 그때그때 뽑으니 여러 번 뽑아 본다

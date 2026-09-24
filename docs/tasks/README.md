@@ -76,7 +76,7 @@
    - 설정집과 다르게 한 것
 
 ### 0-4. 작업 자리
-원래 폴더(`C:\Users\Dev\Desktop\DragoniaGodot`)는 HUD 세션이 쓰고 있다. 거기서는 작업하지 않는다. 세션마다 자기 worktree를 만든다.
+원래 폴더(`C:\Users\Dev\Desktop\DragoniaGodot`)에서는 작업하지 않는다. 세션마다 자기 worktree를 쓴다. F · G의 폴더는 `.godot`까지 복사해 만들어 두었다 (1절 표).
 
 ```
 git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/DragoniaGodot-<이름> -b improve/<이름> improve/story-depth
@@ -93,6 +93,8 @@ git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/Drag
   - 예: `test_ending -- redeem`, `test_boss -- MORGATH_LAIR`
 - 시험은 저장 9번 칸만 쓴다.
 - `test_title`은 2번 칸을 건드리므로 돌리지 않는다.
+- `user://`(세이브 · 로그)는 모든 작업 폴더가 같이 쓴다. 두 세션이 한꺼번에 시험을 돌리면 9번 칸이 부딪친다. PowerShell에서 `$env:APPDATA`를 세션마다 다른 폴더로 바꾸고 돌린다.
+- `class_name`이 있는 스크립트를 새로 만들었으면 `--headless --path . --import`를 한 번 돌린다. 안 그러면 headless에서 그 이름을 찾지 못한다.
 
 ### 0-6. 같이 쓰는 파일 다루기
 1. 2절 표에서 자기 세션 칸에 없는 파일은 읽기만 한다. 고쳐야 하면 주인에게 말한다.
@@ -119,16 +121,30 @@ git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/Drag
 | D | 해 질 녘 폭포: 몰래 다가가기 | 중 | 끝 · 합침 | DragoniaGodot-tryst · improve/tryst |
 | E | 생활: 굴 손님 · 짝과 사는 굴 · 달맞이 모임 | 중 | 끝 · 합침 | DragoniaGodot-life · improve/life |
 | HUD | 화면 알림 정리 | — | 끝 · 합침 | DragoniaGodot · improve/depth-flow |
-| F | 처음 하는 사람 안내 · 일지의 지금까지 이야기 · 에필로그의 생활 줄 | 중 | B·C 뒤 | |
-| G | 원정대 (함께 싸우는 동료) | 대 | A·B·HUD 뒤 | |
-| H | 6장 전쟁 | 대 | C·G 뒤 | |
+| F | 처음 하는 사람 안내 · 일지의 지금까지 이야기 · 에필로그의 생활 줄 | 중 | 지금 | DragoniaGodot-guide · improve/guide |
+| G | 원정대 (함께 싸우는 동료) | 대 | 지금 | DragoniaGodot-party · improve/party |
+| H | 6장 전쟁 | 대 | G 뒤 | |
 
 - A~E와 HUD는 모두 끝나서 `improve/story-depth`에 합쳤다 (6절).
-- 이제 F와 G를 함께 돌릴 수 있다. H는 G 뒤에 한다.
+- 지금 돌릴 수 있는 것은 F와 G 둘이다. 서로 기다리는 일이 없다. H는 G 뒤에 한다.
+- F · G의 작업 폴더(worktree)는 만들어 두었다. 0-4절의 명령은 칠 필요가 없다.
 
 ---
 
 ## 2. 파일 주인
+
+A~E와 HUD는 끝났다. 지금은 아래 F · G 표를 따른다. 두 칸 어디에도 없는 파일을 고쳐야 하면 먼저 주인에게 묻는다.
+
+| 세션 | 스크립트 | 데이터 · 문서 |
+|---|---|---|
+| F | `ui/journal_panel.gd`(와 `scenes/ui/journal_panel.tscn`), `systems/tutorial.gd`, `systems/tour.gd`, `systems/guide.gd`, `systems/ending.gd`, `ui/credits.gd`, `ui/hud_status.gd`, 도움말 판 `scenes/ui/help_panel.tscn`, `tools/test_journal.gd`, 새 시험 `tools/test_guide` | `chapters.json`(새 요약 칸), `ending.json`, `dialogues.json`의 TUTORIAL, `quests.json`의 m0 · m1 · m2 hint |
+| G | `entities/dragon.gd`, `entities/boss.gd`, `entities/enemy.gd`, `entities/enemy_ai.gd`, `entities/human.gd`, `entities/hazard.gd`, `entities/projectile.gd`, `systems/combat.gd`, `systems/boss_show.gd`, `systems/cutscene.gd`, `systems/npc_actions.gd`, `systems/world.gd`, `systems/delve.gd`, `systems/training.gd`, `systems/story.gd`, `systems/sneak.gd`, `systems/den.gd`, `systems/raid.gd`, `systems/chronicle.gd`, `core/game_state.gd`, `ui/minimap.gd`, 새 파일(`systems/party.gd`, 동료를 보여 줄 UI는 새 씬), `tools/test_combat.gd`, `tools/test_boss.gd`, 새 시험 `tools/test_party` | `npcs.json`(power · maxHp), `systems_relics.json`, `enemies.json`, `npcTalk.json`, 새 `party.json`, `quests.json` · `chronicle.json`에서 동료가 나오는 대목(m5 · m5a · ev_glacia · ev_snow_ridge · 보스 뒤 장면) |
+| 여럿이 | `data/conditions.gd`: `# ---- [세션 F] ----`처럼 자기 블록에만 넣는다. `quests.json` · `chronicle.json`: 자기 항목만 고친다 | |
+
+- F가 `dragon.gd` · `story.gd`에 안내 고리가 꼭 필요하면 G에게 부탁한다. 새 안내는 되도록 `tutorial.gd`에서 상태를 살펴 띄운다.
+- G가 일지 · 도움말 · HUD 상태 줄 · 결말에 넣을 것이 있으면 F에게 부탁하거나, `GameState.story`에 적어 두고 F가 읽게 한다.
+
+### 지난 세션 (끝남)
 
 | 세션 | 스크립트 | 데이터 · 문서 |
 |---|---|---|
@@ -317,25 +333,95 @@ git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/Drag
 
 **확인:** `parse_all`, `test_story` (굴·알·아이 구간).
 
+### F. 처음 하는 사람 안내 · 일지의 지금까지 이야기 · 에필로그의 생활 줄
+
+**목표.**
+- 처음 하는 사람이 지금 무엇을 왜 하는지 알고 따라간다. 화살표를 따라가게 하지 않는다. 그 일이 처음 쓸모 있어지는 순간에, 알맞은 용이 한마디 해 준다.
+- 며칠 쉬었다 돌아온 사람도 일지에서 지금까지의 이야기를 읽고 이어 간다.
+- 결말에서 내가 꾸린 생활(짝 · 아이 · 굴 · 모임)이 한 줄씩 불린다. 지금 결말 데이터에는 생활 이야기가 한 줄도 없다.
+
+**할 일**
+1. 일지 "지금까지 이야기" 탭
+   - 탭 단추는 `journal_panel.tscn`의 `Frame/Lines/Body/Tabs` 아래에 있다. 씬에 단추 하나를 넣고, `render()`의 match에 한 줄, `_render_story()` 하나를 만든다. UI는 씬으로 만든다.
+   - 장마다 요약을 둔다. `chapters.json`(c1~c8, c3b)에는 아직 요약 칸이 없다. 끝낸 장만 보인다. 장이 끝나는 조건은 `conditions.gd` 앞부분의 chapters 규칙이다.
+   - 요약은 내가 한 일을 따른다. 고른 것은 `"chose"` 줄로 가른다 (`Chronicle._chosen`을 그대로 쓴다). 누가 죽었는지(`story.dead`), 어느 길(`story.route`)인지도 읽는다.
+   - 지금 장에는 "지금 할 일" 한 줄을 둔다. 추적 중인 퀘스트의 summary를 쓴다.
+   - 요약 글도 0-2절 대사 규칙을 지킨다. 설정집과 맞추고, 플레이어가 아직 모르는 것을 미리 말하지 않는다.
+2. 처음 하는 사람 안내
+   - 지금 첫 이틀의 흐름: 프롤로그 → 엘더의 TUTORIAL(`dialogues.json`) → 포코의 마을 구경(`tour.gd`) → 한 번짜리 안내 넷(`tutorial.gd`: 싸움 · 허수아비 · 먹기 · 해 질 녘) → m1 → 게시판(ev_board) → 둘째 날 카이론과 오늘의 수련.
+   - 확인된 빈 곳
+     1. `Tutorial.update`는 m1을 끝내면 멈춘다. 해 지기 전에 m1을 끝내면 "잠자리에서 [Space]로 잔다" 안내가 안 나온다.
+     2. `moved` · `journal` 표시는 적기만 하고 읽는 데가 없다.
+     3. 둥지(나뭇가지 8개 + 30G)는 잠자리를 쓸 때 · 알을 놓으려 할 때 · 가족 이야기에서만 알려 준다. HUD의 "🪵 n/8"에는 이름이 없다.
+     4. 알 · 유물 · 기술 · 성장 포인트 · 표지석 이동은 얻는 순간의 토스트 한 줄뿐이다. 일지의 어느 탭에서 쓰는지 이끌지 않는다.
+     5. 일지의 퀘스트 탭 말고 다른 탭으로 이끄는 것이 없다. 가족 창 [P] · 날기 [Z]는 도움말에만 있다.
+   - 이것들을 알맞은 순간에 알맞은 용의 한마디로 알려 준다. 예: 처음 나뭇가지를 주웠을 때 포코, 처음 유물을 얻었을 때 그론. 누가 언제 말하는지는 주인에게 먼저 보여 준다.
+   - 새 안내는 `tutorial.gd`에서 상태를 살펴 띄운다. `dragon.gd` · `story.gd`에 새 고리가 꼭 필요하면 G에게 부탁한다.
+   - 도움말 판([H], `help_panel.tscn`)의 "알아 두면 좋은 것"을 새 안내와 맞춘다.
+3. 에필로그 생활 줄
+   - 결말 흐름: `Ending.start` → `_next()`가 `ending.json`의 SEQUENCES(guardian · redeem · dark)를 차례로 돈다. 줄을 거르는 것은 `chose`뿐이다.
+   - 크레딧 앞에 "생활" 단계를 하나 둔다. 짝(`GameState.partner` · `story.love`), 아이(`GameState.kids`의 이름 · 단계 · 부모), 굴(`Den.cozy_of(Den.MY_DEN).tier`, 0~4), 모임(`Gathering.phase()`)을 읽어 줄을 고른다. 해당이 없으면 그 줄은 빠진다.
+   - 크레딧 끝의 "그리고 {name}" 앞에 내 식구 줄을 둘 수 있다. `{Doran} · {Miru}{IseulTail}`처럼 `ending.gd`의 `_roll_credits`에 낱말을 더한다.
+   - 어둠의 길(dark)은 생활 줄의 결이 다르다 (두고 떠난 굴). 어떻게 할지는 주인과 정한다.
+   - G가 "끝까지 곁에서 싸운 용"을 `GameState.story`에 적으면 그것도 읽는다.
+
+**만드는 법 힌트**
+- 결말 줄의 조건은 `ending.gd` 안에서 상태를 읽어 고른다. `$fn`을 새로 늘리지 않아도 된다.
+- 새로 저장할 값은 `GameState.story` 안에 둔다 (0-6절).
+- 안내 줄과 요약도 대사다. 0-2절을 지킨다.
+
+**확인:** `parse_all`, `test_journal`, `test_story`(첫날 흐름), `test_ending`(세 갈래), 새 시험 `tools/test_guide`(첫날 안내 · 요약 탭 · 생활 줄).
+
+**끝났다고 볼 때:** 처음 하는 사람이 첫 사흘 동안 "이제 뭘 하지?"에서 막히지 않는다. 일지 새 탭에서 지금까지의 이야기를 읽을 수 있다. 결말에서 내가 꾸린 생활이 불린다.
+
+### G. 원정대: 함께 싸우는 동료
+
+**목표.**
+- 동료가 뒤에서 따라다니기만 하는 용이 아니라 같이 싸우는 용이 된다. 이야기도 누가 따라왔는지 안다.
+- lore 2절 표의 "함께 가는 용"이 게임에서도 그대로 된다.
+
+**지금 (조사한 것)**
+- 따라다니는 칸은 동행 하나(`GameState.companion`)와 짝 하나다. 새로 부르면 먼저 있던 동행은 돌아간다. 동행으로 부르려면 호감 50 이상이어야 하고, 엘더 · 카이론은 짝일 때만 따라온다.
+- 따라오는 상태는 PARTNER_FOLLOW · COMPANION_FOLLOW · ALLY · SNEAK_FOLLOW다. WANDER가 아니면 모두 똑같이 움직인다 (`dragon.gd`의 `_fight` 무렵).
+- 동료는 460px 안의 가장 가까운 적을 1.25초마다 `config.power`로 쏜다. 적에게 다가가지 않고, 피해가 늘지 않는다. 적 체력은 지도 배율로 2.7배까지 는다.
+- 초당 피해: 카이론 12.8, 이그나르 17.6, 엘더 11.2, 유안 10.4, 티아맷 9.6, 나라 8.8, 포코 6.4. 나는 단계에 따라 17.8 · 44.4 · 86.7 · 113.3.
+- 불 숨결은 310px(+반지름 46)까지 가는데 쏘기 시작하는 거리는 400px라서, 360~400px에서는 빗나간다.
+- 적과 보스는 나만 노린다 (`enemy_ai.gd`, `boss.gd`). 사냥꾼만 아군을 고른다 (`human.gd`의 `_pick_target`, 본보기로 쓸 수 있다).
+- 아군도 적 탄과 장판에 맞는다. 체력이 0이 되면 25초 쓰러졌다가 다 찬 채로 일어난다. 대가가 없다. 내가 쓰러져도 마을에서 다 찬 채로 깨어나서 대가가 없다 (`dragon.gd`의 쓰러짐 → `World.revive_in_village`).
+- 누가 따라왔는지 아는 장치가 없다. `Chronicle.context()`에 동행 칸이 없고, 줄을 거르는 것은 `chose`뿐이다.
+- 이야기 속 빈 곳: 4장 티아맷은 "혼자서는 힘들어"라고 하고는 따라오지 않는다. 5장 카이론은 "너도 같이 가자"고 하지만 실제로 따라오지 않는다 (장면마다 손님으로 불려 나왔다가 돌아간다). 8장의 "혼자"를 막는 것도 없다.
+- 이그나르전 마지막 판에는 카이론이 이미 내려와 같이 싸운다 (A: `{ stay = "Kairon" }` · `Boss.ally`). 다만 손님으로 불려 나온 카이론만 `Boss.ally`가 된다. 짝이라서 이미 따라와 있던 카이론은 그대로 짝으로 싸우고, 무릎 꿇은 뒤에도 공격을 멈추지 않을 수 있다.
+
+**할 일**
+1. 싸움
+   - 적과 보스가 아군도 노린다. 가까운 쪽 · 나를 친 쪽을 고른다. 보스 패턴은 주로 나를 노리되, 가끔은 예고선이 동료 쪽으로도 그어진다.
+   - 동료가 예고선 · 장판을 비킨다.
+   - 동료 화력이 지도 배율과 호감을 따라 는다 (아이의 `12 × (1 + 호감/100)`이 본보기). ★ 동료 하나가 내 피해의 3~4할쯤.
+   - 쏘기 시작하는 거리를 숨결이 닿는 거리에 맞춘다.
+   - 역할을 둔다: 막기(적을 끌어 둔다) · 살리기(쓰러진 용을 일으킨다) 같은 것. 용마다 하나.
+   - 쓰러지면 작은 값을 치른다. 예: 동료는 그날 더 따라오지 않는다 · 나는 가진 고기 조금을 잃는다. ★ 무엇으로 할지는 주인과 정한다.
+2. 누가 따라나서나
+   - 이야기 동료 1~2에 내가 고른 1. lore 2절 표를 따른다: 4장 티아맷 + 고른 1 · 5장 카이론(+ 구해 낸 사절 둘) · 6장 고른 동료 · 7장 엠버 + 바윗골 용 + 고른 1 · 8장 혼자 → 카이론.
+   - 동행 칸 하나를 "이야기 동료 칸 + 고른 칸"으로 늘린다.
+   - 호감으로 누가 따라나설지, 얼마나 세게 싸울지를 정한다.
+3. 이야기가 누가 따라왔는지 안다
+   - `Chronicle.context()`에 동행을 넣고, `chose`와 같은 모양의 거르개(예: `"with": "Tiamat"`)를 둔다. 보스 뒤 장면에서 따라온 용이 한마디씩 한다.
+   - "끝까지 곁에서 싸운 용"을 `GameState.story`에 적는다. 에필로그에서 F가 읽는다.
+4. 이그나르전: 카이론이 짝이라서 이미 따라와 있을 때도 손님일 때와 똑같이 돈다. 무릎 꿇은 보스는 쏘지 않는다. `Boss.ally`를 되돌릴 때 짝 상태를 덮지 않는다.
+
+**만드는 법 힌트**
+- 새로 저장할 값은 `GameState.story` 안에 둔다. `save.gd`는 건드리지 않는다.
+- 동료 표(역할 · 화력 · 따라나서는 호감)는 새 데이터 `data/party.json`에 둔다.
+- 따라온 용의 한마디도 대사다. 그 용의 말투로, 0-2절을 지킨다.
+- 동료 표시(체력 등)가 필요하면 새 씬으로 만든다. `hud_status.gd`는 F 파일이다.
+
+**확인:** `parse_all`, `test_combat`, `test_boss`(다섯 곳), `test_raid`, `test_ending`(세 갈래), `test_chapters`, 새 시험 `tools/test_party`.
+
+**끝났다고 볼 때:** 동료가 있으면 싸움이 눈에 띄게 달라진다(같이 맞고 같이 친다). 4 · 5 · 7장에 이야기 동료가 실제로 따라오고, 장면이 누가 왔는지 안다.
+
 ### 나중 세션
 
-**F. 처음 하는 사람 안내 (B·C 뒤)**
-- 일지에 "지금까지 이야기"를 둔다.
-- 처음 하는 사람을 위한 안내를 다듬는다.
-- 에필로그에 짝·아이·굴 이야기를 한 줄씩 넣는다. 지금 결말 데이터에는 생활 이야기가 한 줄도 없다.
-
-**G. 원정대 (A·B·HUD 뒤)**
-- 보스와 적이 아군도 노리고, 아군은 공격을 피한다.
-- 동료 화력을 조정한다. 지금 카이론은 초당 12.8인데 나는 87~113이다.
-- 막기·회복 같은 역할을 둔다.
-- 이야기 동료 1~2에 내가 고른 1. lore 2절 표의 "함께 가는 용"을 따른다.
-- 호감으로 누가 따라나설지, 얼마나 세게 싸울지를 정한다.
-- 이야기가 누가 따라왔는지 알게 한다.
-- 쓰러지면 작은 값을 치르게 한다 (`dragon.gd:557`).
-- 이그나르전 마지막 판에는 카이론이 내려와 끝까지 같이 싸운다 (A: 컷씬 `{ stay = "Kairon" }` · `Boss.ally`). 함께 싸우는 틀은 여기서부터 넓힌다.
-- 누가 따라나서는지(동행)는 C가 지금 흐름대로 두었다. 지금 흐름에서 시작한다.
-
-**H. 6장 전쟁 (C·G 뒤)**
+**H. 6장 전쟁 (G 뒤)**
 - lore 6-1 전체를 게임에 넣는다.
 - 경계 충돌: 용끼리는 쓰러뜨리기만 한다.
 - 쳐들어가자는 유혹 앞에서 고른다.
@@ -345,7 +431,7 @@ git -C C:/Users/Dev/Desktop/DragoniaGodot worktree add C:/Users/Dev/Desktop/Drag
 - 증거를 들고 두 촌장 앞에서 화해를 얻어 낸다.
 - C가 넣은 장례의 다짐 줄은 남긴다. 8장에서 카이론이 이그나르에게 가지 않는 까닭("그날 뒤로 이 마을을 비우지 않기로 했다")이 이 줄에 걸려 있다.
 
-### HUD 세션에게
+### HUD 세션에게 (끝남)
 1. 커밋하기 전에 `scripts/systems/story.gd` 220행 맨 앞에 잘못 들어간 "w" 한 글자를 지운다. 지금 그대로 두면 이 스크립트가 읽히지 않는다.
 2. 커밋해서 improve/story-depth에 합친 뒤, held.md 14건을 넣는다.
    - 14번은 B의 `quests.gd`와 같이 바꾼다.

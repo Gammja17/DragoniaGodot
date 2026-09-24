@@ -75,6 +75,10 @@
    "element": "ICE",
    "unlock": "ICE",
    "revive": true,
+   "reviveSay": "「아직… 아직은 갈 수가 없다.」",
+   "rise": "bones",
+   "stagedIntro": true,
+   "finaleFlash": "#dff4ff",
    "patterns": [
     "RING",
     "SUMMON",
@@ -93,8 +97,11 @@
     },
     {
      "at": 0.55,
-     "name": "부르는 소리",
-     "say": "「아직… 아직은 갈 수가 없다.」",
+     "name": "멈추지 않는 몸",
+     "say": [
+      "「…아니다. 너는 그 아이가 아니구나.」",
+      "「그런데도 몸이 멈추질 않는구나. …피하거라!」"
+     ],
      "patterns": [
       "SUMMON",
       "BONE_RAIN",
@@ -106,13 +113,89 @@
    "fallen": "잠들다",
    "intro": [
     {
-     "who": "MORGATH",
-     "text": "「……돌아가거라. 이 골짜기엔… 이제 얼음뿐이다.」",
+     "who": "???",
+     "text": "「……돌아가거라. 이 골짜기엔 이제 얼음뿐이다.」",
      "do": [
       {
+       "bgm": "none"
+      },
+      {
+       "tone": "dread"
+      },
+      {
+       "cam": "MORGATH",
+       "zoom": 1.05,
+       "time": 1
+      },
+      {
+       "boss": "frost"
+      },
+      {
        "sfx": "wind"
+      },
+      {
+       "wait": 0.4
       }
      ]
+    },
+    {
+     "who": "나",
+     "text": "(무덤 앞에 흩어져 있던 뼈들이 달그락거리며 움직인다.)",
+     "do": [
+      {
+       "shake": 4
+      },
+      {
+       "sfx": "rumble"
+      }
+     ]
+    },
+    {
+     "who": "MORGATH",
+     "text": "「…잠깐. 이 냄새는…」",
+     "do": [
+      {
+       "boss": "rise"
+      },
+      {
+       "cry": "MORGATH"
+      },
+      {
+       "shake": 14
+      },
+      {
+       "flash": "#bfe9ff",
+       "a": 0.35
+      },
+      {
+       "fx": "SHOCKWAVE",
+       "at": "MORGATH",
+       "size": 3.4,
+       "color": "#bfe9ff"
+      },
+      {
+       "card": "옛 수호룡 모르가스",
+       "sub": "달빛 골짜기의 주인",
+       "time": 2
+      }
+     ]
+    },
+    {
+     "who": "MORGATH",
+     "text": "「하늘 냄새다. 예순 해 전, 그 아이한테서 나던 냄새.」"
+    },
+    {
+     "who": "MORGATH",
+     "text": "「돌아왔구나. …이번에는 놓치지 않는다!」",
+     "do": [
+      {
+       "bgm": "boss"
+      }
+     ]
+    },
+    {
+     "who": "나",
+     "text": "(나를… 누구로 보는 거지?)"
     }
    ]
   },
@@ -135,6 +218,7 @@
    "element": "THUNDER",
    "unlock": "THUNDER",
    "twin": true,
+   "stagedIntro": true,
    "patterns": [
     "TWIN_BEAM",
     "AIMED",
@@ -149,7 +233,8 @@
      "patterns": [
       "AIMED",
       "SPIRAL",
-      "AIMED"
+      "AIMED",
+      "BUMP"
      ]
     },
     {
@@ -159,7 +244,8 @@
      "patterns": [
       "TWIN_BEAM",
       "CHARGE",
-      "AIMED"
+      "AIMED",
+      "BUMP"
      ]
     },
     {
@@ -170,22 +256,86 @@
       "TWIN_BEAM",
       "SPIRAL",
       "CHARGE",
-      "TWIN_BEAM"
+      "TWIN_BEAM",
+      "BUMP"
      ]
     }
    ],
    "fallen": "쓰러지다",
+   "bumpSay": [
+    [
+     "「야, 비켜!」",
+     "「네가 비켜!」"
+    ],
+    [
+     "「…아야.」",
+     "「네가 먼저 들이받았잖아!」"
+    ],
+    [
+     "「내 쪽이다!」",
+     "「아니, 내 쪽이다!」"
+    ]
+   ],
    "intro": [
     {
      "who": "ZALGORA",
-     "text": "「내 밀림이다!」 「아니, 내 밀림이다!」"
+     "text": "「내 밀림이다!」",
+     "do": [
+      {
+       "bgm": "none"
+      },
+      {
+       "cam": "ZALGORA",
+       "zoom": 1.05,
+       "time": 0.9
+      },
+      {
+       "cry": "ZALGORA"
+      },
+      {
+       "shake": 10
+      }
+     ]
+    },
+    {
+     "who": "ZALGORA",
+     "text": "「아니, 내 밀림이다!」",
+     "do": [
+      {
+       "shake": 6
+      }
+     ]
+    },
+    {
+     "who": "나",
+     "text": "(머리 둘이 서로를 노려보다가, 동시에 나를 봤다.)",
+     "do": [
+      {
+       "flash": "#ffd84a",
+       "a": 0.3
+      },
+      {
+       "fx": "SHOCKWAVE",
+       "at": "ZALGORA",
+       "size": 3.4,
+       "color": "#ffd84a"
+      },
+      {
+       "card": "쌍두룡 잘고라",
+       "sub": "환영의 밀림을 차지한 폭군",
+       "time": 2
+      },
+      {
+       "bgm": "boss"
+      }
+     ]
     }
    ]
   },
   "GLACIA": {
    "needs": "ev_glacia",
-   "name": "서리 여왕 글라시아",
-   "title": "얼어붙은 봉우리의 지배자",
+   "name": "봉우리의 글라시아",
+   "title": "예순 개의 알을 품은 용",
    "species": "WYVERN",
    "colors": {
     "body": "#cfeaff",
@@ -200,6 +350,9 @@
    "xp": 1300,
    "element": "ICE",
    "unlock": null,
+   "guards": "EGG_WALL",
+   "guardSay": "「그쪽으로는 가지 마라!」",
+   "stagedIntro": true,
    "patterns": [
     "HOMING",
     "ICE_FIELD",
@@ -220,7 +373,10 @@
     {
      "at": 0.66,
      "name": "얼어붙는 바닥",
-     "say": "「이 산에는 아무도 들이지 않는다.」",
+     "say": [
+      "「그 얼음… 그이 것이다.」",
+      "「네가 어떻게 그이의 얼음을…」"
+     ],
      "patterns": [
       "ICE_FIELD",
       "HOMING",
@@ -230,8 +386,8 @@
     },
     {
      "at": 0.33,
-     "name": "눈보라",
-     "say": "「예순 개였다… 예순 개를 내가…」",
+     "name": "그이의 말",
+     "yield": true,
      "patterns": [
       "BLIZZARD",
       "HOMING",
@@ -243,11 +399,124 @@
    "fallen": "잠들다",
    "intro": [
     {
+     "who": "나",
+     "text": "(얼음벽 속에 무언가가 가지런히 박혀 있다. …알이다. 셀 수 없이 많다.)",
+     "do": [
+      {
+       "bgm": "none"
+      },
+      {
+       "cam": "look:PROP:EGG_WALL",
+       "zoom": 1,
+       "time": 1.4
+      },
+      {
+       "sfx": "wind"
+      },
+      {
+       "wait": 0.5
+      }
+     ]
+    },
+    {
      "who": "GLACIA",
      "text": "「들어오지 마라. …아무도, 들어오지 마라.」",
      "do": [
       {
-       "sfx": "wind"
+       "cam": "GLACIA",
+       "time": 0.8
+      },
+      {
+       "cry": "GLACIA"
+      },
+      {
+       "shake": 12
+      },
+      {
+       "flash": "#bfe9ff",
+       "a": 0.35
+      },
+      {
+       "fx": "SHOCKWAVE",
+       "at": "GLACIA",
+       "size": 3.4,
+       "color": "#bfe9ff"
+      },
+      {
+       "card": "봉우리의 글라시아",
+       "sub": "예순 개의 알을 품은 용",
+       "time": 2
+      },
+      {
+       "bgm": "boss"
+      }
+     ]
+    }
+   ],
+   "yieldScene": [
+    {
+     "who": "Kairon",
+     "text": "그만하시오. 모르가스 어른의 말씀을 전하러 왔소.",
+     "do": [
+      {
+       "bgm": "none"
+      },
+      {
+       "fade": "out",
+       "time": 0.5
+      },
+      {
+       "boss": "home"
+      },
+      {
+       "place": "나",
+       "to": "at:9,8"
+      },
+      {
+       "tone": "grief"
+      },
+      {
+       "cam": "GLACIA",
+       "zoom": 0.95,
+       "time": 0.1
+      },
+      {
+       "fade": "in",
+       "time": 0.6
+      },
+      {
+       "move": "Kairon",
+       "to": "at:7,8"
+      }
+     ]
+    },
+    {
+     "who": "Kairon",
+     "text": "'늦어서 미안하다.' …그렇게 전해 달라 하셨소."
+    },
+    {
+     "who": "GLACIA",
+     "text": "「…그이가.」",
+     "do": [
+      {
+       "cam": "GLACIA",
+       "time": 0.8
+      },
+      {
+       "wait": 0.6
+      }
+     ]
+    },
+    {
+     "who": "GLACIA",
+     "text": "「그이가… 그렇게 말했느냐.」"
+    },
+    {
+     "who": "나",
+     "text": "(글라시아가 등을 돌렸다. 얼음벽 앞에 몸을 둥글게 말고, 알들을 감싸 안는다.)",
+     "do": [
+      {
+       "boss": "wrap"
       }
      ]
     }
@@ -272,6 +541,22 @@
    "element": "FIRE",
    "unlock": null,
    "chargeChain": true,
+   "rise": "sand",
+   "stagedIntro": true,
+   "spears": [
+    [
+     -18,
+     -52
+    ],
+    [
+     4,
+     -60
+    ],
+    [
+     22,
+     -50
+    ]
+   ],
    "patterns": [
     "BURROW",
     "CHARGE",
@@ -311,12 +596,70 @@
      "say": "(폭군이 모래를 박차고 미친 듯이 날뛴다.)"
     }
    ],
-   "fallen": "쓰러지다"
+   "fallen": "쓰러지다",
+   "intro": [
+    {
+     "who": "나",
+     "text": "(모래가 끓는다. 발밑이 울린다.)",
+     "do": [
+      {
+       "bgm": "none"
+      },
+      {
+       "cam": "BASIL",
+       "zoom": 1.05,
+       "time": 1
+      },
+      {
+       "sfx": "rumble"
+      },
+      {
+       "shake": 6
+      },
+      {
+       "wait": 0.5
+      }
+     ]
+    },
+    {
+     "do": [
+      {
+       "boss": "rise"
+      },
+      {
+       "cry": "BASIL"
+      },
+      {
+       "shake": 16
+      },
+      {
+       "fx": "DUST",
+       "at": "BASIL",
+       "size": 4,
+       "color": "#c9a24a"
+      },
+      {
+       "card": "모래 폭군 바실",
+       "sub": "죽은 사구의 포식자",
+       "time": 2
+      }
+     ]
+    },
+    {
+     "who": "나",
+     "text": "(등에 부러진 창끝 셋이 박혀 있다. 녹슬었는데도 희미하게 빛난다.)",
+     "do": [
+      {
+       "bgm": "boss"
+      }
+     ]
+    }
+   ]
   },
   "IGNAR": {
    "needs": "ev_ignar",
    "name": "고룡 이그나르",
-   "title": "하늘에서 떨어진 재앙",
+   "title": "잿빛 화산의 주인",
    "species": "SHADOW",
    "colors": {
     "body": "#3a2a4a",
@@ -332,6 +675,7 @@
    "element": "FIRE",
    "unlock": null,
    "glow": true,
+   "mirror": true,
    "patterns": [
     "METEOR_RAIN",
     "AIMED",
@@ -367,7 +711,96 @@
     {
      "at": 0.33,
      "name": "하늘에서 떨어진 것",
-     "say": "「카이론이 가르쳤구나. 발 딛는 버릇까지 그 녀석이다.」",
+     "say": "「둘이 덤벼도 좋다. 와라!」",
+     "scene": [
+      {
+       "who": "Kairon",
+       "text": "늦었다. 마을은 애들이 보겠단다. 나더러 가라고 등을 떠밀더라.",
+       "do": [
+        {
+         "bgm": "none"
+        },
+        {
+         "fade": "out",
+         "time": 0.4
+        },
+        {
+         "boss": "home"
+        },
+        {
+         "place": "나",
+         "to": "at:10,8"
+        },
+        {
+         "cam": "IGNAR",
+         "zoom": 0.95,
+         "time": 0.1
+        },
+        {
+         "fade": "in",
+         "time": 0.4
+        },
+        {
+         "sfx": "gust"
+        },
+        {
+         "wait": 0.3
+        },
+        {
+         "fx": "SHOCKWAVE",
+         "at": "나",
+         "dx": -190,
+         "size": 3.2,
+         "color": "#ffd38a"
+        },
+        {
+         "sfx": "boom"
+        },
+        {
+         "shake": 14
+        },
+        {
+         "place": "Kairon",
+         "to": "at:8,8"
+        },
+        {
+         "face": "Kairon",
+         "to": "IGNAR"
+        }
+       ]
+      },
+      {
+       "who": "IGNAR",
+       "text": "「…카이론.」",
+       "do": [
+        {
+         "cam": "IGNAR",
+         "time": 0.6
+        }
+       ]
+      },
+      {
+       "who": "Kairon",
+       "text": "…오랜만이다, 형.",
+       "do": [
+        {
+         "cam": "auto"
+        }
+       ]
+      },
+      {
+       "who": "IGNAR",
+       "text": "「그 아이 곁에는 네가 서는구나. …그때 내 곁에는 아무도 없었는데.」",
+       "do": [
+        {
+         "stay": "Kairon"
+        },
+        {
+         "bgm": "boss"
+        }
+       ]
+      }
+     ],
      "patterns": [
       "METEOR_RAIN",
       "SPIRAL",

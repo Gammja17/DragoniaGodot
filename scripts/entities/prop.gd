@@ -6,9 +6,12 @@ extends Node2D
 ## 밤의 불빛(light)은 연출 단계에서 조명과 함께 붙인다.
 
 # 코드로 찍은 픽셀 아이콘으로 그리는 소품: [배율, 발에서 위로 올릴 px]
-const ICON_PROPS := { "CAVE": [8, 48], "DEN_MOUTH": [8, 48], "STAIRS_DOWN": [5, 24], "STAIRS_UP": [5, 24], "ARENA": [4, 26], "TOWER": [7, 77] }
+const ICON_PROPS := { "CAVE": [8, 48], "DEN_MOUTH": [8, 48], "STAIRS_DOWN": [5, 24], "STAIRS_UP": [5, 24], "ARENA": [4, 26], "TOWER": [7, 77],
+	"DRAGON_SKULL": [5, 32], "BONES": [4, 20], "RIB": [5, 45], "RIB_L": [5, 45] }   # 결투장: 옛 용의 뼈
+# 같은 아이콘을 좌우로 뒤집어 그리는 소품 (갈비뼈 한 쌍이 서로 마주 보고 휜다)
+const ICON_FLIP := { "RIB_L": "RIB" }
 # 늘 움직이는 것들은 매 프레임 다시 그린다 (나무는 뒤에 숨은 것에 따라 투명해진다)
-const ANIMATED := ["TREE", "FOUNTAIN", "PORTAL", "CAVE", "TOWER", "WAYSTONE", "WATERFALL", "CAMPFIRE", "BERRY"]
+const ANIMATED := ["TREE", "FOUNTAIN", "PORTAL", "CAVE", "TOWER", "WAYSTONE", "WATERFALL", "CAMPFIRE", "BERRY", "FROST", "WISP", "EGG_WALL", "MARK_STONE", "SAND_BOIL"]
 
 var x: float:
 	get: return position.x
@@ -35,7 +38,7 @@ var fid = null               # 굴 살림살이 (data/furniture.json 의 id)
 
 const BERRY_REGROW := 100.0  # 초
 
-var _flame: Node2D           # 모닥불 불꽃 (더하기 섞기라 따로 그린다)
+var _flame: Node2D           # 모닥불 불꽃 · 도깨비불 (더하기 섞기라 따로 그린다)
 
 
 func setup(px: float, py: float, t: String) -> Prop:
@@ -51,13 +54,14 @@ func setup(px: float, py: float, t: String) -> Prop:
 		sheet_key = sprite.sheet
 		if (sprite.sheet == "trees" or sprite.sheet == "props") and palette: sheet_key = sprite.sheet + str(palette + 1)
 	name = "%s_%d_%d" % [t, int(px), int(py)]
-	if t == "CAMPFIRE":
+	if t == "CAMPFIRE" or t == "WISP":
 		_flame = Node2D.new()
 		var mat := CanvasItemMaterial.new()
 		mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD   # 2D판 'lighter'
 		_flame.material = mat
-		_flame.draw.connect(_draw_flame)
+		_flame.draw.connect(_draw_flame if t == "CAMPFIRE" else _draw_wisp)
 		add_child(_flame)
+	if t == "FROST" or t == "SAND_BOIL": z_index = -5   # 바닥에 깔린다 (지형 위, 다른 모든 것 아래)
 	return self
 
 
@@ -140,6 +144,15 @@ func light():
 			return { r = 240 + sin(t * 9 + seed * 7) * 16, color = f.light, dy = -28, emissive = true }
 		"PORTAL": return { r = 150, color = "#9fe3ff", intensity = 0.7, dy = -40, emissive = true }
 		"WATERFALL": return { r = 260, color = "#bfe9ff", intensity = 0.45, dy = -160 }
+		"MARK_STONE":   # 새긴 무늬의 홈이 불씨처럼 빛난다. 이그나르가 무릎을 꿇으면 꺼진다
+			var mk := BossShow.lair_alpha(x, y, 1.0)
+			return null if mk <= 0.02 else { r = 150, color = "#ff9a3c", intensity = 0.6 * mk, dy = -132, emissive = true }
+		"EGG_WALL":   # 알을 가둔 얼음벽이 희미하게 빛난다. 녹으면 꺼진다
+			var ice := BossShow.lair_alpha(x, y, 1.0)
+			return null if ice <= 0.02 else { r = 330, color = "#9fe3ff", intensity = 0.5 * ice, dy = -110, emissive = true }
+		"WISP":   # 도깨비불. 보스를 보내면 함께 꺼진다
+			var k := BossShow.lair_alpha(x, y, 1.0)
+			return null if k <= 0.02 else { r = 190 + sin(t * 5 + seed * 9) * 14, color = "#7fd4ff", intensity = 0.7 * k, dy = -52, emissive = true }
 	return null
 
 
@@ -152,8 +165,18 @@ func _draw() -> void:
 		"CAVE": _draw_cave()
 		"TOWER": _draw_tower()
 		"FURNITURE": _draw_furniture()
+		"FROST": _draw_frost()
+		"EGG_WALL": _draw_egg_wall()
+		"MARK_STONE": _draw_mark_stone()
+		"SAND_BOIL": _draw_sand_boil()
+		"TOMB": _draw_art("morgath_grave")          # 모르가스의 무덤
+		"TWIN_NEST": _draw_art("twin_nest")         # 잘고라 형제의 둥지 (구멍 둘, 못 박은 팽이)
+		"BEAST_BONES": _draw_art("beast_bones")     # 바실의 사구: 묻힌 짐승 뼈와 부러진 창 셋
 		_:
-			if ICON_PROPS.has(type): Pixel.draw_icon(self, type, 0, -ICON_PROPS[type][1], ICON_PROPS[type][0])
+			if ICON_FLIP.has(type):
+				var tex := Pixel.get_icon(ICON_FLIP[type])
+				Pixel.draw_pixel_sprite(self, tex, Rect2(Vector2.ZERO, tex.get_size()), 0, -ICON_PROPS[type][1], ICON_PROPS[type][0], true, 0.5, 0.5)
+			elif ICON_PROPS.has(type): Pixel.draw_icon(self, type, 0, -ICON_PROPS[type][1], ICON_PROPS[type][0])
 			elif sprite: _draw_sprite()
 			elif type == "CAMPFIRE": Pixel.draw_icon(self, "LOGS", 0, 0, 3)   # 장작. 불꽃은 _draw_flame
 
@@ -164,6 +187,100 @@ func _draw_flame() -> void:
 	if fire == null: return
 	var f := floori(GameState.game_time * 24 + seed * 60) % 60
 	_flame.draw_texture_rect_region(fire, Rect2(-48, -112, 96, 96), Rect2((f % 10) * 64, floori(f / 10.0) * 64, 64, 64))
+
+
+## 도깨비불: 무덤가를 떠도는 푸른 불 (5px 알갱이). 위로 갈수록 흔들린다. 보스를 보내면 함께 사라진다
+func _draw_wisp() -> void:
+	var k := BossShow.lair_alpha(x, y, 1.0)
+	if k <= 0.01: return
+	var t := GameState.game_time * 2.0 + seed * 7.0
+	var bob := -56.0 + sin(t) * 8.0
+	var sway := sin(t * 1.7) * 4.0
+	const PX := 5
+	Pixel.draw_glow(_flame, sway, bob - 18, 52 + sin(t * 3.1) * 5, Color("#4fb8ff"), 0.55 * k)   # 둘레의 푸른 빛
+	Pixel.draw_glow(_flame, 0, -4, 26, Color("#4fb8ff"), 0.22 * k)                            # 바닥에 비친 빛
+	const ROWS := ["..w..", ".wbw.", ".wbw.", "wbcbw", "wbcbw", ".bcb.", "..b.."]
+	const COLS := { "w": "#4fb8ff", "b": "#9fe3ff", "c": "#eaffff" }
+	for ry in ROWS.size():
+		var row: String = ROWS[ry]
+		var shift := roundf(sin(t * 4.0 + ry * 0.9) * (4.0 - ry)) if ry < 3 else 0.0
+		for rx in row.length():
+			var ch := row[rx]
+			if ch == ".": continue
+			_flame.draw_rect(Rect2(roundf(sway) + shift + (rx - 2.5) * PX, roundf(bob) + (ry - 7) * PX, PX, PX), Color(COLS[ch], k * (0.8 if ch == "w" else 1.0)))
+
+
+## 끓는 모래 (바실의 결투장): 모래 밑에서 무언가 움직이듯 물결이 번지고 거품이 터진다. 바실이 쓰러지면 잦아든다
+func _draw_sand_boil() -> void:
+	var k := BossShow.lair_alpha(x, y, 1.0)
+	if k <= 0.01: return
+	var t := GameState.game_time * 1.4 + seed * 9.0
+	draw_set_transform(Vector2.ZERO, 0, Vector2(1, 0.42))
+	draw_circle(Vector2.ZERO, 26, Color(0.62, 0.47, 0.2, 0.35 * k))   # 가운데 짙은 모래
+	for i in 3:   # 번지는 물결
+		var ph := fmod(t + i / 3.0, 1.0)
+		draw_arc(Vector2.ZERO, 20 + ph * 70, 0, TAU, 32, Color(0.95, 0.82, 0.5, (1.0 - ph) * 0.45 * k), 3.0)
+	draw_set_transform(Vector2.ZERO)
+	for i in 4:   # 거품이 솟았다 터진다
+		var ph := fmod(t * 1.3 + i * 0.27 + seed, 1.0)
+		var at := Vector2(roundf(cos(seed * 30.0 + i * 1.7) * 30), roundf(sin(seed * 30.0 + i * 1.7) * 12) - ph * 8)
+		draw_arc(at, 3.0 + ph * 5.0, 0, TAU, 12, Color(0.98, 0.9, 0.62, (1.0 - ph) * 0.8 * k), 2.0)
+
+
+## 하늘 용의 표식(한 줄이 셋으로 갈라졌다가 다시 모이는 무늬)을 새긴 돌. 이그나르의 결투장을 두른다.
+## 홈이 불씨처럼 숨 쉬듯 빛나다가, 이그나르가 무릎을 꿇으면 꺼진다
+func _draw_mark_stone() -> void:
+	_draw_art("mark_monolith")
+	var k := BossShow.lair_alpha(x, y, 1.0)
+	if k <= 0.01: return
+	var t := GameState.game_time * 1.8 + seed * 6.0
+	Pixel.draw_glow(self, 0, -132, 34 + sin(t) * 4, Color("#ff9a3c"), (0.35 + 0.15 * sin(t)) * k)
+
+
+## 글라시아의 알 벽: 얼음 속에 알이 가지런히 박혀 있다. 글라시아가 잠들면 얼음이 녹아 눈 둥지에 알만 남는다 (BossShow.lair_alpha)
+func _draw_egg_wall() -> void:
+	var ice := BossShow.lair_alpha(x, y, 1.0)   # 1: 얼어 있음 → 0: 다 녹음
+	if ice < 1.0: _draw_art("egg_nest")         # 녹은 자리: 눈 둥지의 알
+	if ice > 0.0: _draw_art("egg_wall", ice)    # 얼음벽 속의 알
+
+
+## 결투장 그림 (assets/sprites/arena). 발 위치가 그림 밑동의 가운데다. 타일 소품과 같은 픽셀 크기로 세 배 키워 찍는다.
+## 타일 시트처럼 한 번 불러 Image 로 바꿔 둔다 (가져온 텍스처를 곧바로 그리면 창에서 회색 네모로만 나왔다)
+static var _art := {}
+func _draw_art(file: String, alpha := 1.0) -> void:
+	if not _art.has(file):
+		var path := "res://assets/sprites/arena/%s.png" % file
+		var src = load(path) if ResourceLoader.exists(path) else null
+		_art[file] = ImageTexture.create_from_image(src.get_image()) if src else null
+	var tex = _art[file]
+	if tex == null: return
+	var w: float = tex.get_width() * 3.0
+	var h: float = tex.get_height() * 3.0
+	draw_texture_rect(tex, Rect2(roundf(x - w / 2) - x, roundf(y - h) - y, w, h), false, Color(1, 1, 1, alpha))
+
+
+## 모르가스의 서리. 무덤가 바닥에 옅게 깔려 있다가, 보스가 깨어나면 무덤에서부터 번져 짙어지고, 잠들면 녹는다
+func _draw_frost() -> void:
+	var a := BossShow.lair_alpha(x, y, 0.35, true)
+	if a <= 0.01: return
+	var r := 70.0 + seed * 50.0
+	# 가장자리가 번진 흐린 자락 몇 겹 (둥근 선이 비치지 않게 부드러운 빛 그림을 눕혀 쓴다)
+	var soft := Pixel.glow_texture()
+	var rime := Color(0.66, 0.86, 1.0, 0.6 * a)
+	draw_set_transform(Vector2.ZERO, 0, Vector2(1, 0.45))
+	draw_texture_rect(soft, Rect2(-r, -r, r * 2, r * 2), false, rime)
+	draw_texture_rect(soft, Rect2(r * 0.1, -r * 0.9, r * 1.4, r * 1.4), false, rime)
+	draw_texture_rect(soft, Rect2(-r * 1.25, -r * 0.35, r * 1.2, r * 1.2), false, rime)
+	draw_set_transform(Vector2.ZERO)
+	for i in 5:   # 얼음 결정: 네 갈래로 반짝인다
+		var ang := seed * 40.0 + i * 2.3
+		var rr := r * (0.15 + fmod(seed * float(i + 3) * 7.13, 0.65))
+		var px := roundf(cos(ang) * rr)
+		var py := roundf(sin(ang) * rr * 0.45)
+		var tw := 0.5 + 0.5 * sin(GameState.game_time * 2.6 + i * 1.7 + seed * 9.0)
+		var c := Color(0.9, 0.97, 1.0, (0.25 + 0.7 * tw) * a)
+		draw_rect(Rect2(px - 1, py - 4, 3, 9), c)
+		draw_rect(Rect2(px - 4, py - 1, 9, 3), c)
 
 
 ## 폭포. 세 부분을 쌓는다: 맨 윗칸 → 떨어지는 물(두 행을 번갈아) → 바닥 물보라.

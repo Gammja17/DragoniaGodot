@@ -3,6 +3,7 @@ extends Node2D
 ## 2D판 entities/BabyDragon.js. 내 아이. 부모에게서 물려받은 모습으로 따라다니다가 자라면 함께 싸운다.
 
 const STAGE_SCALE := { "BABY": 0.36, "TEEN": 0.55, "ADULT": 0.8 }   # 부모 스프라이트 대비 크기
+const HERO_STAGE := { "BABY": 0, "TEEN": 1, "ADULT": 2 }   # 주인공 프리셋 시트의 단계 칸 (프리셋 × 3 + 단계)
 
 var x: float:
 	get: return position.x
@@ -28,6 +29,7 @@ var angle := 0.0
 var home = null            # 성체가 되면 둥지 주변을 배회
 var wander_timer := 0.0
 var remove := false
+var _hero_look := -1       # 지금 그리고 있는 HERO 칸 (자라면 바뀐다)
 var is_hidden := false
 var max_hp := 0.0          # 회복 기술이 건드리지 않게 (아이에게는 체력이 없다)
 var hp := 0.0
@@ -48,6 +50,7 @@ static func make(px: float, py: float, g) -> BabyDragon:
 	b.genes = g if g else { species = p.species, colors = p.colors.duplicate(), look = (p.preset * 3 if p.species == "HERO" else p.look) }
 	b.sheet = DragonSprites.get_sheet(b.genes.species, b.genes.get("colors", {}), int(b.genes.get("look", 0)))
 	b.animator = SpriteSheet.Animator.new(b.sheet)
+	b._hero_look = int(b.genes.get("look", 0))
 	b.name = "Baby_%d" % b.get_instance_id()
 	return b
 
@@ -93,6 +96,14 @@ func light(): return { r = 110, color = "#ffe2b0", intensity = 0.5 }
 
 
 func update(dt: float) -> void:
+	# 주인공 프리셋의 아이는 자라면 청소년·성체 그림으로 (2D판 BabyDragon.update 의 heroLook)
+	if genes.get("species") == "HERO":
+		var base := int(genes.get("look", 0))
+		var want: int = base - base % 3 + HERO_STAGE[stage]
+		if want != _hero_look:
+			_hero_look = want
+			sheet = DragonSprites.get_sheet("HERO", genes.get("colors", {}), want)
+			animator = SpriteSheet.Animator.new(sheet)
 	var px := x
 	var py := y
 	if pet_timer > 0: pet_timer -= dt

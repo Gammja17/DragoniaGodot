@@ -2,14 +2,12 @@ class_name Title
 extends Control
 ## 처음 화면. 2D판 ui/customizer.js + 세이브 칸 셋.
 ##   [기록]      칸 셋. 이어 하기 · 새로 시작 · 지우기
-##   [새 용]     이름 · 외형 30가지 · 장신구 · (옛 종족은) 몸과 날개 색 → 눈을 뜬다
+##   [새 용]     이름 · 주인공 프리셋 다섯(자라는 모습 세 단계) · 장신구 · 몸 · 날개 · 문양 색 → 눈을 뜬다
 ##   [되묻기]    차 있는 칸을 덮어쓰거나 지울 때 한 번 더 묻는다
 ## 고른 것은 Launch 에 담아 게임 씬(main.tscn)으로 넘긴다.
 
 const LOOK_CELL := preload("res://scenes/ui/look_cell.tscn")
 const GAME := "res://scenes/main.tscn"
-# 색을 바꿀 수 있는 옛 종족 4 (한 장짜리 새 외형 26 뒤에 붙는다)
-const CLASSIC := [["WESTERN", "서양룡 (색 변경 가능)"], ["WYVERN", "와이번 (색 변경 가능)"], ["HYDRA", "쌍두룡 (색 변경 가능)"], ["BEHEMOTH", "베히모스 (색 변경 가능)"]]
 const ACCESSORIES := [null, "PLUME", "FLOWER", "LEAF", "HELM", "HAT", "CROWN"]
 
 @onready var _slots: PanelContainer = $Center/Column/Slots

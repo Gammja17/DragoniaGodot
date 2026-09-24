@@ -164,7 +164,7 @@ static func trigger(kind = null) -> void:
 static func _spawn_war() -> void:
 	Hud.current.show_raid_warning("마을이 습격당하고 있다!")
 	Sfx.play("raid")
-	Hud.pop("사냥꾼들이 두 방향에서 몰려온다. 싸울 수 있는 용들은 전부 폭포에 가 있다!", "⚔️")
+	Hud.pop("사냥꾼 대장 베르단의 무리가 두 방향에서 몰려온다. 싸울 수 있는 용들은 전부 폭포에 가 있다!", "⚔️")
 	var two := [SIDES.E, SIDES.S]
 	for i in WAR_ROSTER.size():
 		var p := _spot(two[i % 2])

@@ -8,7 +8,8 @@ func _ready() -> void:
 	for path in _scripts("res://scripts"):
 		n += 1
 		var s = load(path)   # 문법·형 오류는 여기서 찍힌다
-		if s == null:
+		# 문법 오류가 있어도 스크립트 자원은 돌아온다. 만들 수 없으면 실패로 센다 (hud.gd 가 깨졌는데 0개 실패라고 했다)
+		if s == null or not s.can_instantiate():
 			bad += 1
 			print("FAIL ", path)
 	print("parsed %d scripts, %d failed" % [n, bad])

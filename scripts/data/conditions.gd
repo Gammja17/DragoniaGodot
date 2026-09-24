@@ -270,6 +270,11 @@ static func _build_fix() -> void:
 		"quests:QUESTS.e1.needs": func(s): return _boss(s, "BASIL"),
 		# 마을 최고의 술래: 포코의 두 부탁(엿들은 말 · 술래잡기)이 첫날 한꺼번에 이어져, 첫날에 포코와 절친이 되었다. 술래잡기는 사흘째부터
 		"quests:QUESTS.p2.needs": func(s): return s.day >= 3,
+		# [H] 6장: 폭포 싸움터의 잿빛 비늘. 반짝이는 자리(m6w 넷째 대목의 glint) 가까이 가야 눈에 띈다
+		"chronicle:CHRONICLE.ev_ash_scale.when": func(c):
+			if c.map != "FALLS" or not c.active.call("m6w") or int(c.s.quests.active.m6w.step) != 3: return false
+			var at: Array = Data.get_module("quests").QUESTS.filter(func(q): return q.id == "m6w")[0].steps[3].glint.at
+			return Vector2(c.s.player.x, c.s.player.y).distance_to(Vector2((at[0] + 0.5) * 96, (at[1] + 0.5) * 96)) < 170,
 		# 일과: 어둠의 길 끝에 나라가 떠난 뒤의 스승
 		"routines:ROUTINES.Kairon.variants.after_dark.when": func(s): return s.story.get("route") == "dark" and s.quests.done.has("m7d"),
 	})

@@ -164,7 +164,7 @@ static func start_drill(npc, drill: Dictionary, extra: Dictionary) -> void:
 		a.rate = drill.rate
 		Hud.pop("수련: %d초 동안 불씨를 피하세요! 체력이 40%% 아래로 떨어지면 실패. ([Shift]로 대시)" % drill.time, "💨")
 	else:
-		Hud.pop("스승의 기력을 모두 깎으세요! 내 체력이 25% 아래로 떨어지면 패배.", "⚔️")
+		Hud.pop("%s의 기력을 모두 깎으세요! 내 체력이 25%% 아래로 떨어지면 패배." % extra.get("who", "스승"), "⚔️")
 	Sfx.play("warn")
 
 
@@ -227,7 +227,7 @@ static func update_drill(npc, dt: float) -> void:
 	var d := Util.dist(npc, p)
 	var to_player := atan2(p.y - npc.y, p.x - npc.x)
 	var fire := func(angle: float, speed := 300.0, damage := 5.0):
-		Projectile.add(Projectile.new(npc.x, npc.y - 50, angle, { faction = "ENEMY", element = "FIRE", damage = damage, speed = speed, life = 3, scale = 0.7 }))
+		Projectile.add(Projectile.new(npc.x, npc.y - 50, angle, { faction = "ENEMY", element = a.get("element", "FIRE"), damage = damage, speed = speed, life = 3, scale = 0.7 }))
 	if a.type == "TARGETS":
 		a.time -= dt
 		if a.get("rival"): _rival_tick(a, dt)
@@ -254,7 +254,7 @@ static func update_drill(npc, dt: float) -> void:
 		elif a.time <= 0: _end_drill(true)
 		return
 	# DUEL: 스승과 대련 (수련·승급 시험 공용). 기력(a.hp)은 Dragon.take_damage 가 깎는다
-	Hud.current.set_boss_bar("승급 시험: 스승 카이론" if a.get("trial") else "스승과의 대련", a.hp / a.max)
+	Hud.current.set_boss_bar(a.get("label", "승급 시험: 스승 카이론" if a.get("trial") else "스승과의 대련"), a.hp / a.max)
 	var mv := to_player if d > 320 else to_player + PI if d < 200 else to_player + PI / 2
 	npc.move_by(cos(mv), sin(mv), 185, dt)
 	a.timer -= dt
@@ -414,7 +414,22 @@ static func on_flag(flag: String) -> void:
 				Hud.pop("아이의 이름은 %s. 내일부터 마을을 뛰어다닌다." % n, "🐣")
 				Save.save_game())
 		"tryst_start", "tryst_done": Sneak.on_flag(flag)   # [세션 D] 해 질 녘 폭포: 몰래 다가가기를 열고 닫는다
+		"yuan_duel": _yuan_duel()   # [H] 6장: 폭포에서 유안과 대표로 겨룬다
 	Save.save_game()
+
+
+## 6장: 폭포에서 유안과 대표로 겨룬다. 유안은 카이론에게 배운 자세로 싸운다 (스승과의 대련과 같은 박자).
+## 이기든 지든 겨루기가 끝나면 유안이 "우리 쪽 아이도 등을 물렸다"고 털어놓고, 싸운 자리를 뒤지는 대목으로 넘어간다
+static func _yuan_duel() -> void:
+	var p = GameState.player
+	var y = World.any_npc("Yuan")
+	if not y: return
+	y.x = p.x + 200; y.y = p.y; y.walk_to = null
+	start_drill(y, { type = "DUEL", hp = 600 + p.level * 18 }, { label = "구름마루의 유안", who = "유안", element = "WATER",
+		onEnd = func(win: bool):
+			Chronicle.play_scene("등을 물린 아이들", _data().YUAN_DUEL.win if win else _data().YUAN_DUEL.lose, func():
+				Quests.notify("event", "yuan_duel")
+				Save.save_game()) })
 
 
 ## 어둠의 길 끝. 마을 어귀를 스승이 막아선다. 이기면 마을이 넘어가고, 지면 스승이 끌고 돌아온다

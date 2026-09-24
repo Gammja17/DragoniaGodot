@@ -83,12 +83,16 @@ static func _stamp_tryst() -> void:
 static func update(dt: float) -> void:
 	_stamp_bosses()
 	_stamp_tryst()
+	_glint(dt)
 	_party_cd -= dt
 	if _party_cd <= 0 and not _playing:
 		_party_cd = 0.5
 		Party.sync()   # 이야기 동료: 들어올 용은 따라나서고, 일을 마친 용은 장면이 다 흐른 뒤에 돌아간다
 	if _playing or Ending.playing or GameState.isDialogueOpen or GameState.dungeon or GameState.activity or GameState.raid.active: return
 	if GameState.bannerUntil and GameState.play_time < GameState.bannerUntil: return   # 지역 이름이 떠 있는 동안은 기다린다
+	# 잠에서 깨는 동안은 기다린다. 자는 사이 끝난 대목의 장면(장례)을 먼저 틀면, 깨어난 뒤의 아침 장면(아침 · 아이들)이
+	# 그 위에 겹쳐 틀려 앞 장면이 끝을 못 맺었다 (_playing 이 풀리지 않아 그 뒤로 사건이 하나도 안 열렸다)
+	if Hud.fading(): return
 	if GameState.entities.bosses.any(func(b): return b.dying > 0): return   # 보스가 무너지는 동안은 기다린다 (작별은 그 뒤에)
 	if Combat.in_fight(): return   # 싸움 한복판에 장면이 끼어들지 않게 (조용해지면 튼다)
 	_check_timer -= dt
@@ -105,6 +109,7 @@ static func update(dt: float) -> void:
 	# 찾아오는 대목(meet): 말을 걸어야 넘어가는 대목인데, 그 용이 있는 지도에 들어서면 그쪽이 먼저 다가온다
 	# (보스를 잡고 돌아와 "누구에게 전한다"를 찾아다니던 심부름을 줄인다)
 	if _meet_step(): return
+	if _resume_duel(): return
 	# 대화 중에 사이가 깊어졌으면, 대화가 끝난 지금 그 장면을 보여 준다
 	var bond = GameState.pendingBond
 	if bond:
@@ -139,6 +144,31 @@ static func _meet_step() -> bool:
 				Save.save_game())
 			return true
 	return false
+
+
+## 화살표 없이 스스로 찾는 대목(step.glint = { map, at })의 자리가 가끔 반짝인다. 가까이 가야 사건이 열린다 (6장의 잿빛 비늘)
+static var _glint_t := 0.0
+static func _glint(dt: float) -> void:
+	_glint_t -= dt
+	if _glint_t > 0 or GameState.dungeon: return
+	_glint_t = 1.1
+	for q in Quests.active_quests():
+		var st = Quests.cur_step(q)
+		var g = st.get("glint") if st else null
+		if g and g.map == GameState.map_id:
+			var at := World.at(g.at)
+			Vfx.spawn_effect("SPARKLE", at.x, at.y - 12, { size = 1.3, color = "#e8e2d4" })
+
+
+## 6장: 유안과의 겨루기는 저장되지 않는다. 겨루기 대목에서 폭포에 오면(불러온 판 · 겨루다 멀리 벗어난 판) 유안이 다시 청한다
+static func _resume_duel() -> bool:
+	var e = GameState.quests.active.get("m6w")
+	if not e or int(e.step) != 2 or GameState.map_id != "FALLS": return false
+	_playing = true
+	play_scene(null, [{ who = "Yuan", text = "…아까 하던 거, 마저 하자. 둘 중 하나가 쓰러질 때까지다." }], func():
+		_playing = false
+		Story.on_flag("yuan_duel"))
+	return true
 
 
 ## 사건 끝에 고르는 것 (ev.choice = { prompt, options: [{ id, label, when(ctx)?, lines, flag?, grant?, clue? }] }).

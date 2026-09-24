@@ -20,7 +20,7 @@ border_width_bottom = 2
 border_color = Color(0.847, 0.698, 0.353, 0.38)
 
 [node name="LookCell" type="Button"]
-custom_minimum_size = Vector2(62, 62)
+custom_minimum_size = Vector2(88, 88)
 focus_mode = 0
 theme_override_styles/normal = SubResource("cell")
 theme_override_styles/hover = SubResource("cell_hover")

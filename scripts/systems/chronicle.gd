@@ -166,12 +166,21 @@ static func _glint(dt: float) -> void:
 ## 6장: 유안과의 겨루기는 저장되지 않는다. 겨루기 대목에서 폭포에 오면(불러온 판 · 겨루다 멀리 벗어난 판) 유안이 다시 청한다
 static func _resume_duel() -> bool:
 	var e = GameState.quests.active.get("m6w")
-	if not e or int(e.step) != 2 or GameState.map_id != "FALLS": return false
-	_playing = true
-	play_scene(null, [{ who = "Yuan", text = "…아까 하던 거, 마저 하자. 둘 중 하나가 쓰러질 때까지다." }], func():
-		_playing = false
-		Story.on_flag("yuan_duel"))
-	return true
+	if e and int(e.step) == 2 and GameState.map_id == "FALLS":
+		_playing = true
+		play_scene(null, [{ who = "Yuan", text = "…아까 하던 거, 마저 하자. 둘 중 하나가 쓰러질 때까지다." }], func():
+			_playing = false
+			Story.on_flag("yuan_duel"))
+		return true
+	# 나라의 시험 (n3): 수련장에 다시 오면 나라가 마저 하자고 한다
+	var n3 = GameState.quests.active.get("n3")
+	if n3 and int(n3.step) == 3 and GameState.map_id == "DOJO":
+		_playing = true
+		play_scene(null, [{ who = "Nara", text = "왔다. 아까 하던 거 마저 하자. 봐주기 없기다." }], func():
+			_playing = false
+			Story.on_flag("nara_trial"))
+		return true
+	return false
 
 
 ## 사건 끝에 고르는 것 (ev.choice = { prompt, options: [{ id, label, when(ctx)?, lines, flag?, grant?, clue? }] }).

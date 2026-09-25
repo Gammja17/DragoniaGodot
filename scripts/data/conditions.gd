@@ -340,6 +340,12 @@ static func _build_c() -> void:
 		"chapters:CHAPTERS.c8.hold.IGNAR_LAIR.when": func(s): return s.player.stage_index >= 3 or _boss(s, "IGNAR"),
 		# 잿마루에서 그날 밤의 밤손님을 알아본다
 		"chronicle:CHRONICLE.ev_heukdan.when": func(c): return c.map == "VOLCANO" and c.s.story.get("events", []).has("ev_volcano") and c.flag.call("messenger"),
+
+		# ---- 나라 줄기: 스승님의 제자 ----
+		# 어둠의 길로 들어선 판에서는 나라가 마을을 떠난다
+		"quests:QUESTS.n3.needs": func(s): return s.story.get("route") != "dark",
+		# 엘더와 함께 수련장에 들어서면 엘더가 약속을 거둔다
+		"chronicle:CHRONICLE.ev_nara_trial.when": func(c): return c.map == "DOJO" and c.active.call("n3") and int(c.s.quests.active.n3.step) == 2,
 	}, true)
 
 

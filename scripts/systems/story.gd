@@ -159,7 +159,8 @@ static func start_drill(npc, drill: Dictionary, extra: Dictionary) -> void:
 			a.dummies.append(d)
 			World.add_entity("enemies", d)
 			Vfx.spawn_effect("PUFF", d.x, d.y - 10)
-		Hud.pop("내기: %s보다 허수아비를 많이 부수세요!" % Names.npc(extra.rival.config.name) if extra.get("rival") else "수련: 허수아비 %d개를 %d초 안에 부수세요!" % [drill.count, drill.time], "🎯")
+		if extra.get("team"): Hud.pop("둘이 한 편: %s와 함께 허수아비 %d개를 %d초 안에 모두 부수세요!" % [Names.npc(extra.rival.config.name), drill.count, drill.time], "🎯")
+		else: Hud.pop("내기: %s보다 허수아비를 많이 부수세요!" % Names.npc(extra.rival.config.name) if extra.get("rival") else "수련: 허수아비 %d개를 %d초 안에 부수세요!" % [drill.count, drill.time], "🎯")
 	elif drill.type == "DODGE":
 		a.rate = drill.rate
 		Hud.pop("수련: %d초 동안 불씨를 피하세요! 체력이 40%% 아래로 떨어지면 실패. ([Shift]로 대시)" % drill.time, "💨")
@@ -234,8 +235,9 @@ static func update_drill(npc, dt: float) -> void:
 		if a.get("rival"): _rival_tick(a, dt)
 		var left: int = a.dummies.filter(func(x): return is_instance_valid(x) and not x.remove).size()   # 깨진 허수아비는 곧 치워진다
 		var mine: int = a.dummies.size() - left - a.get("rivalKills", 0)
-		Hud.current.set_boss_bar("나 %d : %d %s" % [mine, a.rivalKills, Names.npc(a.rival.config.name)] if a.get("rival") else "허수아비 %d개 남음" % left, a.time / a.max)
-		if left == 0: _end_drill(mine > a.rivalKills if a.get("rival") else true)
+		var race: bool = a.get("rival") != null and not a.get("team")   # 한 편이면 누가 깼는지 세지 않는다
+		Hud.current.set_boss_bar("나 %d : %d %s" % [mine, a.rivalKills, Names.npc(a.rival.config.name)] if race else "허수아비 %d개 남음" % left, a.time / a.max)
+		if left == 0: _end_drill(mine > a.rivalKills if race else true)
 		elif a.time <= 0: _end_drill(false)
 		return
 	if a.type == "DODGE":
@@ -413,6 +415,7 @@ static func on_flag(flag: String) -> void:
 				Save.save_game())
 		"tryst_start", "tryst_done": Sneak.on_flag(flag)   # [세션 D] 해 질 녘 폭포: 몰래 다가가기를 열고 닫는다
 		"yuan_duel": _yuan_duel()   # [H] 6장: 폭포에서 유안과 대표로 겨룬다
+		"nara_trial": _nara_trial()   # 나라의 시험: 카이론 앞에서 나와 겨룬다 (n3)
 	Save.save_game()
 
 
@@ -428,6 +431,47 @@ static func _yuan_duel() -> void:
 			Chronicle.play_scene("등을 물린 아이들", _data().YUAN_DUEL.win if win else _data().YUAN_DUEL.lose, func():
 				Quests.notify("event", "yuan_duel")
 				Save.save_game()) })
+
+
+## 나라의 시험: 카이론이 "네 또래부터 넘어 봐라"며 나와 붙인다 (n3). 이기든 지든 끝까지 안 물러섰으면 제자다
+static func _nara_trial() -> void:
+	var p = GameState.player
+	var n = World.any_npc("Nara")
+	if not n: return
+	n.x = p.x + 200; n.y = p.y; n.walk_to = null
+	start_drill(n, { type = "DUEL", hp = 240 + p.level * 14 }, { label = "나라의 시험", who = "나라", element = "FIRE",
+		onEnd = func(win: bool):
+			nara_result(win)
+			if not GameState.story.has("choices"): GameState.story.choices = {}
+			GameState.story.choices.nara_trial = "win" if win else "lose"   # 결말의 수련장(epi_dojo)이 읽는다
+			Chronicle.play_scene("스승님의 제자", _data().NARA_TRIAL.win if win else _data().NARA_TRIAL.lose, func():
+				Quests.notify("event", "nara_trial")
+				Save.save_game()) })
+
+
+## 나라와 겨룬 전적 (허수아비 내기 · 겨루기 · 시험). won: 내가 이겼나.
+## 나라는 지면 새벽에 더 굴러서 다음 판이 조금 세지고(form), 이기면 방심해서 조금 약해진다.
+## 나라가 한 번이라도 이겼으면 story.choices.nara_record 에 앞섰나 · 비겼나 · 뒤졌나를 적는다 (8장 떠나기 전날 밤의 한 줄이 읽는다)
+static func nara_result(won: bool) -> void:
+	if not GameState.story.get("nara"): GameState.story.nara = { me = 0, her = 0, form = 0.0, streak = 0, last = "" }
+	var r: Dictionary = GameState.story.nara
+	if won:
+		r.me = int(r.me) + 1
+		r.streak = int(r.streak) + 1   # 나라가 내리 진 판 수
+		r.form = minf(0.3, float(r.form) + 0.1)
+	else:
+		r.her = int(r.her) + 1
+		r.streak = 0
+		r.form = maxf(-0.15, float(r.form) - 0.15)
+	r.last = "me" if won else "her"
+	if int(r.her) > 0:
+		if not GameState.story.has("choices"): GameState.story.choices = {}
+		GameState.story.choices.nara_record = "ahead" if r.her > r.me else "even" if r.her == r.me else "behind"
+
+
+## 나라가 지금 얼마나 올라와 있나 (1 이 보통). 내기 · 겨루기의 세기에 곱한다
+static func nara_form() -> float:
+	return 1.0 + float(GameState.story.get("nara", {}).get("form", 0.0))
 
 
 ## 어둠의 길 끝. 마을 어귀를 스승이 막아선다. 이기면 마을이 넘어가고, 지면 스승이 끌고 돌아온다

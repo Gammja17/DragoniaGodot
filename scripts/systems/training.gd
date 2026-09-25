@@ -5,7 +5,7 @@ class_name Training
 ## 스승을 찾아가 말을 걸면 메뉴를 거치지 않고 바로 그 얘기부터 나온다.
 ##
 ## GameState.story.plan = { day, kind, stage: 'offered' | 'active' | 'done', n, ... }
-##   kind: 'DRILL' | 'HUNT_CLEAN' | 'HUNT_ELITE' | 'DELVE' | 'RACE' | 'WATCH' | 'TRIP' | 'REST'
+##   kind: 'DRILL' | 'HUNT_CLEAN' | 'HUNT_ELITE' | 'DELVE' | 'RACE' | 'WATCH' | 'TRIP' | 'REST' | 'PAIR' | 'DUEL_NARA'
 ## GameState.story.planLog = { count, last, trips: [], rests: [] }
 
 # 여덟 번의 기본기는 스승의 일정 안에 날짜가 박혀 있다: n번째 기본기는 일과를 이만큼 받은 뒤에야 나온다.
@@ -57,6 +57,7 @@ static func _choose():
 	if _next_rest(): others.append("REST")
 	if p.level >= 3 and L >= 2: others.append("DELVE")
 	if L >= 2 and not _log().get("watched"): others.append("WATCH")
+	if GameState.quests.done.has("n3"): others.append_array(["PAIR", "DUEL_NARA"])   # 나라가 제자가 된 뒤로는 둘이 같이 받는다
 	var list := others.filter(func(k): return k != last)
 	if list.is_empty(): return "DRILL" if can_drill else "HUNT_CLEAN"
 	return list[int(_log().count) % list.size()]
@@ -136,7 +137,7 @@ static func open(npc, other: Callable) -> void:
 		_ask(npc, "오늘은 기본기다. %s." % lesson.title, options)
 		return
 	# 제안은 한 줄씩 넘기다가, 마지막 줄에서 따라나설지 고른다 (나라가 받아치고 끝나는 제안도 있다)
-	var lines: Array = _def(plan).offer
+	var lines: Array = _race_offer(_def(plan)) if plan.kind == "RACE" else _def(plan).offer
 	var say := []
 	say.append(func(i: int):
 		var who = World.any_npc(lines[i].who)
@@ -166,6 +167,12 @@ static func _begin(npc, plan: Dictionary) -> void:
 			return
 		"RACE":
 			_race(npc, plan, d)
+			return
+		"PAIR":
+			_pair(npc, plan, d)
+			return
+		"DUEL_NARA":
+			_duel_nara(npc, plan, d)
 			return
 	# 나머지는 스승이 따라나선다
 	Party.take_slot(npc)   # 고른 칸은 스승이 쓴다. 따라오던 동료는 돌아가고, 짝은 기다린다
@@ -228,17 +235,56 @@ static func _watch(npc, plan: Dictionary, d: Dictionary) -> void:
 	])
 
 
-static func _race(npc, plan: Dictionary, d: Dictionary) -> void:
-	# 나라가 이 지도에 없으면 불러온다 (수련이 끝나면 일과대로 제 갈 길을 간다)
+## 나라가 이 지도에 없으면 불러온다 (수련이 끝나면 일과대로 제 갈 길을 간다)
+static func _bring_nara(npc):
 	var nara = World.any_npc("Nara")
 	if not GameState.entities.npcs.has(nara):
 		nara.x = npc.x + 90; nara.y = npc.y + 40
 		nara.remove = false; nara.is_hidden = false
 		World.add_entity("npcs", nara)
+	return nara
+
+
+## 내기를 청하는 말: 첫판 · 나라가 지난번에 이겼나 졌나 · 내리 졌나에 따라
+static func _race_offer(d: Dictionary) -> Array:
+	var r: Dictionary = GameState.story.get("nara", {})
+	if r.is_empty(): return d.offer
+	if int(r.streak) >= 3: return d.offerStreak
+	return d.offerHerWon if r.last == "her" else d.offerHerLost
+
+
+static func _race(npc, plan: Dictionary, d: Dictionary) -> void:
+	var nara = _bring_nara(npc)
 	var hp: float = 40 + GameState.player.level * 14
 	Story.start_drill(npc, { type = "TARGETS", count = d.dummies, hp = hp, time = 60 }, {
-		rival = nara, rivalKills = 0, rivalDps = hp / 5,
+		rival = nara, rivalKills = 0, rivalDps = hp / 5 * Story.nara_form(),
+		onEnd = func(won):
+			Story.nara_result(won)
+			var lines: Array = (d.winStreak if int(GameState.story.nara.streak) >= 3 else d.win) if won \
+				else (d.loseStudent if GameState.quests.done.has("n3") else d.lose)
+			Chronicle.play_scene(d.title, lines, func(): _finish(plan, null)),
+	})
+
+
+## 둘이 한 편: 나라와 같이 허수아비를 시간 안에 다 깬다 (누가 몇 개 깼는지는 세지 않는다)
+static func _pair(npc, plan: Dictionary, d: Dictionary) -> void:
+	var nara = _bring_nara(npc)
+	var hp: float = 40 + GameState.player.level * 14
+	Story.start_drill(npc, { type = "TARGETS", count = d.dummies, hp = hp, time = 70 }, {
+		rival = nara, team = true, rivalKills = 0, rivalDps = hp / 5 * Story.nara_form(),
 		onEnd = func(won): Chronicle.play_scene(d.title, d.win if won else d.lose, func(): _finish(plan, null)),
+	})
+
+
+## 나라와 겨루기: 카이론 앞에서 서로를 상대로. 전적에 남는다
+static func _duel_nara(npc, plan: Dictionary, d: Dictionary) -> void:
+	var nara = _bring_nara(npc)
+	var p = GameState.player
+	nara.x = p.x + 200; nara.y = p.y; nara.walk_to = null
+	Story.start_drill(nara, { type = "DUEL", hp = (220 + p.level * 12) * Story.nara_form() }, { label = "나라와 겨루기", who = "나라", element = "FIRE",
+		onEnd = func(won):
+			Story.nara_result(won)
+			Chronicle.play_scene(d.title, d.win if won else d.lose, func(): _finish(plan, null)),
 	})
 
 

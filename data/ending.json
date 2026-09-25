@@ -59,13 +59,15 @@
    { "who": "Kairon", "text": "…날 밝으면 가마. 너는 들어가 자라. 수고했다." }
   ] },
   "epi_dojo": { "title": "", "lines": [
-   { "who": "Nara", "text": "스승님! …아니, 카이론 아저씨! 오늘은 나랑 대련해 주는 거죠? 약속했잖아요!", "do": [{ "bgm": "village" }, { "move": "Nara", "to": [150, -20] }] },
+   { "who": "Nara", "text": "스승님! …아니, 카이론 아저씨! 오늘은 나랑 대련해 주는 거죠? 약속했잖아요!", "chose": "nara_trial:!*", "do": [{ "bgm": "village" }, { "move": "Nara", "to": [150, -20] }] },
+   { "who": "Nara", "text": "스승님! 오늘은 나랑 대련해 주시는 거죠? 제자하고는 한 달에 한 번 붙어 주신다고 했잖아요!", "chose": "nara_trial:*", "do": [{ "bgm": "village" }, { "move": "Nara", "to": [150, -20] }] },
    { "who": "Kairon", "text": "약속한 적 없다. 허수아비나 쳐라." },
    { "who": "Nara", "text": "아 짜증 나. 맨날 허수아비래.", "do": [{ "move": "Nara", "to": [60, 90] }, { "fx": "PUFF", "at": "Nara" }, { "sfx": "hit" }] },
    { "who": "나", "text": "(나라는 허수아비 앞에서 하나, 하고 숨을 고른 뒤에 들어간다. 한 박자 늦게.)", "chose": "n1:tip" },
    { "who": "나", "text": "(나라는 여전히 몸이 먼저 나간다. 엄마를 닮았다는 그 버릇대로, 누구보다 빠르게.)", "chose": "n1:mom" },
    { "who": "Kairon", "text": "(허수아비를 두들기는 나라를 한참 보다가, 스승이 혼잣말처럼 중얼거렸다.) …꼬리 쓰는 게 늘었군. 내 제자답게.", "do": [{ "wait": 1.0 }] },
-   { "who": "Nara", "text": "…방금 뭐라고 했어요? 제자라고 했죠? 했죠?!", "do": [{ "emote": "Nara", "icon": "!" }, { "move": "Nara", "to": "near:Kairon" }] },
+   { "who": "Nara", "text": "…방금 뭐라고 했어요? 제자라고 했죠? 했죠?!", "chose": "nara_trial:!*", "do": [{ "emote": "Nara", "icon": "!" }, { "move": "Nara", "to": "near:Kairon" }] },
+   { "who": "Nara", "text": "…방금 칭찬하신 거죠? 스승님이 칭찬을 다 하시고! 하셨죠?!", "chose": "nara_trial:*", "do": [{ "emote": "Nara", "icon": "!" }, { "move": "Nara", "to": "near:Kairon" }] },
    { "who": "Kairon", "text": "안 했다. 헛것 들었다. …백 번 더 쳐라." },
    { "who": "Nara", "text": "(나라는 투덜대며 허수아비 앞으로 돌아갔다. 꼬리가 아까보다 두 배는 세게 휘둘러졌다.)", "do": [{ "move": "Nara", "to": [60, 90] }, { "emote": "Nara", "icon": "♪" }] }
   ] },

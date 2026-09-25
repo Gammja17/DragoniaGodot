@@ -327,16 +327,31 @@ static func whereabouts(nm: String) -> String:
 	return "%s에 있다" % Names.map(home.map) if home else "마을 어딘가에 있다"
 
 
-## 추적창의 📍 줄: 이 대목에서 찾아가야 할 용이 지금 어디 있는지
+## 이 대목 앞에 끝내야 할 부탁(대목의 after) 가운데 아직 안 끝낸 첫 것. 없으면 null
+## (고룡이 되는 대목: 뿌리골 · 바윗골 · 구름마루가 건네는 속성 없이는 빈 둥지가 소용없다)
+static func pending_before(q):
+	if not q or is_complete(q): return null
+	for id in cur_step(q).get("after", []):
+		if not GameState.quests.done.has(id): return by_id(id)
+	return null
+
+
+## 추적창의 📍 줄: 이 대목에서 찾아가야 할 용이 지금 어디 있는지. 먼저 끝낼 부탁이 남았으면 그쪽 (화살표와 같이)
 static func _where_line(q: Dictionary) -> String:
 	var who = null
-	if is_complete(q): who = turn_in_npc(q)
+	var pre = pending_before(q)
+	if pre and not GameState.quests.active.has(pre.id): who = pre.giver
 	else:
-		var g: Dictionary = cur_step(q).goal
-		if g.type == "talk" or g.type == "bring": who = g.target
+		if pre: q = pre
+		if is_complete(q): who = turn_in_npc(q)
+		else:
+			var g: Dictionary = cur_step(q).goal
+			if g.type == "talk" or g.type == "bring": who = g.target
 	if not who: return ""
 	var plan = Routine.plan_for(who)
-	return "%s · %s" % [Names.npc(who), plan.mapName] if plan else ""
+	if plan: return "%s · %s" % [Names.npc(who), plan.mapName]
+	var home = Guide.home_of(who)   # 일과가 없는 용은 사는 곳
+	return "%s · %s" % [Names.npc(who), Names.map(home.map)] if home else ""
 
 
 ## 의뢰인 이름과, 일과를 아는 용이라면 지금 어디 있는지까지

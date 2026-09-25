@@ -85,6 +85,13 @@ static func _wanted():
 	var q = Quests.tracked_quest()
 	var who = null
 	var place = null
+	# 이 대목 앞에 끝낼 부탁이 남았으면 그것을 가리킨다: 맡았으면 그 부탁의 대목, 아직이면 그 부탁을 줄 용
+	# (고룡이 되는 대목: 세 마을의 속성을 받기 전부터 빈 둥지를 가리키던 것)
+	var pre = Quests.pending_before(q)
+	if pre and GameState.quests.active.has(pre.id): q = pre
+	elif pre:
+		q = null
+		who = pre.giver
 	if q:
 		if level() == "main" and q.get("act") != "main": return null   # 곁가지는 스스로 찾는다
 		if Quests.is_complete(q): who = Quests.turn_in_npc(q)
@@ -126,7 +133,7 @@ static func _wanted():
 						place.x = e.x; place.y = e.y
 			elif (g.type == "kill" or g.type == "killAny" or g.type == "elite") and (GameState.map_id == "VILLAGE" or GameState.map_id == "DOJO"):
 				place = { map = "EAST_ROAD", label = "사냥터" }
-	else:
+	elif not who:
 		# 맡은 일이 없으면 추적창은 오늘의 수련을 먼저 보여 준다. 화살표도 그것을 따른다
 		# (추적창은 "카이론을 찾아가"인데 화살표는 엘더를 가리키던 것. 수련 도중에는 스승이 곁에 있으니 가리키지 않는다)
 		var plan = Training.todays_plan()

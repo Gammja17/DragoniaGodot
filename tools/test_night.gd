@@ -105,6 +105,24 @@ func _ready() -> void:
 	G.quests.active = was
 	G.quests.tracked = was_tracked
 
+	# 고룡이 되는 대목: 세 마을의 속성을 받기 전에는 그 부탁부터 가리킨다 (빈 둥지를 먼저 가리키던 것)
+	var done_was: Array = G.quests.done.duplicate()
+	G.quests.active = { m6 = { step = 2, n = 0 } }
+	G.quests.tracked = "m6"
+	G.quests.done = done_was.filter(func(id): return not ["r1", "e1", "w1"].has(id)) + ["r1"]
+	aim = Guide._wanted()
+	_check("고룡 대목 · 아직 안 맡은 바윗골의 가람부터", [aim.get("who") if aim else null, Quests.tracked_line().where], ["Garam", "가람 · 바윗골"])
+	G.quests.active.e1 = { step = 0, n = 0 }
+	aim = Guide._wanted()
+	_check("고룡 대목 · 맡은 부탁이면 그 대목 (바윗골의 아이 돌)", aim.get("who") if aim else null, "Dol")
+	G.quests.active.erase("e1")
+	G.quests.done.append_array(["e1", "w1"])
+	aim = Guide._wanted()
+	_check("고룡 대목 · 다 받았으면 빈 둥지", [aim.get("map") if aim else null, aim.get("label") if aim else null], ["SKY_RUINS", "빈 둥지"])
+	G.quests.done = done_was
+	G.quests.active = was
+	G.quests.tracked = was_tracked
+
 	# 옛 세이브: 첫 밤을 이미 본 판은 '첫 밤' 대목을 지난 것으로 친다
 	Save.save_game()
 	var data: Dictionary = Save.read()

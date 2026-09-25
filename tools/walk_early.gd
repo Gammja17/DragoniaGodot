@@ -135,12 +135,16 @@ func _act():
 	if GameState.activity: return await _drill()
 	if GameState.raid.active: return await _defend()
 	var q = Quests.tracked_quest()
+	var pre = Quests.pending_before(q)   # 이 대목 앞에 끝낼 부탁 (화살표와 같은 규칙)
+	if pre and not GameState.quests.active.has(pre.id): return await _visit(pre.giver)
+	if pre: q = pre
 	var line = Quests.tracked_line()
 	if q == null and line and line.get("training"): return await _training()
 	if q == null:
 		var s = Quests.suggestion()
 		if s and s.get("kind") == "trial": return await _stage()   # 본 이야기가 다음 승급을 기다린다
 		if s and s.get("who") and s.get("main"): return await _visit(s.who)
+		if s and s.get("place") and s.get("main") and s.place != GameState.map_id: return await _go(s.place)   # 저절로 열리는 본 이야기: 그 지도로
 		if _bedtime(): return await _sleep()
 		if s and s.get("who") and s.who != "Kairon" and not _idle_logged.contains(s.who):
 			_idle_logged += s.who
@@ -156,7 +160,9 @@ func _act():
 	match str(g.type):
 		"talk", "bring": await _visit(g.target)
 		"kill", "killAny", "elite": await _hunt(str(g.get("target", "")))
-		"stage": await _stage()
+		"stage":
+			if st.get("where"): await _awaken(st)   # 고룡: 구름 위 폐허의 빈 둥지
+			else: await _stage()
 		"raid":
 			if _bedtime(): await _sleep()
 			else: await _pass(20)
@@ -279,6 +285,19 @@ func _stage():
 	if _busy(): return
 	_line("[봇] 카이론에게 가르침을 청한다")
 	NpcActions.show(k, "뭘 배우러 왔냐.", Story.master_options(k) + [{ label = "돌아간다", on_select = NpcActions.close }])
+
+
+## 고룡이 되는 대목: 빈 둥지 앞에 가서 [Space]
+func _awaken(st: Dictionary):
+	if GameState.map_id != st.where.map:
+		await _go(st.where.map)
+		return
+	var w := World.at(st.where.spot)
+	await _walk_to(w.x, w.y + 60)
+	if _busy(): return
+	_line("[봇] 빈 둥지 앞에서 [Space]")
+	Story.try_awaken()
+	await _pass(3)
 
 
 ## 오늘의 수련: 카이론에게 청하고, 받은 일을 한다

@@ -4,7 +4,7 @@ extends Node
 ## 걷는 시간은 거리만큼 기다려서 흉내 낸다. 싸움은 한 대에 쓰러뜨린다 (보스도. 대련은 기력을 비워 이긴 셈 친다).
 ## 굴 탐험 · 대장간 단련 대목은 건너뛴다 (지하 몇 층 · 단련 한 번을 한 셈 친다).
 ## 가리키는 곳이 아직 닫힌 지도면 [막힘], 찾아간 용이 할 말이 없으면 [헛걸음] 을 찍는다.
-##   godot --headless --path . res://tools/walk_early.tscn -- [며칠째까지 (기본 3)]
+##   godot --headless --path . res://tools/walk_early.tscn -- [며칠째까지 (기본 3)] [resume: 9번 칸 저장에서 이어 걷는다]
 
 const WALK := 260.0   # 걷는 빠르기 (px/초)
 const GATE := 12.0    # 지도를 하나 넘는 데 드는 시간 (초)
@@ -25,7 +25,7 @@ func _ready() -> void:
 	var a := OS.get_cmdline_user_args()
 	if a.size() > 0: _until = int(a[0])
 	Save.slot = 9   # 시험은 9번 칸을 쓴다 (사람이 쓰는 1~3번 칸을 건드리지 않게)
-	Save.delete()
+	if not a.has("resume"): Save.delete()   # resume: 앞선 걸음이 남긴 저장에서 이어 걷는다 (앞 장들을 다시 걷지 않게)
 	var main: Node = load("res://scenes/main.tscn").instantiate()
 	add_child(main)
 	await get_tree().process_frame
@@ -182,6 +182,7 @@ func _visit(who: String):
 	if not n: return await _pass(5)
 	if not GameState.entities.npcs.has(n) or n.is_hidden:
 		var plan = Routine.plan_for(who)
+		if not plan: plan = Guide.home_of(who)   # 일과가 없는 용은 사는 곳 (뿌리골의 모스)
 		if not plan: return await _pass(5)
 		if plan.map == GameState.map_id: return await _pass(5)   # 오는 중이다
 		if not await _go(plan.map): return
@@ -322,6 +323,11 @@ func _drill():
 		return await _pass(1)
 	if a.get("type") == "TAG" and a.get("npc"):   # 술래잡기: 곁으로 가서 잡는다
 		GameState.player.x = a.npc.x; GameState.player.y = a.npc.y
+		return await _pass(1)
+	if a.get("type") == "SNEAK":   # 몰래 다가가기: 판이 돌기 시작하면 엿들을 자리에 닿은 셈 친다
+		if Sneak.running() and Sneak._view.run.get("phase") == "play":
+			_line("[봇] 몰래 다가가기를 해낸 셈 친다")
+			Sneak._heard(Sneak._view)
 		return await _pass(1)
 	await _pass(3)
 

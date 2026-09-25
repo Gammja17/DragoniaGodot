@@ -92,6 +92,9 @@ func _ready() -> void:
 	sug = Quests.suggestion()
 	_check("레벨이 차면: 스승에게 승급 시험을 청하자 (화살표는 카이론)", sug.get("kind") == "trial" and sug.who == "Kairon" and sug.main)
 
+	# 일과가 없는 용은 사는 곳을 말한다 (뿌리골의 모스를 "마을 어딘가에 있다"고 하던 것)
+	_check("모스를 찾을 곳: 뿌리골", Quests.whereabouts("Moss"), "뿌리골에 있다")
+
 	# 5장 달맞이 모임: 사건으로 넘어가는 본 이야기 대목도 그 지도로 가는 문을 가리킨다 (걷는 봇이 마을에서 모임을 기다리던 것)
 	var was: Dictionary = G.quests.active.duplicate(true)
 	var was_tracked = G.quests.tracked

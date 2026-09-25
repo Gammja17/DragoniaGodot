@@ -318,6 +318,15 @@ static func _where_is(nm: String) -> String:
 	return " (지금 %s)" % plan.mapName if plan else ""
 
 
+## 그 용을 어디서 찾을지 한 줄. 일과를 아는 용은 지금 자리와 하는 일, 일과가 없는 용은 사는 곳
+## (뿌리골의 모스 · 바윗골의 가람을 "마을 어딘가에 있다"고 하던 것)
+static func whereabouts(nm: String) -> String:
+	var plan = Routine.plan_for(nm)
+	if plan: return "지금 %s에 있다 · %s" % [plan.mapName, plan.doing]
+	var home = Guide.home_of(nm)
+	return "%s에 있다" % Names.map(home.map) if home else "마을 어딘가에 있다"
+
+
 ## 추적창의 📍 줄: 이 대목에서 찾아가야 할 용이 지금 어디 있는지
 static func _where_line(q: Dictionary) -> String:
 	var who = null
@@ -362,9 +371,7 @@ static func suggestion():
 	# 본 이야기는 누구에게 가면 되는지 바로 알려 주고, 곁가지 부탁은 "누군가 할 말이 있는 눈치" 정도로만 귀띔한다
 	for q in all():
 		if not q.get("auto") and q.act == "main" and _ready_quest(q):
-			var plan = Routine.plan_for(q.giver)
-			return { who = q.giver, main = true, title = "%s에게 말을 걸어 보자" % Names.npc(q.giver),
-				goal = "지금 %s에 있다 · %s" % [plan.mapName, plan.doing] if plan else "마을 어딘가에 있다" }
+			return { who = q.giver, main = true, title = "%s에게 말을 걸어 보자" % Names.npc(q.giver), goal = whereabouts(q.giver) }
 	# 돌아다니다 저절로 열리는 본 이야기. 어디로 가야 열리는지는 lead 가 귀띔한다
 	for q in all():
 		if q.get("auto") and q.act == "main" and q.get("lead") and _ready_quest(q):

@@ -60,7 +60,7 @@ static func _next_hop(from: String, dest: String):
 
 
 ## 그 용의 집 (일과가 없는 용은 지도 명세의 자리)
-static func _home_of(nm: String):
+static func home_of(nm: String):
 	for id in World.maps():
 		for f in World.maps()[id].get("fixtures", []):
 			if f.t == "NPC" and f.name == nm:
@@ -141,7 +141,7 @@ static func _wanted():
 			if n.config.get("name") == who and not n.remove and not n.is_hidden:
 				return { map = GameState.map_id, x = n.x, y = n.y, entity = n, label = Names.npc(who), who = who }
 		var plan = Routine.plan_for(who)
-		if not plan: plan = _home_of(who)
+		if not plan: plan = home_of(who)
 		if not plan: return null
 		place = { map = plan.map, x = plan.x, y = plan.y, label = Names.npc(who), who = who }
 		# 굴 안에 있으면 그 굴의 입구를 가리킨다

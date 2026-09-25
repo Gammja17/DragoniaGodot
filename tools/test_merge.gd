@@ -18,12 +18,14 @@ func _ready() -> void:
 
 	# ---- 옛 세이브: 대목이 바뀐 퀘스트의 번호를 옮긴다 ----
 	Save.save_game()
-	_check("새 세이브에는 표시가 있다", Save.read().get("questLayout"), 5)
+	_check("새 세이브에는 표시가 있다", Save.read().get("questLayout"), 6)
 	for case in [
 		{ what = "옛 m4 모르가스 대목(1) → 새 0", id = "m4", old = 1, want = 0 },
 		{ what = "옛 m4 성체 대목(0) → 새 0", id = "m4", old = 0, want = 0 },
 		{ what = "옛 m4 폭포 대목(3) → 새 2", id = "m4", old = 3, want = 2 },
 		{ what = "옛 s1 미라 대목(0) → 새 2", id = "s1", old = 0, want = 2 },
+		{ what = "옛 m6 카이론 대목(4) → 새 5", id = "m6", old = 4, want = 5 },
+		{ what = "옛 m6 이그나르 대목(3) → 새 3", id = "m6", old = 3, want = 3 },
 	]:
 		_check(case.what, _load_old(case.id, case.old, false), case.want)
 	_check("새 세이브의 m4 1 은 그대로", _load_old("m4", 1, true), 1)

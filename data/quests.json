@@ -2564,6 +2564,16 @@
     },
     {
      "goal": {
+      "type": "event",
+      "target": "ev_ignar_fall"
+     },
+     "hint": "싸움은 끝났다. 무릎을 꿇은 이그나르 곁으로 간다.",
+     "where": {
+      "map": "IGNAR_LAIR"
+     }
+    },
+    {
+     "goal": {
       "type": "talk",
       "target": "Kairon"
      },

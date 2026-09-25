@@ -94,7 +94,7 @@ static func save_game() -> void:
 		gameTime = GameState.game_time, dayTime = GameState.dayTime, day = GameState.day, raidTimer = GameState.raidTimer,
 		mapId = GameState.map_id, visited = GameState.visited,
 		villageLayout = 2,   # 마을이 34×24 로 넓어진 뒤의 세이브 (불러올 때 서 있던 자리를 믿어도 된다)
-		questLayout = 5,     # 이야기를 다시 쓴 뒤의 퀘스트 대목 (m0 · m4 · s1 · m6w 의 대목 번호를 믿어도 된다 · 첫 밤 m1n 이 있다)
+		questLayout = 6,     # 이야기를 다시 쓴 뒤의 퀘스트 대목 (m0 · m4 · s1 · m6w · m6 의 대목 번호를 믿어도 된다 · 첫 밤 m1n 이 있다)
 		elderTutorialDone = GameState.elderTutorialDone, tutorial = GameState.tutorial,
 		weather = "STORM" if Weather.stormy() else GameState.weather.type,
 		quests = GameState.quests, chores = GameState.chores,
@@ -148,6 +148,8 @@ static func apply(data: Dictionary) -> void:
 	if layout < 4: remaps.append({ m0 = [0, 1, 3, 4] })
 	#   첫 밤(m1n)이 생기기 전 세이브: 첫 밤 장면을 이미 봤으면 지난 대목으로 친다 (일지의 '???' 줄에 남아 다음 본 이야기를 가렸다)
 	if layout < 5 and (data.story if data.get("story") else {}).get("events", []).has("ev_first_night") and not G.quests.done.has("m1n"): G.quests.done.append("m1n")
+	#   8장(m6): [잿마루 → 베스나 → 고룡 → 이그나르 → 카이론] → [… → 이그나르 → 무릎 꿇은 이그나르 곁 → 카이론]
+	if layout < 6: remaps.append({ m6 = [0, 1, 2, 3, 5] })
 	for remap in remaps:
 		for id in remap:
 			var e = G.quests.active.get(id)

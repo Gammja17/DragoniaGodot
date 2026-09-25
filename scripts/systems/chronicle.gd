@@ -113,8 +113,9 @@ static func update(dt: float) -> void:
 	# (보스를 잡고 돌아와 "누구에게 전한다"를 찾아다니던 심부름을 줄인다)
 	if _meet_step(): return
 	if _resume_duel(): return
-	# 대화 중에 사이가 깊어졌으면, 대화가 끝난 지금 그 장면을 보여 준다
-	var bond = GameState.pendingBond
+	# 대화 중에 사이가 깊어졌으면, 대화가 끝난 지금 그 장면을 보여 준다.
+	# 보스 둥지에서는 미룬다 (이그나르를 꺾은 정상에서 '수련이 끝났는데도 스승이 자리를 뜨지 않았다'가 결말의 선택보다 먼저 끼어들던 것)
+	var bond = GameState.pendingBond if not GameState.map_id.ends_with("_LAIR") else null
 	if bond:
 		GameState.pendingBond = null
 		var lines = Data.get_module("npcTalk").BOND_SCENES.get(bond.name, {}).get(str(bond.tier))

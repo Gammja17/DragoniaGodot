@@ -210,7 +210,7 @@ func _go(map: String):
 	var hop := _next_hop(GameState.map_id, map)
 	_line("[봇] %s(으)로 간다%s" % [Names.map(hop), "" if hop == map else " (%s 가는 길)" % Names.map(map)])
 	await _pass(GATE)
-	if _busy(): return false   # 가는 길에 장면이 열렸다. 사람은 대화 중에 지도를 넘지 못한다
+	if _busy() or GameState.activity: return false   # 가는 길에 장면이 열렸거나 놀이가 붙었다. 사람은 그동안 지도를 넘지 못한다
 	World.travel_to(hop)
 	await _real(0.6)
 	return hop == map
@@ -250,7 +250,7 @@ func _walk_to(x: float, y: float):
 
 
 func _busy() -> bool:
-	return DialogueBox.is_open() or Cutscene.on or GameState.isDialogueOpen
+	return DialogueBox.is_open() or Cutscene.on or GameState.isDialogueOpen or Hud.fading()   # 막이 덮인 동안(수련장으로 옮기는 중)에 또 청하지 않게
 
 
 ## 그 적을 찾아 쓰러뜨린다. 없으면 사냥터로
@@ -293,7 +293,7 @@ func _awaken(st: Dictionary):
 		await _go(st.where.map)
 		return
 	var w := World.at(st.where.spot)
-	await _walk_to(w.x, w.y + 60)
+	await _walk_to(w.x, w.y)   # 화살표가 가리키는 자리 (둥지에서 한 칸 아래)
 	if _busy(): return
 	_line("[봇] 빈 둥지 앞에서 [Space]")
 	Story.try_awaken()
@@ -358,7 +358,9 @@ func _play_with(who: String):
 	await _walk_to(n.x - 60, n.y)
 	if _busy() or GameState.activity: return
 	_line("[봇] %s와 %s" % [Names.npc(who), "대련한다" if who == "Tiamat" else "술래잡기를 한다"])
-	if who == "Tiamat": NpcActions._go_spar(n)
+	if who == "Tiamat":
+		if GameState.map_id == "DOJO": NpcActions._begin_spar(n)   # 수련장에서는 자리를 옮기지 않고 바로 붙는다 (게임의 _start_spar 와 같이)
+		else: NpcActions._go_spar(n)
 	else: NpcActions._start_tag(n)
 	await _pass(2)
 
@@ -393,6 +395,7 @@ func _event(st: Dictionary):
 		await _go(at.map)
 		return
 	var spot = at.get("spot", at.get("at")) if at != null else null
+	if spot == null and Combat.in_fight(): return await _defend()   # 남은 싸움이 있으면 장면이 기다린다 (이그나르 곁의 졸개들)
 	if spot == null:   # 어디라고 적히지 않았거나, 지도에 들어서기만 하면 열리는 사건 (밤에 서는 모임): 기다린다
 		if _event_wait != str(st.goal.target):
 			_event_wait = str(st.goal.target)

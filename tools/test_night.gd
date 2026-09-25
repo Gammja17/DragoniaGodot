@@ -123,6 +123,25 @@ func _ready() -> void:
 	G.quests.active = was
 	G.quests.tracked = was_tracked
 
+	# 이그나르를 꺾은 뒤: 무릎 꿇은 이그나르 곁이 대목이다 (곁의 카이론을 가리켜, 말을 걸면 결말의 선택을 건너뛰던 것)
+	G.quests.active = { m6 = { step = 4, n = 0 } }
+	G.quests.tracked = "m6"
+	aim = Guide._wanted()
+	_check("이그나르를 꺾은 뒤 · 추적창과 화살표는 정상, 카이론이 아니다",
+		[str(Quests.tracked_line().goal).contains("무릎을 꿇은 이그나르"), aim.get("map") if aim else null, aim.get("who") if aim else null], [true, "IGNAR_LAIR", null])
+	G.quests.active = was
+	G.quests.tracked = was_tracked
+
+	# 사이 장면은 보스 둥지에서는 미루고, 둥지를 나오면 튼다 (이그나르를 꺾은 정상에서 결말의 선택보다 먼저 끼어들던 것)
+	var map_was: String = G.map_id
+	G.pendingBond = { name = "Kairon", tier = 2 }
+	G.map_id = "IGNAR_LAIR"
+	await _wait(1.5)
+	_check("보스 둥지에서는 사이 장면을 미룬다", G.pendingBond != null)
+	G.map_id = map_was
+	await _play_until(func(): return G.pendingBond == null and _idle(), 10)
+	_check("둥지를 나오면 사이 장면을 튼다", G.pendingBond == null and _saw("스승이 자리를 뜨지 않았다"))
+
 	# 옛 세이브: 첫 밤을 이미 본 판은 '첫 밤' 대목을 지난 것으로 친다
 	Save.save_game()
 	var data: Dictionary = Save.read()

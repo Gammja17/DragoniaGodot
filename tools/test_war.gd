@@ -125,7 +125,7 @@ func _ready() -> void:
 
 	# ---- 옛 세이브: 대목 번호를 옮긴다 ----
 	Save.save_game()
-	_check("새 세이브에는 표시가 있다 (5)", Save.read().get("questLayout"), 5)
+	_check("새 세이브에는 표시가 있다 (6)", Save.read().get("questLayout"), 6)
 	for case in [
 		{ what = "옛 m6w 대치(1) → 새 1", old = 1, want = 1 },
 		{ what = "옛 m6w 습격(2) → 새 4", old = 2, want = 4 },

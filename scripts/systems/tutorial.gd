@@ -47,7 +47,7 @@ static func _hints() -> Array:
 		  text = "[WASD]로 걷는다." },
 		# 첫 잠 전의 밤. 첫 일거리를 해 지기 전에 끝내도 나온다 (스승을 소개받는 둘째 날 아침 장면 ch1 이 첫 잠의 표시)
 		{ id = "dusk", icon = "🌙", who = ["Poco", "Tiamat", "Elder"], urgent = true,
-		  when = func(s): return not s.story.get("scenes", []).has("ch1") and (s.dayTime > 0.78 or s.dayTime < 0.2),
+		  when = func(s): return not s.story.get("scenes", []).has("ch1") and not s.quests.active.has("m1n") and (s.dayTime > 0.78 or s.dayTime < 0.2),
 		  say = { Poco = "해 진다! 애들은 밤에 돌아다니면 안 된대. 너도 얼른 네 굴 가서 자.",
 			Tiamat = "해 지면 들어가. 밤은 내가 볼게.",
 			Elder = "벌써 해가 지는구나. 오늘은 네 굴에 들어가 푹 자거라." },

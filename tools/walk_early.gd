@@ -98,6 +98,8 @@ func _answer():
 
 
 func _bedtime() -> bool:
+	var q = Quests.tracked_quest()
+	if q and not Quests.is_complete(q) and Quests.cur_step(q).goal.type == "sleep": return true   # 자고 나면 넘어가는 대목 (첫 밤)
 	return GameState.dayTime > 0.8 or GameState.dayTime < 0.2
 
 
@@ -155,6 +157,7 @@ func _act():
 			if _bedtime(): await _sleep()
 			else: await _pass(20)
 		"visit": await _go(g.target)
+		"sleep": await _sleep()
 		"tour": pass
 		_:
 			_line("[봇] 여기까지만 걷는다 (%s)" % g.type)

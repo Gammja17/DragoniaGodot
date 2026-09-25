@@ -165,6 +165,12 @@ static func complete_step(q: Dictionary, quiet := false):
 	if st.get("flag"): on_flag.call(st.flag)
 	if st.get("toast"): Hud.pop(st.toast, st.icon if st.get("icon") else "📜")
 	_catch_up(q)   # 배너는 이미 이룬 대목을 건너뛴 뒤의 할 일을 알린다
+	if is_complete(q) and q.get("noReport"):   # 보고할 것 없이 끝나는 이야기 (첫 밤: 자고 나면 아침 장면이 이어 준다)
+		GameState.quests.active.erase(q.id)
+		GameState.quests.done.append(q.id)
+		if GameState.quests.tracked == q.id: GameState.quests.tracked = null
+		on_change.call()
+		return st
 	if is_complete(q): Hud.quest_banner("다음 할 일", q.title, "%s에게 돌아간다%s" % [Names.npc(turn_in_npc(q)), _where_is(turn_in_npc(q))], q)
 	else: Hud.quest_banner("다음 할 일", q.title, _hint_or_goal(q), q)
 	on_change.call()
@@ -268,6 +274,11 @@ static func resting() -> bool:
 	return GameState.day < int(until) or (GameState.day == int(until) and GameState.dayTime < NightEvents.DAWN)
 
 
+## 본 이야기가 내일 아침을 기다리는가: 큰 대목을 마친 날, 첫 사냥을 마치고 스승을 소개받기 전(자고 일어나면 1장 아침 장면)
+static func waits_for_morning() -> bool:
+	return resting() or (GameState.quests.done.has("m1") and not GameState.story.get("scenes", []).has("ch1"))
+
+
 ## 쉬는 날이라 내일 아침으로 미뤄 둔 본 이야기. 없으면 null
 static func rest_offer(npc):
 	var cand = _find_offer(npc)
@@ -331,11 +342,14 @@ static func reportable_for(npc):
 
 ## 맡은 일이 없을 때 "다음에 할 만한 일". { who: 말을 걸 용 | null, title, goal, main?, place? }
 static func suggestion():
+	# 본 이야기가 내일 아침을 기다리는 날은 그렇다고 말한다 (엉뚱한 부탁이나 할 말 없는 엘더를 가리키던 것)
+	if waits_for_morning():
+		return { who = null, main = false, title = "오늘은 여기까지",
+			goal = "큰일을 치렀다. 다음 이야기는 내일 아침에 이어진다. 오늘은 마을 용들과 어울리거나 굴에서 푹 쉬자." if resting()
+				else "오늘 할 일은 끝났다. 마을 서쪽 끝 내 굴에서 자면 내일 이야기가 이어진다." }
 	# 본 이야기는 누구에게 가면 되는지 바로 알려 주고, 곁가지 부탁은 "누군가 할 말이 있는 눈치" 정도로만 귀띔한다
 	for q in all():
 		if not q.get("auto") and q.act == "main" and _ready_quest(q):
-			if resting(): return { who = null, main = false, title = "오늘은 여기까지",
-				goal = "큰일을 치렀다. 다음 이야기는 내일 아침에 이어진다. 오늘은 마을 용들과 어울리거나 굴에서 푹 쉬자." }
 			var plan = Routine.plan_for(q.giver)
 			return { who = q.giver, main = true, title = "%s에게 말을 걸어 보자" % Names.npc(q.giver),
 				goal = "지금 %s에 있다 · %s" % [plan.mapName, plan.doing] if plan else "마을 어딘가에 있다" }
@@ -513,7 +527,7 @@ static func quest_log() -> Array:
 			if acts.get(q.act, q.act) != g.name or Q.active.has(q.id) or Q.done.has(q.id): continue
 			if q.get("requires") and not Q.done.has(q.requires): continue
 			var hint: String = "아직 때가 아니다. 세상을 더 돌아다녀 보자." if q.get("auto") \
-				else "다음 이야기는 내일 아침에 이어진다." if q.act == "main" and resting() \
+				else "다음 이야기는 내일 아침에 이어진다." if q.act == "main" and waits_for_morning() \
 				else "%s에게 말을 걸어 보자." % Names.npc(q.giver)
 			g.rows.append({ id = q.id, title = "???", giver = giver_line(q.giver), upcoming = true, hint = hint })
 			break

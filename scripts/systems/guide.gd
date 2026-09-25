@@ -99,6 +99,14 @@ static func _wanted():
 			elif g.type == "visit": place = { map = g.target }
 			elif g.type == "boss": place = _boss_place(g.id)
 			elif g.type == "tour": who = "Poco"
+			elif g.type == "sleep":   # 자고 나면 넘어가는 대목: 내 굴 (굴 안이면 잠자리)
+				if Den.in_my_den() and not GameState.entities.nests.is_empty():
+					var nest = GameState.entities.nests[0]
+					place = { map = GameState.map_id, x = nest.x, y = nest.y, label = "잠자리" }
+				else:
+					var den: Dictionary = World.dens()[Den.MY_DEN]
+					var at := World.at(den.at)
+					place = { map = den.outer, x = at.x, y = at.y, label = "내 굴" }
 			elif g.type == "stage": who = "Kairon"
 			elif g.type == "delve":
 				var cave = null

@@ -49,13 +49,15 @@
    "id": "ev_first_night",
    "title": "첫 밤",
    "when": {
-    "$fn": "c => c.night && c.day >= 2 && c.lessons >= 1 && c.map === 'VILLAGE'",
+    "$fn": "c => c.map === 'VILLAGE' && ((c.day === 1 && c.done('m1') && c.s.story.events.includes('ev_board')) || (c.night && c.day >= 2 && c.lessons >= 1))",
     "$at": "CHRONICLE.1.when"
    },
+   "dusk": true,
+   "grant": "m1n",
    "lines": [
     {
      "who": "나",
-     "text": "(밤이 되니 마을이 조용하다. 눈을 감으면 아직도 떨어지는 느낌이 난다.)",
+     "text": "(해가 지니 마을이 조용하다. 눈을 감으면 아직도 떨어지는 느낌이 난다.)",
      "do": [
       {
        "bgm": "none"
@@ -67,7 +69,7 @@
     },
     {
      "who": "Elder",
-     "text": "잠이 안 오느냐. 나도 그렇단다… 늙으면 잠이 없어져. 무릎은 쑤시고."
+     "text": "고단하냐? 허허, 눈꺼풀이 반은 내려왔구나. 나도 해만 지면 무릎이 쑤신단다."
     },
     {
      "who": "Elder",
@@ -104,7 +106,7 @@
     },
     {
      "who": "Elder",
-     "text": "…골짜기에서 나는 소리란다. 밤마다 저러니 놀랄 것 없다."
+     "text": "…골짜기에서 나는 소리란다. 해만 지면 저러니 놀랄 것 없다."
     },
     {
      "who": "Elder",

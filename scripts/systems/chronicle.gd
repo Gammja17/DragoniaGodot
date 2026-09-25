@@ -217,9 +217,14 @@ static func _fire(ev: Dictionary, then = null) -> void:
 	var finish := func():
 		_finish_event(ev)
 		if then: then.call()
-	play_scene(ev.title, ev.lines, func():
+	var go := func(): play_scene(ev.title, ev.lines, func():
 		if ev.get("choice"): _choose(ev, finish)
 		else: finish.call())
+	# 해 질 녘의 사건(ev.dusk)이 낮에 열리면 화면을 한 번 덮고 오후를 건너뛴다 (첫 밤: 첫날 일을 다 마치면 더 할 게 없었다)
+	var t := GameState.dayTime
+	if ev.get("dusk") and t > NightEvents.DAWN and t < NightEvents.DUSK:
+		Hud.fade_screen("해 질 녘", func(): GameState.dayTime = NightEvents.DUSK, go, true)
+	else: go.call()
 
 
 static func _finish_event(ev: Dictionary) -> void:

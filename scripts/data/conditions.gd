@@ -185,7 +185,9 @@ static func _build_chronicle() -> void:
 	var only_map := func(id: String): return func(c): return c.map == id
 	var w := {
 		0: func(c): return c.s.story.scenes.has("ch1") and c.map == "DOJO",
-		1: func(c): return c.night and c.day >= 2 and c.lessons >= 1 and c.map == "VILLAGE",
+		# 첫 밤: 첫날 첫 사냥을 보고하고 게시판 얘기까지 들었으면 연다 (낮이면 해 질 녘으로 건너간다 · ev.dusk).
+		# 그날을 놓친 판은 예전처럼 수련을 시작한 뒤의 밤에
+		1: func(c): return c.map == "VILLAGE" and ((c.day == 1 and D.call(c, "m1") and ev.call(c, "ev_board")) or (c.night and c.day >= 2 and c.lessons >= 1)),
 		2: func(c): return c.map == "VILLAGE" and D.call(c, "m1"),
 		3: func(c): return c.s.story.rites.has(1) and home_night.call(c),
 		4: func(c): return c.map == "FALLS" and c.s.story.get("clues", []).has("mark") and ev.call(c, "ev_falls"),
@@ -284,8 +286,9 @@ static func _build_fix() -> void:
 ## (여러 세션이 이 파일을 같이 고친다. 합칠 때 부딪히지 않게, 바꾼 조건도 원래 줄은 두고 여기서 덮는다)
 static func _build_c() -> void:
 	_table.merge({
-		# 마을의 시선: 첫 습격을 같이 막기 전까지, 하늘에서 떨어진 아이를 꺼리는 용들이 있다
-		"npcTalk:SITUATION_LINES.wary.when": func(s, _n = null): return s.raid.count == 0,
+		# 마을의 시선: 첫 습격을 같이 막기 전까지, 하늘에서 떨어진 아이를 꺼리는 용들이 있다.
+		# 나라의 줄은 스승님이 나를 받은 걸 샘내는 말이라, 수련장에서 나라를 만난 뒤(ev_nara)부터 (첫날부터 "오늘 또 뭘 가르쳐 주셨는데?"가 나왔다)
+		"npcTalk:SITUATION_LINES.wary.when": func(s, _n = null): return s.raid.count == 0 			and (_n == null or _n.config.get("name") != "Nara" or s.story.get("events", []).has("ev_nara")),
 		# 첫 습격을 같이 막은 뒤 한동안은, 꺼리던 용들의 말이 조금씩 풀린다 (세 번째 습격부터는 [7] 이 받는다)
 		"npcTalk:SITUATION_LINES.thaw.when": func(s, _n = null): return s.raid.count >= 1 and s.raid.count < 3,
 		# 아이 안부는 짝 본인이 묻지 않는다 (제 아이를 두고 "네 아이들은 잘 크느냐"고 하던 것)

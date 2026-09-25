@@ -138,7 +138,7 @@ static func _life(s: Dictionary) -> void:
 	_fade(f)
 
 
-## 생활 줄 (data/ending.json 의 LIFE). 짝 → 아이 → 굴 → 모임 → 끝까지 곁에서 싸운 용 차례.
+## 생활 줄 (data/ending.json 의 LIFE). 짝 → 아이 → 굴 → 모임 → 끝까지 곁에서 싸운 용 → 들어준 이웃들 차례.
 ## 아이는 저마다 제 부모를 닮는다 (짝이 바뀌었어도). 어둠의 길은 결이 다르다: 두고 온 것들로
 static func life_lines(route: String) -> Array:
 	var dark := route == "dark"
@@ -172,6 +172,12 @@ static func life_lines(route: String) -> Array:
 		var ally: String = GameState.story.get("ally", "")
 		if ally != "" and not Routine.is_dead(ally) and not (partner and partner.config.name == ally):
 			out.append(L.ally.replace("{ally}", Names.npc(ally)))
+		# 들어준 이웃들의 이야기가 그 뒤로 어떻게 이어졌는지 (많으면 넷까지)
+		var told := 0
+		for id in L.neighbors:
+			if told < 4 and GameState.quests.done.has(id):
+				out.append(L.neighbors[id])
+				told += 1
 	var pn: String = Names.npc(partner.config.name) if partner else ""
 	return out.map(func(t): return t.replace("{partner}", pn))
 

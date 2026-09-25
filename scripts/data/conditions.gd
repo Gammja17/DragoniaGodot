@@ -326,7 +326,9 @@ static func _build_c() -> void:
 		# 마을의 시선: 봉우리의 알이 하나도 안 남았다는 걸 안 뒤로 수군거림이 돈다
 		"npcTalk:SITUATION_LINES.chill.when": func(s, _n = null): return s.quests.done.has("m5a") and not s.quests.done.has("m6w"),
 		# 그론을 보낸 뒤: 수군거림을 처음 꺼낸 이가 먼저 와서 사과한다
-		"npcTalk:SITUATION_LINES.family.when": func(s, _n = null): return s.quests.done.has("m6w") and not s.quests.done.has("m5c"),
+		# (도란 · 미루의 줄은 평상에서 사과를 들은 뒤로는 되풀이하지 않는다)
+		"npcTalk:SITUATION_LINES.family.when": func(s, _n = null): return s.quests.done.has("m6w") and not s.quests.done.has("m5c") \
+			and not (_n != null and ["Doran", "Miru"].has(_n.config.get("name")) and s.story.get("events", []).has("ev_doran_sorry")),
 
 		# ---- 7장: 사막 길 ----
 		# 바윗골과 불탄 도시는 모래 폭군이 비킨 뒤에 (바실을 잡기 전에 가면 "모래 폭군을 네가 잡았다고 들었다"가 틀린 말이 되던 것)
@@ -373,6 +375,13 @@ static func _build_c() -> void:
 		# 누이의 알: 봉우리의 알 벽 앞에서 · 망루 자리: 낮에 폭포 아래에서
 		"chronicle:CHRONICLE.ev_yuan_egg.when": func(c): return c.map == "GLACIA_LAIR" and _step(c.s, "yu1") == 0,
 		"chronicle:CHRONICLE.ev_yuan_tower.when": func(c): return c.map == "FALLS" and _step(c.s, "yu1") == 1 and c.hour >= 7 and c.hour < 18,
+		# 미루의 옛 둥지: 새 알이 생긴 뒤 깨기 전까지 · 도란네 집 뒤에서
+		"quests:QUESTS.mi1.needs": func(s): return _flag(s, "couple_egg") and not _flag(s, "couple_hatched") and s.story.get("route") != "dark",
+		"chronicle:CHRONICLE.ev_miru_nest.when": func(c): return c.map == "VILLAGE" and _step(c.s, "mi1") == 0 \
+			and Vector2(c.s.player.x - (6 * 96 + 48), c.s.player.y - (10 * 96 + 48)).length() < 350,
+		# 도란의 사과: 그론을 보낸 뒤, 저녁에 도란네 집 앞을 지나면 미루가 불러 앉힌다
+		"chronicle:CHRONICLE.ev_doran_sorry.when": func(c): return c.map == "VILLAGE" and c.done.call("m6w") and c.s.story.get("route") != "dark" \
+			and c.hour >= 16 and c.hour < 22 and Vector2(c.s.player.x - (6 * 96 + 48), c.s.player.y - (10 * 96 + 48)).length() < 350,
 	}, true)
 
 

@@ -353,9 +353,11 @@ static func reportable_for(npc):
 static func suggestion():
 	# 본 이야기가 내일 아침을 기다리는 날은 그렇다고 말한다 (엉뚱한 부탁이나 할 말 없는 엘더를 가리키던 것)
 	if waits_for_morning():
+		var side_now := all().filter(func(q): return not q.get("auto") and q.act != "main" and _ready_quest(q)) if resting() else []
 		return { who = null, main = false, title = "오늘은 여기까지",
-			goal = "큰일을 치렀다. 다음 이야기는 내일 아침에 이어진다. 오늘은 마을 용들과 어울리거나 굴에서 푹 쉬자." if resting()
-				else "오늘 할 일은 끝났다. 마을 서쪽 끝 내 굴에서 자면 내일 이야기가 이어진다." }
+			goal = ("큰일을 치렀다. 다음 이야기는 내일 아침에 이어진다. 오늘은 마을 용들과 어울리거나 굴에서 푹 쉬자." if resting()
+				else "오늘 할 일은 끝났다. 마을 서쪽 끝 내 굴에서 자면 내일 이야기가 이어진다.")
+				+ (" %s에게 할 말이 있는 눈치다." % Names.npc(side_now[0].giver) if not side_now.is_empty() else "") }
 	# 본 이야기는 누구에게 가면 되는지 바로 알려 주고, 곁가지 부탁은 "누군가 할 말이 있는 눈치" 정도로만 귀띔한다
 	for q in all():
 		if not q.get("auto") and q.act == "main" and _ready_quest(q):

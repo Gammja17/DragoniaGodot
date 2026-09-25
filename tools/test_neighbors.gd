@@ -34,7 +34,7 @@ func _ready() -> void:
 	G.quests.done = ["m0", "m1", "m1n", "m2", "m3", "m4"]
 	G.visited.append("LAKE")
 	for ev in Data.get_module("chronicle").CHRONICLE:
-		if not ev.id in ["ev_nuri_dinner", "ev_nuri_forest", "ev_haru_pebble", "ev_haru_stones", "ev_seiran_pool", "ev_yuan_egg", "ev_yuan_tower"]: G.story.events.append(ev.id)
+		if not ev.id in ["ev_nuri_dinner", "ev_nuri_forest", "ev_haru_pebble", "ev_haru_stones", "ev_seiran_pool", "ev_yuan_egg", "ev_yuan_tower", "ev_miru_nest", "ev_doran_sorry"]: G.story.events.append(ev.id)
 	G.tutorial.hints = {}
 	for h in Tutorial._hints(): G.tutorial.hints[h.id] = true   # 안내가 끼어들어 자리를 옮기지 않게
 	var p: Dragon = G.player
@@ -180,12 +180,43 @@ func _ready() -> void:
 	await _talk(ember)
 	_check("엠버의 부탁을 마친다", G.quests.done.has("em1"))
 
+	# ---------- 도란의 사과: 그론을 보낸 뒤 저녁에 도란네 앞을 지나면 ----------
+	G.dayTime = 0.75
+	p.x = 6 * 96 + 48; p.y = 10 * 96 + 48 + 150
+	await _play_until(func(): return G.story.events.has("ev_doran_sorry") and _idle(), 30)
+	_check("저녁에 도란네 앞을 지나면 도란이 사과한다", _saw("처음 꺼낸 게 나여"))
+	_check("미루가 늘 받던 자리의 고기", _saw("미루가 늘 받던 그 자리"))
+
+	# ---------- 미루 "옛 둥지": 새 알이 생긴 뒤 ----------
+	Story.on_flag("couple_egg")
+	G.story.restUntil = G.day + 1   # 큰 대목을 마친 날
+	var rest_goal := str(Quests.suggestion().goal)
+	print("  쉬는 날 추적창: ", rest_goal)
+	_check("쉬는 날 추적창이 그날 들을 이웃 이야기를 같이 알려 준다", rest_goal.contains("할 말이 있는 눈치다"))
+	G.story.erase("restUntil")
+	var miru = World.any_npc("Miru")
+	offer = Quests.offer_for(miru)
+	_check("미루가 옛 둥지 얘기를 꺼낸다", offer.id if offer else "", "mi1")
+	Quests.accept(Quests.by_id("mi1"))
+	await _play_until(func(): return Quests.is_complete(Quests.by_id("mi1")) and _idle(), 30)
+	_check("옛 둥지는 포코와 누리의 비밀 기지였다", _saw("여기 우리 비밀 기지인데"))
+	await _talk(doran)
+	_check("도란이 스무 해 만에 예쁘다고 한다", _saw("오늘 좀… 예쁘구먼"))
+	_check("미루의 옛 둥지를 마친다", G.quests.done.has("mi1"))
+
 	# ---------- 바늘을 보여 줄 그론이 먼저 떠나면 ----------
 	G.quests.done.erase("dr1")
 	G.quests.active.dr1 = { step = 2, n = 0 }
 	Story._kill_npc("Gron")
 	_check("그론이 떠나면 바늘 대목을 거둔다", G.quests.active.has("dr1"), false)
 	_check("그론이 떠난 뒤로는 '큰 놈'을 꺼내지 않는다", Quests._ready_quest(Quests.by_id("dr1")), false)
+
+	# 결말의 "그 뒤로": 들어준 이웃들의 이야기가 이어진다 (많으면 넷까지, 어둠의 길은 빼고)
+	G.quests.done.append_array(["dr1"])
+	var life: Array = Ending.life_lines("guardian")
+	var told := life.filter(func(t): return t.contains("망루에서는 밤마다") or t.contains("징검돌은") or t.contains("창 대신 방패") or t.contains("숲 어귀까지") or t.contains("큰 놈의 새끼") or t.contains("별비늘"))
+	_check("결말에 이웃 이야기가 넷 이어진다", told.size(), 4)
+	_check("어둠의 길 결말에는 없다", Ending.life_lines("dark").any(func(t): return t.contains("징검돌")), false)
 
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit(1 if _fails else 0)

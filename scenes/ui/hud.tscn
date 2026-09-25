@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3]
+[gd_scene load_steps=40 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1"]
 [ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="2"]
@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/den_panel.tscn" id="13"]
 [ext_resource type="PackedScene" path="res://scenes/ui/touch_layer.tscn" id="14"]
 [ext_resource type="PackedScene" path="res://scenes/ui/fx_panel.tscn" id="fx"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_mobile_status.tscn" id="mstatus"]
 
 [sub_resource type="Gradient" id="rule_grad"]
 offsets = PackedFloat32Array(0, 0.5, 1)
@@ -210,6 +211,9 @@ script = ExtResource("1")
 [node name="Bottom" parent="." instance=ExtResource("8")]
 
 [node name="Status" parent="." instance=ExtResource("6")]
+
+[node name="MStatus" parent="." instance=ExtResource("mstatus")]
+visible = false
 
 [node name="Right" parent="." instance=ExtResource("7")]
 

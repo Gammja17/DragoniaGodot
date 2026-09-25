@@ -50,7 +50,8 @@ node tools/export_data.mjs
 - `tools/test_hud.tscn` — HUD 판이 뜬 뒤에도 클릭이 세상에 닿는지, 판 위 클릭은 막히는지, 추적창·[U]
 - `tools/test_title.tscn` — 처음 화면 → 새 용(2번 칸) → 게임 → 처음 화면으로 → 이어 하기 → 지우기
 - `tools/test_journal.tscn` — 일지 탭 열 개, 성장 마디 찍기 · 스킬 장착과 강화 · 유물 · 퀘스트 추적
-- `tools/test_touch.tscn` — 터치: 스틱 · [불] 유도 숨결 · 용 탭하면 말 걸기 · 칩, 가족 창 · 굴 꾸미기 판
+- `tools/test_touch.tscn` — 터치: 스틱 · [숨결] 유도탄(비켜선 적 · 과녁이 쓰러지면 갈아타기) · 용 탭하면 말 걸기 · 작은 단추, 가족 창 · 굴 꾸미기 판
+- `tools/shot_touch.tscn -- portrait C:/tmp/p.png` — 휴대폰 화면(세로 · 가로)을 흉내 내 터치 조작 · 휴대폰 UI 찍기 (`fire` · `talk` · `journal` · `settings`)
 - `tools/test_fx.tscn` — 조명(낮·새벽·밤·폭우·붉은 달·굴 속의 어둠, 광원 모으기) · 날씨 그림 · 화면 효과 판([L], 손잡이 저장, 되돌리기, 연 채로 세상 클릭)
 - `tools/test_audio.tscn` — 합성음 36개 만들기 · 효과음 전부 틀어 보기 · 배경음이 처음 화면 → 마을 → 굴 → 붉은 달로 바뀌고 앞 곡이 물러나 멈추는지 · 음량 · 음소거
 - `tools/shot_ui.tscn -- title` — 처음 화면·새 용·설정·도움말 찍기 (`title` · `create` · `settings` · `help`)

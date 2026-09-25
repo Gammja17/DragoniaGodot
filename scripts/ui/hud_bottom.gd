@@ -17,12 +17,14 @@ const EL_ACCENT := {
 var _relic_key := "-"
 
 
-## 터치: 기술 칸 줄은 치우고, 기세 띠는 위로 (2D판 body.touch)
-func set_touch(on: bool) -> void:
+## 터치: 기술 칸 줄은 치우고, 기세 띠는 위로 (2D판 body.touch).
+## 가로 화면은 위쪽 작은 단추 줄 밑, 세로 화면은 상태 카드 · 지도 기둥 밑 (그 사이가 좁다)
+func set_touch(on: bool, screen := Vector2.ZERO) -> void:
 	_skills.visible = not on
 	if on:
+		var top := 186.0 if screen.y > screen.x else 66.0
 		_flow.anchor_top = 0; _flow.anchor_bottom = 0
-		_flow.offset_top = 40; _flow.offset_bottom = 49
+		_flow.offset_top = top; _flow.offset_bottom = top + 9
 		_flow.offset_left = -100; _flow.offset_right = 100
 	_relics.modulate.a = 0.0 if on else 1.0
 

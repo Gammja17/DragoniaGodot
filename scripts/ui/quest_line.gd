@@ -27,6 +27,10 @@ var _last_key := ""
 var _flash := 0.0
 var _hover := false
 var _left := GOLD_DIM
+## 휴대폰: 제목 · 할 일 · 진행만 (윗줄 · 장소 · '누르면 간다' 줄을 뺀다). 누르면 가는 것은 그대로
+var compact := false
+## 휴대폰 가로: 제목 한 줄만 (지도 기둥 밑이 곧 필살기 단추 자리다)
+var tight := false
 
 
 func _ready() -> void:
@@ -59,7 +63,10 @@ func refresh() -> void:
 	_title.text = Util.keep_words(line.title)
 	_goal.text = Util.keep_words(line.goal)
 	_where.text = Util.keep_words("📍 %s" % line.where) if line.get("where") else ""
-	_where.visible = _where.text != ""
+	_where.visible = _where.text != "" and not compact
+	_kind.visible = not compact
+	_goal.visible = not tight
+	get_node("Lines/Rule").visible = not tight
 	_prog.text = line.get("text", "") if line.get("text") else ""
 	_prog.visible = _prog.text != ""
 	_left = Color("#4a4538") if suggest else GOOD if line.complete else GOLD_DIM
@@ -70,6 +77,7 @@ func refresh() -> void:
 	if _last_key != "" and key != _last_key: _flash = 1.6
 	_last_key = key
 	get_parent().get_node("More").text = "+ 맡은 일 %d개 · [J] 일지" % line.more if line.more > 0 else "" if suggest else "[J] 일지"
+	get_parent().get_node("More").visible = not compact
 
 
 func _process(dt: float) -> void:
@@ -78,7 +86,7 @@ func _process(dt: float) -> void:
 	var t = Guide.target()
 	var nav: bool = GameState.nav != null
 	_go.text = "🧭 걸어가는 중… (누르거나 직접 움직이면 멈춤)" if nav else "🧭 누르면 %s까지 알아서 간다" % (t.label if t.label else "그곳") if t else ""
-	_go.visible = _go.text != ""
+	_go.visible = _go.text != "" and not compact
 	_go.add_theme_color_override("font_color", COLD if nav else PARCH_DIM)
 	_style.border_color = COLD if nav else _left
 	_flash = maxf(0, _flash - dt)

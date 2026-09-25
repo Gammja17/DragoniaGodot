@@ -16,7 +16,7 @@ func _ready() -> void:
 	var hud: Hud = Hud.current
 	var t: TouchLayer = hud.touch
 	var vp := get_viewport().get_visible_rect().size
-	print("[터치 층] 보임=%s 단추=%s 기술 칸 줄=%s 화면 %s" % [t.visible, t.get_node("Buttons").visible, hud.bottom.get_node("Skills").visible, vp])
+	print("[터치 층] 보임=%s 단추 %d개 기술 칸 줄=%s 화면 %s" % [t.visible, t.buttons.values().filter(func(b): return b.on).size(), hud.bottom.get_node("Skills").visible, vp])
 	# 1) 스틱: 왼쪽 아래를 짚고 오른쪽으로 민다
 	var p = GameState.player
 	var x0: float = p.x
@@ -33,8 +33,7 @@ func _ready() -> void:
 	var e := Enemy.make(p.x - 200, p.y + 150, "SLIME")
 	World.add_entity("enemies", e)
 	var hp0: float = e.hp
-	var fire: Panel = t.get_node("Buttons/attack")
-	var c := fire.position + fire.size / 2
+	var c: Vector2 = t.buttons.attack.c
 	_touch(1, c, true)
 	await _wait(0.4)
 	_touch(1, c, false)
@@ -42,6 +41,34 @@ func _ready() -> void:
 	print("   마우스 조준=%s 붙잡은 적=%s 슬라임 체력 %.0f → %.0f (숨결이 벌써 맞았으면 줄어 있다)" % [GameInput.mouse_inside, p.aim_lock == e, hp0, e.hp])
 	print("[불] 숨결 %d발, 그중 슬라임을 따라가는 것 %d발" % [GameState.entities.bullets.filter(func(b): return b.faction == "ALLY").size(), homing.size()])
 	e.remove = true
+	# 2-1) 유도탄: 쏜 뒤 옆으로 비켜선 적도 따라가 맞히고, 과녁이 쓰러지면 곁의 다른 적으로 갈아탄다
+	await _wait(0.6)
+	GameState.entities.bullets.clear()
+	p.aim_lock = null
+	var dodger := Enemy.make(p.x + 260, p.y, "SLIME")
+	World.add_entity("enemies", dodger)
+	var d_hp: float = dodger.hp
+	p.fire_timer = 0
+	p.attack()
+	dodger.x += 0; dodger.y -= 110   # 쏘자마자 옆으로 뛴다
+	await _wait(0.8)
+	print("[유도] 비켜선 슬라임 체력 %.0f → %.0f" % [d_hp, dodger.hp])
+	dodger.remove = true
+	GameState.entities.bullets.clear()
+	var first := Enemy.make(p.x + 300, p.y, "SLIME")
+	var second := Enemy.make(p.x + 360, p.y + 90, "SLIME")
+	World.add_entity("enemies", first)
+	World.add_entity("enemies", second)
+	await get_tree().process_frame
+	p.aim_lock = null
+	p.fire_timer = 0
+	p.attack()
+	var shot: Array = GameState.entities.bullets.filter(func(b): return b.faction == "ALLY" and b.seek)
+	first.remove = true   # 숨결이 닿기 전에 쓰러진다
+	await get_tree().process_frame
+	await get_tree().process_frame
+	print("[유도] 과녁이 쓰러진 뒤 갈아탔다=%s" % shot.any(func(b): return b.homing_target == second))
+	second.remove = true
 	# 3) 용을 탭하면 말 걸기
 	var gron = World.any_npc("Gron")
 	p.x = gron.x - 70; p.y = gron.y + 10
@@ -55,15 +82,14 @@ func _ready() -> void:
 	Dialogue.close()
 	await get_tree().process_frame
 	# 4) [일지] 칩
-	var chip: Control = t.get_node("Top/journal")
 	await get_tree().process_frame
-	var cc := chip.get_global_rect().get_center()
+	var cc: Vector2 = t.buttons.journal.c
 	_touch(2, cc, true)
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_touch(2, cc, false)
 	await get_tree().process_frame
-	print("[일지 칩] 일지 보임=%s, 그동안 터치 단추 보임=%s" % [hud.journal.visible, t.get_node("Buttons").visible])
+	print("[일지 단추] 일지 보임=%s, 그동안 터치 층 보임=%s" % [hud.journal.visible, t.visible])
 	hud.journal.close()
 	# 5) 가족 창
 	hud.kids.toggle()

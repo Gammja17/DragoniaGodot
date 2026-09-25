@@ -199,12 +199,39 @@ func _go(map: String):
 		_line("[막힘] %s 은 아직 닫힌 곳이다 (%s)" % [Names.map(map), Chapters.blocked_text(GameState, map)])
 		await _pass(20)
 		return false
-	_line("[봇] %s(으)로 간다" % Names.map(map))
+	# 사람처럼 지도의 문을 따라 한 칸씩 건너간다 (바로 건너뛰면 지나는 길의 사건을 놓친다: 골짜기의 울음을 못 들으면 무덤에 수호룡이 안 나온다)
+	var hop := _next_hop(GameState.map_id, map)
+	_line("[봇] %s(으)로 간다%s" % [Names.map(hop), "" if hop == map else " (%s 가는 길)" % Names.map(map)])
 	await _pass(GATE)
 	if _busy(): return false   # 가는 길에 장면이 열렸다. 사람은 대화 중에 지도를 넘지 못한다
-	World.travel_to(map)
+	World.travel_to(hop)
 	await _real(0.6)
-	return true
+	return hop == map
+
+
+## 지도의 문(portals)을 따라 가는 길의 다음 칸. 굴(den)은 바깥 지도까지 간 뒤에 들어간다. 길을 모르면 곧장
+func _next_hop(from: String, to: String) -> String:
+	var dens: Dictionary = World.dens()
+	var goal := to
+	if dens.has(to):
+		if from == dens[to].outer: return to
+		goal = dens[to].outer
+	if dens.has(from):   # 굴 안에서는 바깥으로 먼저 나간다
+		return dens[from].outer if dens[from].outer != goal else goal
+	var prev := { from: "" }
+	var queue := [from]
+	while not queue.is_empty():
+		var m: String = queue.pop_front()
+		if m == goal: break
+		for pt in World.maps().get(m, {}).get("portals", []):
+			var nx: String = str(pt.get("to", ""))
+			if nx != "" and not prev.has(nx) and Chapters.map_open(GameState, nx):
+				prev[nx] = m
+				queue.append(nx)
+	if not prev.has(goal): return to
+	var step := goal
+	while prev[step] != from: step = prev[step]
+	return step
 
 
 func _walk_to(x: float, y: float):

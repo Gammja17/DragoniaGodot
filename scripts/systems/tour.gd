@@ -33,13 +33,13 @@ const STOPS := [
 		{ who = "Tiamat", text = "…포코. 또 새로 온 애 끌고 다니냐. 해 지기 전엔 들여보내.", here = "Tiamat", do = [{ cam = "auto", time = 0.8 }] },
 		{ who = "Poco", text = "(작게) 봤지? 저래 보여도 나 넘어지면 제일 먼저 달려와.", here = "Tiamat" },
 	] },
-	{ at = [25, 19], stand = [-110, 40], via = [[30, 12], [25, 12], [25, 17]], lines = [
+	{ at = [25, 19], stand = [-110, 40], via = [[30, 12], [25, 12]], lines = [   # [25, 17] 은 마을이 넓어진 뒤로 누리네 집 한가운데라 뺐다 (집은 길찾기로 돌아간다)
 		{ who = "Poco", text = "여긴 누리네! 단 아저씨는 나무꾼이라 낮에는 숲에 가 있고, 소이 아줌마는 누리 비늘 닦아 주느라 맨날 바빠.", look = "PROP:HOUSE", label = "단 · 소이 · 누리네" },
 		{ who = "Soi", text = "어머, 포코가 또 손님을 데려왔네. 오다가다 배고프면 들러. 우리 집 문은 늘 열려 있어.", here = "Soi" },
 		{ who = "Nuri", text = "포코 형! 얘가 하늘에서 떨어졌다는 애야? 우와, 날개 진짜 크다!", here = "Nuri" },
 		{ who = "Poco", text = "누리는 나보다 어려. 그래서 나를 형이라고 불러. 헤헤.", here = "Nuri" },
 	] },
-	{ at = [17, 16], stand = [60, 40], via = [[25, 17], [25, 12], [21, 12]], lines = [
+	{ at = [17, 16], stand = [60, 40], via = [[25, 12], [21, 12]], lines = [
 		{ who = "Poco", text = "이 돌은 옛날 용들이 세운 거래. 손을 얹으면 막 빛나는데, 밖에 있는 똑같은 돌들도 깨워 놓으면 돌에서 돌로 슝 하고 갈 수 있대.", look = "PROP:WAYSTONE", label = "이동 석비" },
 		{ who = "Poco", text = "난 안 써 봤어. 밖에 안 나가거든. …밖은 좀, 그래. 무서운 거 많아." },
 	] },
@@ -100,10 +100,16 @@ static func update(dt: float) -> void:
 		# 길을 따라 돌아간다 — 풀밭을 가로지르면 흩어진 상자·장작에 걸린다 (stop.via: 거쳐 갈 큰 칸)
 		var via: Array = stop.get("via", [])
 		var vi: int = t.get("via", 0)
-		var target := goal if vi >= via.size() else World.at(via[vi])
+		var target := _free_near(goal if vi >= via.size() else World.at(via[vi]))
 		# 포코는 앞서 뛰되, 내가 너무 뒤처지면 기다린다
 		var far := Util.dist(p, e) > 380
-		e.walk_to = null if far else { x = target.x, y = target.y, speed = RUN }
+		# 거쳐 가는 칸 사이도 소품과 집을 돌아서 걷는다. 곧장 그으면 마을이 넓어진 뒤로 누리네 가는 길이 집 벽을 지나서,
+		# 포코가 벽에 붙은 채 서 버렸다
+		if not t.get("path"): t.path = _route(Vector2(e.x, e.y), target)
+		var path: Array = t.path
+		while path.size() > 1 and Vector2(e.x, e.y).distance_to(path[0]) < 64: path.pop_front()   # 일과 걸음은 56 앞에서 멈춘다 (Routine.ARRIVED)
+		var step: Vector2 = path[0]
+		e.walk_to = null if far else { x = step.x, y = step.y, speed = RUN }
 		e.home_x = target.x; e.home_y = target.y
 		t.nag -= dt
 		if far and t.nag <= 0:
@@ -117,13 +123,18 @@ static func update(dt: float) -> void:
 			t.stuck = 0.0
 		else:
 			t.stuck = t.get("stuck", 0.0) + dt
+			if t.stuck > 1.0 and not t.get("replanned"):   # 누가 길을 막았으면 지금 자리에서 길을 한 번 다시 찾는다
+				t.replanned = true
+				t.erase("path")
+			elif t.stuck > 1.6 and dg > 260:   # 그래도 소품 틈에 끼어 있으면 앞쪽 빈자리로 폴짝 넘어가서 다시 찾는다
+				_hop(e, target)
+				_new_leg(t)
 		# 멀리서 걸렸더라도 3초를 못 다가가면 그 자리에서 이야기한다
-		var arrived: bool = dg < 48 or (t.stuck > 1.5 and dg < 260) or t.stuck > 3
-		if vi < via.size():   # 거쳐 가는 칸에 닿았으면 다음 칸으로
-			if arrived:
+		var arrived: bool = dg < 64 or (t.stuck > 1.5 and dg < 260) or t.stuck > 3
+		if vi < via.size():   # 거쳐 가는 칸은 곁을 지나기만 하면 다음 칸으로 (칸마다 서서 기다리지 않게)
+			if arrived or dg < 110:
 				t.via = vi + 1
-				t.stuck = 0.0
-				t.erase("best")
+				_new_leg(t)
 			return
 		if arrived and Util.dist(p, e) < 200:
 			t.phase = "talk"
@@ -133,8 +144,45 @@ static func update(dt: float) -> void:
 				t.i += 1
 				t.phase = "walk"
 				t.via = 0
-				t.stuck = 0.0
-				t.erase("best"))
+				_new_leg(t))
+
+
+## 다음 구간을 새로 걷는다 (길 · 막힌 시간을 비운다)
+static func _new_leg(t: Dictionary) -> void:
+	t.stuck = 0.0
+	for k in ["best", "path", "replanned"]: t.erase(k)
+
+
+## 그 자리가 벽 · 소품 속이면 가장 가까운 빈자리 (거쳐 가는 칸이 넓어진 마을의 집 안에 찍혀 있기도 하다)
+static func _free_near(v: Vector2) -> Vector2:
+	if not Collision.solid_at(v.x, v.y, 20): return v
+	for r in range(1, 8):
+		for k in 16:
+			var a := k * TAU / 16
+			var c := v + Vector2(cos(a), sin(a)) * r * 32
+			if not Collision.solid_at(c.x, c.y, 20): return c
+	return v
+
+
+## 소품 틈에 끼었다 (바위 · 그루터기는 판마다 흩어진 자리가 달라서 길찾기로도 몸이 둘레 칸에 다 걸릴 때가 있다).
+## 가려던 쪽으로 막히지 않은 첫 자리에 폴짝 뛰어 선다. 연기 한 줌과 함께 (아이라 울타리쯤은 넘는다)
+static func _hop(e, target: Vector2) -> void:
+	var from := Vector2(e.x, e.y)
+	var dir := (target - from).normalized()
+	for step in range(2, 9):   # 64 ~ 256 px 앞
+		var c := from + dir * step * 32
+		if Collision.solid_at(c.x, c.y, 20): continue
+		Vfx.spawn_effect("PUFF", from.x, from.y - 10)
+		e.x = c.x; e.y = c.y
+		Vfx.spawn_effect("PUFF", c.x, c.y - 10)
+		return
+
+
+## 이 구간의 길. 포코 몸 굵기로 먼저 찾고, 못 찾으면 좁은 틈까지 본다
+static func _route(from: Vector2, to: Vector2) -> Array:
+	var path: Array = Guide._find_path(from, to, 20.0)
+	if path.size() == 1 and not Guide._clear(from, to, 20.0): path = Guide._find_path(from, to)
+	return path
 
 
 ## 구경 대목(m0 의 둘째)인데 구경이 돌고 있지 않다: 구경 도중에 저장한 판을 불러왔다 (세이브는 구경을 적지 않는다).

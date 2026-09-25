@@ -227,8 +227,8 @@ static func draw_edge(ci: CanvasItem, w: float, h: float) -> void:
 # ---------- 자동 이동 ----------
 # GameState.nav = { map, path: [Vector2], i, stuck, lx, ly, far }
 
-## 격자 위에서 길을 찾는다 (너비 우선). 못 찾으면 곧장 가는 한 점짜리 길
-static func _find_path(from: Vector2, to: Vector2) -> Array:
+## 격자 위에서 길을 찾는다 (너비 우선). 못 찾으면 곧장 가는 한 점짜리 길. body: 비켜 갈 몸 반지름 (마을 구경의 포코는 제 몸 굵기로)
+static func _find_path(from: Vector2, to: Vector2, body := 14.0) -> Array:
 	var b := Terrain.current_map_bounds()
 	var cols := ceili(b.x / CELL)
 	var rows := ceili(b.y / CELL)
@@ -242,7 +242,7 @@ static func _find_path(from: Vector2, to: Vector2) -> Array:
 	free.resize(cols * rows)
 	for yy in rows:
 		for xx in cols:
-			free[yy * cols + xx] = 0 if Collision.solid_at(xx * CELL + CELL / 2.0, yy * CELL + CELL / 2.0, 14) else 1
+			free[yy * cols + xx] = 0 if Collision.solid_at(xx * CELL + CELL / 2.0, yy * CELL + CELL / 2.0, body) else 1
 	free[sy * cols + sx] = 1
 	# 목표 칸이 막혀 있으면(용이 소품 위에 서 있거나) 그 둘레의 빈 칸으로 간다
 	var goal := ty * cols + tx
@@ -298,7 +298,7 @@ static func _find_path(from: Vector2, to: Vector2) -> Array:
 	var i := 0
 	while i < pts.size():
 		var j := pts.size() - 1
-		while j > i + 1 and not _clear(from if i == 0 else pts[i], pts[j]): j -= 1
+		while j > i + 1 and not _clear(from if i == 0 else pts[i], pts[j], body + 2.0): j -= 1
 		out.append(pts[j])
 		i = j
 		if j == pts.size() - 1: break
@@ -307,11 +307,11 @@ static func _find_path(from: Vector2, to: Vector2) -> Array:
 	return out
 
 
-static func _clear(a: Vector2, b: Vector2) -> bool:
+static func _clear(a: Vector2, b: Vector2, body := 16.0) -> bool:
 	var n := ceili(a.distance_to(b) / 14)
 	for i in range(1, n):
 		var t := i / float(n)
-		if Collision.solid_at(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, 16): return false
+		if Collision.solid_at(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, body): return false
 	return true
 
 

@@ -26,7 +26,7 @@ const INTERACT_RANGE := 120   # 이만큼 가까운 용에게 [Space] 로 말을
 const TALK_RANGE := 260       # 마우스로 가리킨 용은 이만큼 떨어져 있어도 된다
 const TOUCH_AIM_RANGE := 700.0   # 터치: 이 안이면 등 뒤에 있어도 겨눈다
 const TOUCH_LOCK_TIME := 1.1     # 터치: 한 번 붙잡은 적은 이만큼 놓지 않는다 (겨냥이 프레임마다 튀지 않게)
-const TOUCH_HOMING := 5.5        # 터치: 숨결이 1초에 꺾을 수 있는 각도(rad). 겨눈 적을 따라간다
+const TOUCH_HOMING := 9.0        # 터치: 숨결이 1초에 꺾을 수 있는 각도(rad). 겨눈 적을 따라간다 (5.5 는 옆으로 뛰는 적을 자주 놓쳤다)
 
 var x: float:
 	get: return position.x
@@ -311,7 +311,7 @@ func _update_player(dt: float) -> void:
 		if GameInput.pressed("num%d" % (i + 1)) and elements.has(all_els[i]): element = all_els[i]
 	fire_timer -= dt
 	aim_lock_timer -= dt   # 터치 자동 조준이 붙잡은 적
-	# 마우스 왼쪽 버튼(모바일은 [불] 단추, 게임패드는 RT 나 오른쪽 스틱을 끝까지)을 꾹 누르고 있으면 연사
+	# 마우스 왼쪽 버튼(모바일은 [숨결] 단추, 게임패드는 RT 나 오른쪽 스틱을 끝까지)을 꾹 누르고 있으면 연사
 	var firing := GameInput.down("attack") or GameInput.mouse_down or GameInput.aim_stick().length() > 0.6
 	if firing and fire_timer <= 0: attack()
 	for slot in Data.get_module("skills").SKILL_SLOTS:
@@ -619,6 +619,9 @@ func aim_angle() -> Dictionary:
 				near = e; near_d = d
 		if near: return { angle = atan2(near.y - 20 - oy, near.x - ox), target = near }
 		return { angle = want, target = null }
+	if GameInput.touch_aim() and is_player:
+		var locked = _lock_target(foes)
+		return { angle = atan2(locked.y - 20 - oy, locked.x - ox), target = locked } if locked else { angle = angle, target = null }
 	if GameInput.mouse_inside and not GameInput.pad:
 		var c: Vector2 = GameCamera.current.screen_to_world(GameInput.mouse_pos)
 		var near = null
@@ -630,9 +633,6 @@ func aim_angle() -> Dictionary:
 				near = e; near_d = d
 		if near: return { angle = atan2(near.y - 20 - oy, near.x - ox), target = near }
 		return { angle = atan2(c.y - oy, c.x - ox), target = null }
-	if GameInput.touch and is_player:
-		var locked = _lock_target(foes)
-		return { angle = atan2(locked.y - 20 - oy, locked.x - ox), target = locked } if locked else { angle = angle, target = null }
 	var best = null
 	var best_d := float(AIM_RANGE)
 	for e in foes:
@@ -951,7 +951,7 @@ func attack() -> void:
 	var a: float = aim.angle
 	var pellets: int = el.pelletsByStage[st] if el.get("pelletsByStage") else el.pellets
 	# 모바일에서만 유도탄. 엄지로 겨눌 수 없으니 숨결이 붙잡은 적 쪽으로 휘어 간다 (마우스를 쓰는 중이면 겨냥은 손끝에)
-	var seek = aim.target if GameInput.touch and is_player and not GameInput.mouse_inside else null
+	var seek = aim.target if is_player and GameInput.touch_aim() else null
 	for i in pellets: breathe(a + (i - (pellets - 1) / 2.0) * el.spread, 1.0, seek)
 	var sc: float = stage.scale
 	Vfx.spawn_effect("MUZZLE", x + cos(a) * 50 * sc, y - 40 * sc + sin(a) * 50 * sc, { angle = a + PI / 2, size = 0.7 + sc * 0.4, color = el.color })
@@ -969,7 +969,7 @@ func breathe(a: float, mult := 1.0, seek = null) -> void:
 	var damage: float = el.damage * damage_mult * breath_bonus * Weather.damage_mult(element) * mult
 	Projectile.add(Projectile.new(mx, my, a, { faction = "ALLY", element = element, damage = damage, scale = 0.7 + sc * 0.3,
 		pierce = el.get("pierce", false) and stage_index >= el.get("pierceFromStage", 0), fromPlayer = true,
-		homing = TOUCH_HOMING if seek else 0.0, homingTarget = seek, by = self }))
+		homing = TOUCH_HOMING if seek else 0.0, homingTarget = seek, seek = seek != null, by = self }))
 
 
 # ---------- NPC ----------

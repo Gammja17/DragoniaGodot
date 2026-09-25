@@ -137,7 +137,7 @@ func _emulated(event: InputEvent) -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# 판에 먹히지 않은 손가락 탭은 그 자리를 탭한 것 (용에게 말 걸기). 연사는 [불] 단추로만
+	# 판에 먹히지 않은 손가락 탭은 그 자리를 탭한 것 (용에게 말 걸기). 연사는 [숨결] 단추로만
 	if _emulated(event):
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT: tap_at(event.position)
 		return
@@ -176,6 +176,13 @@ func tap_at(pos: Vector2) -> void:
 	mouse_inside = false
 
 
+## 터치로 겨누는가: 숨결이 붙잡은 적을 따라가는 유도탄이 된다.
+## 휴대폰에서는 늘 (모바일 웹은 손가락이 흉내 낸 마우스가 '진짜 마우스'로 들어와 mouse_inside 가 켜지던 것),
+## PC 에서는 터치 화면을 쓰고 마우스를 안 쓰는 동안만
+func touch_aim() -> bool:
+	return touch and not pad and (UiScale.is_mobile() or not mouse_inside)
+
+
 ## 이동 벡터 (-1..1, -1..1). 키보드·게임패드 왼쪽 스틱이 우선이고, 안 누르고 있으면 터치 스틱
 func axis() -> Vector2:
 	var dx := (1 if down("right") else 0) - (1 if down("left") else 0)
@@ -199,8 +206,8 @@ func aim_stick() -> Vector2:
 const AIM_WORDS := {
 	pad = [["마우스로 겨누고 클릭하면", "오른쪽 스틱으로 겨누면"], ["마우스로 겨누고 클릭해서", "오른쪽 스틱으로 겨눠서"],
 		["마우스로 겨누고 클릭", "오른쪽 스틱으로 겨누기"], ["꾹 누르면 계속", "밀고 있으면 계속"], ["[WASD]로", "왼쪽 스틱으로"], ["[WASD]", "왼쪽 스틱"]],
-	touch = [["마우스로 겨누고 클릭하면", "[불]을 누르면"], ["마우스로 겨누고 클릭해서", "[불]을 눌러서"],
-		["마우스로 겨누고 클릭", "[불] 단추로 쏘기"], ["[Shift]로 대시", "[대시]로 피하기"], ["[Shift] 대시로", "[대시]로"], ["[Z]로", "[비행]으로"],
+	touch = [["마우스로 겨누고 클릭하면", "[숨결]을 누르면"], ["마우스로 겨누고 클릭해서", "[숨결]을 눌러서"],
+		["마우스로 겨누고 클릭", "[숨결] 단추로 쏘기"], ["[Shift]로 대시", "[대시]로 피하기"], ["[Shift] 대시로", "[대시]로"], ["[Z]로", "[비행]으로"],
 		["[WASD]로", "왼쪽 아래 스틱으로"], ["[WASD]", "왼쪽 아래 스틱"]],
 }
 ## 키 → 그 기기에서 같은 일을 하는 단추 (PADMAP · 터치 단추 이름). 없는 것은 그대로 둔다.

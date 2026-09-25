@@ -24,7 +24,7 @@ const TOAST_W := 400.0   # 이보다 긴 알림은 줄을 나눈다 (좌우 판 
 @onready var _raid: Label = $RaidWarning
 
 # 상태판 · 오른쪽 기둥 · 기술 칸 (5단계)
-@onready var status: HudStatus = $Status
+@onready var status: Control = $Status   # HudStatus. 휴대폰이면 작은 상태 카드(HudMobileStatus)로 바뀐다 (_ready)
 @onready var right: HudRight = $Right
 @onready var bottom: HudBottom = $Bottom
 @onready var settings: SettingsPanel = $Settings
@@ -48,7 +48,8 @@ var _qb_now = null       # 지금 떠 있는 퀘스트 배너 (지역 이름에 
 var _qb_tween: Tween
 var _qb_rest := 0.0      # 퀘스트 배너가 내려앉는 자리 (hud.tscn: 알림 줄 맨 위)
 var _toast_wait := []    # 아직 못 띄운 알림
-var _toast_gap := 0.0    # 다음 알림까지 남은 틈 (한꺼번에 쏟아지지 않게)
+var _toast_gap := 0.0
+var _max_toasts := MAX_TOASTS   # 휴대폰 가로는 둘 (화면이 낮아 셋이면 용을 가린다)    # 다음 알림까지 남은 틈 (한꺼번에 쏟아지지 않게)
 var _lv_pending = null   # 아직 못 보여 준 레벨 업 { level, points }
 var _lv_at := 0
 var _lv_tween: Tween
@@ -65,16 +66,21 @@ static func pop(msg: String, icon := "✨") -> void:
 
 func _ready() -> void:
 	current = self
+	# 휴대폰은 작은 상태 카드를 쓴다 (둘은 신호 · refresh() 가 같다)
+	if UiScale.is_mobile():
+		$Status.visible = false
+		status = $MStatus
+		right.quest.compact = true
 	_banner.modulate.a = 0
 	_qb_rest = $QuestBanner.position.y
-	status.collapse_pressed.connect(func(): collapse_status(true))
+	status.connect("collapse_pressed", func(): collapse_status(true))
 	$ShowStatus.pressed.connect(func(): collapse_status(false))
 	right.collapse_pressed.connect(func(): collapse_right(true))
 	$ShowRight.pressed.connect(func(): collapse_right(false))
 	settings.help_pressed.connect(help.open)
 	settings.fx_pressed.connect(fx.open)
-	status.growth_pressed.connect(func(): journal.toggle_tab("growth"))
-	status.family_pressed.connect(kids.toggle)
+	status.connect("growth_pressed", func(): journal.toggle_tab("growth"))
+	status.connect("family_pressed", kids.toggle)
 	touch.settings_pressed.connect(settings.toggle)
 	get_viewport().size_changed.connect(_fit_screen)
 	_fit_screen()
@@ -95,11 +101,42 @@ func show_game_ui(on: bool) -> void:
 ## UI 는 UiScale 이 이미 화면에 맞춰 늘려 두었으니, 논리 크기가 휴대폰 기준(780×420)쯤일 때만
 func _fit_screen() -> void:
 	var s := get_viewport().get_visible_rect().size
+	if UiScale.is_mobile():
+		_fit_mobile(s)
+		return
 	var small := s.x <= 820 or s.y <= 440
 	status.scale = Vector2.ONE * (0.72 if small else 1.0)
 	status.position = Vector2(6, 6) if small else Vector2(18, 18)
 	right.scale = Vector2.ONE * (0.7 if small else 1.0)
 	right.pivot_offset = Vector2(right.size.x, 0)
+
+
+## 휴대폰: 왼쪽 위 작은 상태 카드, 오른쪽 위 줄인 지도 기둥. 알림 · 퀘스트 배너는 둘 사이(가로) 또는 둘 밑(세로)에.
+## 세로 화면은 폭이 420 뿐이라 알림을 위쪽 판들 밑으로 내리고 폭을 화면에 맞춘다
+func _fit_mobile(s: Vector2) -> void:
+	var portrait := s.y > s.x
+	status.scale = Vector2.ONE
+	status.position = Vector2(6, 6)
+	right.scale = Vector2.ONE * (0.62 if portrait else 0.66)
+	right.pivot_offset = Vector2(right.size.x, 0)
+	right.quest.tight = not portrait
+	_max_toasts = MAX_TOASTS if portrait else 2
+	right.quest.refresh()
+	var top := 196.0 if portrait else 70.0
+	var half := s.x / 2 - 10 if portrait else 290.0
+	_toasts.offset_top = top; _toasts.offset_bottom = top
+	_toasts.offset_left = -half; _toasts.offset_right = half
+	$QuestBanner.offset_top = top; $QuestBanner.offset_bottom = top
+	_qb_rest = top
+	var bg: Control = $QuestBanner/Bg
+	bg.offset_left = -minf(260, half); bg.offset_right = minf(260, half)
+
+
+## 알림 한 줄의 폭 (넘으면 줄을 나눈다)
+func _toast_width() -> float:
+	var w := get_viewport().get_visible_rect().size.x
+	if UiScale.is_mobile(): return minf(360.0, w - 24) if w < 600 else 360.0
+	return minf(TOAST_W, w * 0.5)
 
 
 ## 왼쪽 판(상태)을 접거나 편다
@@ -365,6 +402,12 @@ func set_boss_bar(name_text, ratio := 0.0) -> void:
 
 ## 눈앞에서 할 수 있는 일 (말 걸기 · 줍기 · 석비 …). 그 대상 머리 위에 붙는다. target 이 null 이면 감춘다
 static var _tip_target = null
+
+## 눈앞에 말 걸 것 · 주울 것이 있는가 (터치의 [말] 단추가 또렷해진다)
+static func has_interact() -> bool:
+	return _tip_target != null and is_instance_valid(_tip_target)
+
+
 func set_interact(target, text := "") -> void:
 	text = GameInput.words(text)
 	_tip_target = target
@@ -413,7 +456,7 @@ func _process(dt: float) -> void:
 	_refresh_t -= dt
 	if _refresh_t <= 0 and GameState.player and status.get_parent():
 		_refresh_t = 0.1
-		if status.visible: status.refresh()
+		if status.visible: status.call("refresh")
 		if right.visible: right.refresh()
 		if bottom.visible: bottom.refresh()
 	_flush_quest_banner()
@@ -424,7 +467,7 @@ func _process(dt: float) -> void:
 	# 터치에서는 Q·F·R·X 가 단추로 있으니 기술 칸 줄과 도움말 칩은 치운다
 	if bottom.visible:
 		$HelpChip.visible = not help.visible and not GameInput.touch   # 도움말이 떠 있는 동안엔 안내 칩을 감춘다
-		bottom.set_touch(GameInput.touch)
+		bottom.set_touch(GameInput.touch, get_viewport().get_visible_rect().size)
 	$QuestBanner.visible = not Cutscene.on
 	_banner.visible = not Cutscene.on   # 장면이 시작되면 지역 이름은 장면 제목에 자리를 내준다
 	if _raid.visible:
@@ -462,7 +505,7 @@ func _update_toasts(dt: float) -> void:
 	# 장면 중에는 띠가 다 걷힌 뒤에 (걷히는 동안엔 판이 투명하다)
 	var hold: bool = (Cutscene.on or Cutscene.bars >= 0.05) and not GameState.prologue
 	# 셋까지. 퀘스트 배너가 떠 있으면 둘, 지역 이름이 떠 있으면 하나 (알림 줄이 지역 이름까지 내려오지 않게)
-	var cap := 1 if now < _region_until else MAX_TOASTS - (1 if qb_on else 0)
+	var cap := 1 if now < _region_until else maxi(1, _max_toasts - (1 if qb_on else 0))
 	_toast_gap -= dt
 	if not hold and _toast_gap <= 0 and not _toast_wait.is_empty() and _toasts.get_child_count() < cap:
 		_add_toast(_toast_wait.pop_front())
@@ -489,7 +532,7 @@ func _add_toast(text: String) -> void:
 	var label: Label = t.get_node("Label")
 	label.text = text
 	var ls := label.label_settings
-	var max_w := minf(TOAST_W, get_viewport().get_visible_rect().size.x * 0.5)
+	var max_w := _toast_width()
 	if ls.font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, ls.font_size).x > max_w:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		label.custom_minimum_size.x = max_w

@@ -1,6 +1,7 @@
 extends Node
 ## UI 크기 (autoload "UiScale").
 ## 창이 커지면 글자와 판도 같이 커진다: 창을 기준 크기(데스크톱 960×540, 휴대폰 780×420)에 맞춰 늘리는
+## 휴대폰을 세로로 들면 기준도 세워 420×780 으로 (가로일 때와 글자 크기가 같다).
 ## canvas_items 늘이기를 쓰고, 기준 크기를 설정의 "UI 크기"로 나눈다 (크게 = 기준을 줄여 더 크게 늘린다).
 ## 960×540 은 1080p 화면에서 딱 2배(픽셀 글꼴이 또렷하다), 720p 에서 1.33배.
 ## 세상(땅·용)은 GameCamera 가 이 배율만큼 줌을 되돌려, UI 크기와 상관없이 전과 같은 크기로 그린다.
@@ -34,8 +35,12 @@ func cycle() -> String:
 	return STEP_NAMES[i]
 
 
+## 시험·사진 도구가 PC 에서 휴대폰 화면을 흉내 낼 때 켠다
+static var force_mobile := false
+
+
 static func is_mobile() -> bool:
-	return OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios")
+	return force_mobile or OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios")
 
 
 static func _headless() -> bool: return DisplayServer.get_name() == "headless"
@@ -45,6 +50,8 @@ func apply() -> void:
 	var win := get_window()
 	var phys := Vector2(win.size)
 	var base := (MOBILE if is_mobile() else DESKTOP) / setting()
+	# 세로로 든 휴대폰은 기준도 세운다 (780×420 을 그대로 대면 짧은 변 420 이 780 으로 늘어나 글자·단추가 가로의 절반만 했다)
+	if is_mobile() and phys.y > phys.x: base = Vector2(base.y, base.x)
 	var k := minf(phys.x / base.x, phys.y / base.y)
 	if k < 1 or _headless(): base = phys   # 창이 더 작으면(또는 시험이면) 늘이지도 줄이지도 않는다
 	win.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS

@@ -5,6 +5,7 @@ extends RefCounted
 ## opts: { faction, element, kind: 'BREATH' | 'ARROW', damage, speed, life, scale, radius, pierce, fromPlayer, slow, homing, homingTarget, by }
 
 const CRIT_CHANCE := 0.12   # 치명타: 피해 2배
+const SEEK_RANGE := 420.0   # 유도탄이 다른 적으로 갈아탈 수 있는 거리
 const ARROW := Rect2(176, 160, 16, 16)   # Tiny Dungeon 시트의 화살(위쪽을 향함)
 
 var x: float
@@ -25,6 +26,7 @@ var from_player: bool         # 플레이어가 쏜 탄만 필살기 게이지�
 var slow: float               # 맞은 용을 이만큼(초) 느리게 한다 (그물)
 var homing: float             # 초당 꺾을 수 있는 각도(rad)
 var homing_target = null      # 따라갈 상대. 없으면 플레이어 (사냥꾼의 그물)
+var seek := false             # 유도탄 (모바일 숨결): 쫓던 적이 쓰러지면 가까운 다른 적으로 갈아탄다
 var by = null                 # 쏜 용. 적이 "나를 친 쪽"을 기억한다 (모르면 null)
 var speed: float
 var t := 0.0
@@ -57,6 +59,7 @@ func _init(px: float, py: float, a: float, opts := {}) -> void:
 	slow = opts.get("slow", 0.0)
 	homing = opts.get("homing", 0.0)
 	homing_target = opts.get("homingTarget")
+	seek = bool(opts.get("seek", false))
 	by = opts.get("by")
 
 
@@ -70,6 +73,10 @@ func light():
 
 
 func update(dt: float) -> void:
+	if homing:
+		if seek and (homing_target == null or not is_instance_valid(homing_target) or homing_target.remove or homing_target.hp <= 0 or hit_set.has(homing_target)):
+			homing_target = _next_seek()
+			if homing_target == null: homing = 0.0   # 따라갈 적이 없으면 가던 길로
 	if homing:
 		var tg = homing_target if homing_target else GameState.player
 		# 쫓던 상대가 쓰러지면 더 꺾지 않고 가던 길로 날아간다
@@ -85,6 +92,20 @@ func update(dt: float) -> void:
 	t += dt
 	if life < 0: remove = true
 	if kind == "BREATH" and randf() < 0.25: Particles.burst(x, y, els()[element].trail, 0.4)
+
+
+## 유도탄이 갈아탈 적: 날아가는 쪽 앞의 가까운 적 (뒤로 돌아 날아가지는 않는다)
+func _next_seek():
+	var best = null
+	var best_d := SEEK_RANGE
+	for e in Combat.foes():
+		if e.remove or e.hp <= 0 or e.get("awake") == false or hit_set.has(e): continue
+		var d := Vector2(e.x - x, e.y - 20 - y)
+		var da := d.angle() - angle
+		if absf(atan2(sin(da), cos(da))) > 1.4: continue
+		if d.length() < best_d:
+			best = e; best_d = d.length()
+	return best
 
 
 ## 이 숨결이 대상에 걸린 상태와 반응하나

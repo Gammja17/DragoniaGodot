@@ -366,6 +366,16 @@ static func suggestion():
 	for q in all():
 		if q.get("auto") and q.act == "main" and q.get("lead") and _ready_quest(q):
 			return { who = null, main = true, place = q.lead.map, title = q.lead.text, goal = "%s 쪽으로 가 본다" % Names.map(q.lead.map) }
+	# 본 이야기가 다음 승급을 기다린다 (2장 뒤 성체 시험: 그 뒤에야 누리가 사라진다).
+	# 레벨이 차도 알림 한 번뿐이라, 추적창은 곁가지 부탁만 가리키고 다음 이야기가 어디서 이어지는지는 말하지 않았다
+	var trial = Story.next_trial()
+	if trial and not active_quests().any(func(q): return q.act == "main") and not (trial.get("needs") and not trial.needs.call(GameState)):
+		var st: Dictionary = Story._stages()[int(trial.stage)]
+		if GameState.player.level < int(st.minLevel):
+			return { who = null, main = false, kind = "trial", title = "[%s]까지 자라기 (레벨 %d / %d)" % [st.name, GameState.player.level, st.minLevel],
+				goal = "레벨 %d부터 스승 카이론에게 [승급 시험]을 청할 수 있다. 다음 이야기는 그 뒤에 이어진다. 숲길에서 싸우거나, 오늘의 수련 · 마을 용들의 부탁을 하면 레벨이 오른다." % st.minLevel }
+		return { who = "Kairon", main = true, kind = "trial", title = "스승에게 [승급 시험]을 청하자",
+			goal = "[%s]로 자랄 때가 됐다. 카이론에게 말을 걸어 [승급 시험]을 청한다." % st.name }
 	var side := all().filter(func(q): return not q.get("auto") and _ready_quest(q))
 	if not side.is_empty():
 		var where := []

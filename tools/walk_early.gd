@@ -139,6 +139,7 @@ func _act():
 	if q == null and line and line.get("training"): return await _training()
 	if q == null:
 		var s = Quests.suggestion()
+		if s and s.get("kind") == "trial": return await _stage()   # 본 이야기가 다음 승급을 기다린다
 		if s and s.get("who") and s.get("main"): return await _visit(s.who)
 		if _bedtime(): return await _sleep()
 		if s and s.get("who") and s.who != "Kairon" and not _idle_logged.contains(s.who):

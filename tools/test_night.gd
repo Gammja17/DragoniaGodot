@@ -63,6 +63,17 @@ func _ready() -> void:
 	_check("아침에 엘더가 카이론을 소개한다", _saw("내 오랜 친구인데"))
 	_check("다음에 할 일이 더는 '오늘은 여기까지'가 아니다", Quests.suggestion().title != "오늘은 여기까지")
 
+	# 2장 뒤: 본 이야기가 성체 승급을 기다리면 추적창이 그렇다고 말한다 (곁가지 부탁만 가리키던 것)
+	G.quests.done.append_array(["m2", "m3"])
+	G.story.lessons = ["L1", "L2"]
+	G.player.stage_index = 1
+	G.player.level = 5
+	var sug = Quests.suggestion()
+	_check("레벨이 모자라면: 성체까지 자라기 (레벨 5 / 8)", sug.get("kind") == "trial" and str(sug.title).contains("5 / 8"))
+	G.player.level = 8
+	sug = Quests.suggestion()
+	_check("레벨이 차면: 스승에게 승급 시험을 청하자 (화살표는 카이론)", sug.get("kind") == "trial" and sug.who == "Kairon" and sug.main)
+
 	# 옛 세이브: 첫 밤을 이미 본 판은 '첫 밤' 대목을 지난 것으로 친다
 	Save.save_game()
 	var data: Dictionary = Save.read()

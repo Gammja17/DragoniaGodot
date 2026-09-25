@@ -364,15 +364,16 @@ func _boss(id: String):
 ## 그 자리에 가 있기: 대목이 가리키는 자리(where · glint)로 가서 기다린다. 자리가 없으면 그 사건이 열릴 때까지 기다린다
 func _event(st: Dictionary):
 	var at = st.get("where") if st.get("where") else st.get("glint")
-	if at == null:
+	if at != null and GameState.map_id != at.map:
+		await _go(at.map)
+		return
+	var spot = at.get("spot", at.get("at")) if at != null else null
+	if spot == null:   # 어디라고 적히지 않았거나, 지도에 들어서기만 하면 열리는 사건 (밤에 서는 모임): 기다린다
 		if _event_wait != str(st.goal.target):
 			_event_wait = str(st.goal.target)
 			_line("[봇] 사건(%s)을 기다린다" % st.goal.target)
 		return await _pass(10)
-	if GameState.map_id != at.map:
-		await _go(at.map)
-		return
-	var w := World.at(at.get("spot", at.get("at")))
+	var w := World.at(spot)
 	await _walk_to(w.x, w.y + 60)
 	await _pass(4)
 

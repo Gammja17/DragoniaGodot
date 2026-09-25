@@ -63,6 +63,24 @@ func _ready() -> void:
 	_check("아침에 엘더가 카이론을 소개한다", _saw("내 오랜 친구인데"))
 	_check("다음에 할 일이 더는 '오늘은 여기까지'가 아니다", Quests.suggestion().title != "오늘은 여기까지")
 
+	# 아침: 맡은 일이 없으면 추적창은 오늘의 수련을 보여 준다. 화살표도 스승을 가리킨다 (화살표만 엘더를 가리키던 것)
+	var kept: Dictionary = G.quests.active.duplicate(true)
+	var kept_tracked = G.quests.tracked
+	G.quests.active = {}
+	G.quests.tracked = null
+	var plan = Training.todays_plan()
+	_check("아침 · 오늘의 수련이 정해져 있다", plan != null and plan.stage == "offered")
+	var line2 = Quests.tracked_line()
+	aim = Guide._wanted()
+	_check("아침 · 추적창은 오늘의 수련, 화살표는 카이론", [line2 != null and line2.get("training"), aim.get("who") if aim else null], [true, "Kairon"])
+	plan.stage = "done"
+	var s2 = Quests.suggestion()
+	aim = Guide._wanted()
+	_check("수련을 마치면 화살표는 다음에 할 만한 일(%s)을 따른다" % s2.title, aim.get("who") if aim else null, s2.get("who") if s2.get("main") else null)
+	plan.stage = "offered"
+	G.quests.active = kept
+	G.quests.tracked = kept_tracked
+
 	# 2장 뒤: 본 이야기가 성체 승급을 기다리면 추적창이 그렇다고 말한다 (곁가지 부탁만 가리키던 것)
 	G.quests.done.append_array(["m2", "m3"])
 	G.story.lessons = ["L1", "L2"]
@@ -73,6 +91,16 @@ func _ready() -> void:
 	G.player.level = 8
 	sug = Quests.suggestion()
 	_check("레벨이 차면: 스승에게 승급 시험을 청하자 (화살표는 카이론)", sug.get("kind") == "trial" and sug.who == "Kairon" and sug.main)
+
+	# 5장 달맞이 모임: 사건으로 넘어가는 본 이야기 대목도 그 지도로 가는 문을 가리킨다 (걷는 봇이 마을에서 모임을 기다리던 것)
+	var was: Dictionary = G.quests.active.duplicate(true)
+	var was_tracked = G.quests.tracked
+	G.quests.active = { m5g = { step = 0, n = 0 } }
+	G.quests.tracked = "m5g"
+	aim = Guide._wanted()
+	_check("달맞이 모임 대목: 화살표가 구름 폭포 쪽을 가리킨다", aim != null and aim.get("map") == "FALLS" and aim.get("x") == null)
+	G.quests.active = was
+	G.quests.tracked = was_tracked
 
 	# 옛 세이브: 첫 밤을 이미 본 판은 '첫 밤' 대목을 지난 것으로 친다
 	Save.save_game()

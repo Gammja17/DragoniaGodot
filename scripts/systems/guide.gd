@@ -92,9 +92,12 @@ static func _wanted():
 			var st: Dictionary = Quests.cur_step(q)
 			var g: Dictionary = st.goal
 			if st.get("discover"): return null                          # 이 대목은 일부러 안 가리킨다
-			if st.get("where"):
-				var p := World.at(st.where.spot)
-				place = { map = st.where.map, x = p.x, y = p.y, label = st.where.get("label", "") }
+			if st.get("where"):   # 자리 없이 지도만 적힌 대목(들어서면 열리는 사건)은 그 지도로 가는 문까지만 가리킨다
+				place = { map = st.where.map, label = st.where.get("label", "") }
+				if st.where.get("spot"):
+					var p := World.at(st.where.spot)
+					place.x = p.x
+					place.y = p.y
 			elif g.type == "talk" or g.type == "bring": who = g.target
 			elif g.type == "visit": place = { map = g.target }
 			elif g.type == "boss": place = _boss_place(g.id)
@@ -124,9 +127,15 @@ static func _wanted():
 			elif (g.type == "kill" or g.type == "killAny" or g.type == "elite") and (GameState.map_id == "VILLAGE" or GameState.map_id == "DOJO"):
 				place = { map = "EAST_ROAD", label = "사냥터" }
 	else:
-		var s = Quests.suggestion()
-		if s and s.get("who") and s.get("main"): who = s.who   # 곁가지 부탁은 누가 줄지 귀띔만 하고 가리키지는 않는다
-		elif s and s.get("place") and s.get("main"): place = { map = s.place }   # 저절로 열리는 이야기는 그 지도로 가는 문을 가리킨다
+		# 맡은 일이 없으면 추적창은 오늘의 수련을 먼저 보여 준다. 화살표도 그것을 따른다
+		# (추적창은 "카이론을 찾아가"인데 화살표는 엘더를 가리키던 것. 수련 도중에는 스승이 곁에 있으니 가리키지 않는다)
+		var plan = Training.todays_plan()
+		if plan and plan.stage != "done":
+			if plan.stage == "offered": who = "Kairon"
+		else:
+			var s = Quests.suggestion()
+			if s and s.get("who") and s.get("main"): who = s.who   # 곁가지 부탁은 누가 줄지 귀띔만 하고 가리키지는 않는다
+			elif s and s.get("place") and s.get("main"): place = { map = s.place }   # 저절로 열리는 이야기는 그 지도로 가는 문을 가리킨다
 	if who:
 		for n in GameState.entities.npcs:
 			if n.config.get("name") == who and not n.remove and not n.is_hidden:

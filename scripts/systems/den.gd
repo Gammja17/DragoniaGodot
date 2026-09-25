@@ -203,8 +203,8 @@ static func home_greeting(npc, greeting: String) -> String:
 		if not g.met.has(nm): g.met.append(nm)
 		if not g.greeted:
 			g.greeted = true
-			NpcActions.add_relation(npc, GUEST.warmth)
-			Hud.pop("놀러 온 %s 반겨 맞았습니다. (호감 ↑)" % Util.josa(Names.npc(nm), "을", "를"), "🏠")
+			var got := NpcActions.add_relation(npc, GUEST.warmth)
+			Hud.pop("놀러 온 %s 반겨 맞았습니다. (%s)" % [Util.josa(Names.npc(nm), "을", "를"), NpcActions.gain_note(got)], "🏠")
 		line = VISIT_LINES.get(tier, VISIT_LINES[0]).pick_random()
 	else:
 		line = VISIT_LINES.get(tier, VISIT_LINES[0]).pick_random()

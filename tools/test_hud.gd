@@ -27,7 +27,7 @@ func _ready() -> void:
 	_click(st.get_center(), false)
 	print("[판 위 클릭] 숨결 %d → %d (그대로여야 한다)" % [before, _ally_bullets()])
 	# 3) 추적창을 누른다
-	GameState.quests.active.m0 = { step = 3, n = 0 }   # 엘더에게 돌아가는 대목 (본 이야기)
+	GameState.quests.active.m0 = { step = 4, n = 0 }   # 엘더에게 돌아가는 대목 (본 이야기)
 	GameState.quests.tracked = "m0"
 	Quests.changed()
 	await _wait(0.5)

@@ -103,5 +103,5 @@ static func _gift(npc) -> void:
 	var got := NpcActions.add_relation(npc, 8)
 	Particles.burst(npc.x, npc.y - 60, "#ff7aa8", 1, 10)
 	npc.say("고마워! 잘 먹을게.")
-	Hud.pop("%s에게 고기를 선물했습니다. (%s)" % [Names.npc(npc.config.name), "호감 ↑" if got > 0 else "오늘은 이미 많이 가까워졌습니다"], "🎁")
+	Hud.pop("%s에게 고기를 선물했습니다. (%s)" % [Names.npc(npc.config.name), NpcActions.gain_note(got)], "🎁")
 	close()

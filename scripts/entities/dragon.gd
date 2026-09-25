@@ -145,6 +145,7 @@ func setup(px: float, py: float, cfg: Dictionary, player := false) -> Dragon:
 	home_x = px; home_y = py
 	config = cfg
 	is_player = player
+	status_immune = not player   # 대련 상대로 선 용은 보스처럼 버틴다: 기절이 짧고 밀려나지 않는다
 	species = cfg.get("species", "WESTERN")
 	colors = cfg.get("colors", {}).duplicate()
 	look = int(cfg.get("look", 0))
@@ -427,7 +428,6 @@ func use_ultimate() -> void:
 
 func _update_beam(dt: float) -> void:
 	var b: Dictionary = beam
-	var E: Dictionary = GameState.entities
 	b.time -= dt; b.tick -= dt
 	# 빔은 바라보는 쪽으로 천천히 따라 돈다
 	var da: float = aim_angle().angle - b.angle
@@ -438,7 +438,7 @@ func _update_beam(dt: float) -> void:
 		var sc: float = stage.scale
 		var ox := x
 		var oy := y - 40 * sc
-		for e in E.enemies + E.humans + E.bosses:
+		for e in Combat.foes():
 			if e.get("awake") == false: continue
 			var t := clampf((e.x - ox) * cos(b.angle) + (e.y - 20 - oy) * sin(b.angle), 0, 950)
 			if Vector2(e.x - (ox + cos(b.angle) * t), e.y - 20 - (oy + sin(b.angle) * t)).length() > 75 + (50 if e.def.get("scale") else 0): continue
@@ -520,11 +520,11 @@ func evolve(idx: int) -> void:
 	Quests.notify("stage", idx)
 
 
-func take_damage(dmg: float, _silent := false, _from = null) -> void:
+func take_damage(dmg: float, silent := false, _from = null) -> void:
 	var act = GameState.activity
 	if act and (act.type == "SPAR" or act.type == "DUEL") and act.npc == self:   # 대련: 실제 체력 대신 기력이 깎인다
 		act.hp -= dmg
-		animator.play("hit")
+		if not silent: animator.play("hit")   # 불·독이 태우는 몫에는 움찔하지 않는다
 		return
 	if not is_player and down_timer > 0: return
 	if is_player and invuln > 0: return
@@ -600,10 +600,7 @@ func take_damage(dmg: float, _silent := false, _from = null) -> void:
 ##  마우스를 쓰는 중이면 커서 쪽이 기준이고, 커서가 적 위에 얹히면 그 적에게 살짝 붙는다.
 ##  터치로 할 때는 둘레의 적 하나를 붙잡아 겨누고(_lock_target), 키보드만 쓸 때는 바라보는 쪽 원뿔 안의 가장 가까운 적.
 func aim_angle() -> Dictionary:
-	var E: Dictionary = GameState.entities
-	var foes: Array = E.enemies + E.humans + E.bosses
-	var act = GameState.activity
-	if act and (act.type == "SPAR" or act.type == "DUEL"): foes.append(act.npc)
+	var foes: Array = Combat.foes()
 	var sc: float = stage.scale
 	var ox := x
 	var oy := y - 40 * sc
@@ -1398,7 +1395,9 @@ func _draw_emote(ci: CanvasItem) -> void:
 	var fs := 24   # 12px 픽셀 글꼴은 12의 배수로만 또렷하다
 	var w := maxf(34, Fonts.text_width(font, glyph, fs) + 18) * sc
 	var h := 32.0 * sc
-	var by := -34.0 - h - (30 if Quests.marker(self) != "" and config.get("fixed") else 0)
+	# 컷씬에서는 이름표도 퀘스트 표시도 그리지 않으니 머리 바로 위에 띄운다 (그 자리를 비워 두느라 너무 높이 떠서 잘 안 보였다)
+	var above := 6.0 if Cutscene.on else 34.0 + (30.0 if Quests.marker(self) != "" and config.get("fixed") else 0.0)
+	var by := -above - h
 	var bob := sin(t * 5) * 2
 	_bubble(ci, -w / 2, by + bob, w, h, by + h + bob, alpha)
 	var tw := Fonts.text_width(font, glyph, fs)

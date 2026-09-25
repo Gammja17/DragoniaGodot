@@ -4,6 +4,8 @@ class_name NpcActions
 ## 진행 중인 놀이는 GameState.activity = { type: 'SPAR' | 'TAG', npc, hp, max, time } 에 담는다.
 
 const SPAR_HP := 140.0
+const STEP_TIME := 0.8     # 대련 상대가 자리를 옮겨 다니는 시간
+const PLANT_TIME := 1.2    # 멈춰 서서 쏘는 시간. 이때가 틈이다
 const TAG_TIME := 25.0
 
 
@@ -20,7 +22,8 @@ static func close() -> void:
 	DialogueBox.current.hide_dialogue()
 
 
-const DAILY_GAIN := 10.0   # 한 용과 하루에 쌓을 수 있는 호감 (말 · 선물 · 놀이 · 부탁을 다 합쳐 첫날에 절친이 되던 것)
+const DAILY_GAIN := 15.0   # 한 용과 하루에 쌓을 수 있는 호감 (말 · 선물 · 놀이 · 부탁을 다 합쳐 첫날에 절친이 되던 것).
+                           # 10 이면 말 한마디와 선물만으로 그날이 차서, 같이 논 것은 하나도 안 쳐줬다
 
 
 ## 호감도를 올린다. 단계가 올라가면 그 인물의 장면을 하나 예약한다 (지금 대화가 끝난 뒤 Chronicle 이 꺼내 준다).
@@ -38,6 +41,17 @@ static func add_relation(npc, amount: float, daily := true) -> float:
 	npc.relation = clampf(npc.relation + amount, 0, 100)
 	if amount > 0: _book_bond(npc)
 	return amount
+
+
+## 오늘 그 용과 쌓은 호감 (하루 상한 DAILY_GAIN 안에서)
+static func gained_today(npc) -> float:
+	var got: Dictionary = GameState.story.get("relGain", {})
+	return float(got.get(npc.config.name, 0.0)) if got.get("day") == GameState.day else 0.0
+
+
+## 알림 끝에 붙이는 한마디: 실제로 올랐을 때만 "호감 ↑" (하루 상한에 걸렸는데도 오른다고 했다)
+static func gain_note(got: float) -> String:
+	return "호감 ↑" if got > 0 else "오늘은 이미 많이 가까워졌습니다"
 
 
 ## 지금 단계까지 열렸는데 아직 못 본 장면을 아래 단계부터 하나 예약한다. 기다리는 장면이 있으면 다음 기회에
@@ -395,7 +409,7 @@ static func _give_gift(npc) -> void:
 	npc.last_gift_day = GameState.day
 	var got := add_relation(npc, 8)
 	Particles.burst(npc.x, npc.y - 60, "#ff7aa8", 1, 10)
-	Hud.pop("%s에게 고기를 선물했습니다. (%s)" % [Names.npc(npc.config.name), "호감 ↑" if got > 0 else "오늘은 이미 많이 가까워졌습니다"], "🎁")
+	Hud.pop("%s에게 고기를 선물했습니다. (%s)" % [Names.npc(npc.config.name), gain_note(got)], "🎁")
 	var said = _talk().NPC_TALK.get(npc.config.name, {}).get("gift")   # 받는 말은 용마다 (data/npcTalk.json 의 gift)
 	show(npc, _retold(npc, said.pick_random()) if said else "이걸 나한테? 고마워. 잘 먹을게.", [{ label = "(고개를 끄덕인다)", on_select = func(): open_hub(npc) }])
 
@@ -444,10 +458,10 @@ static func _go_on_date(npc) -> void:
 	var lines: Array = _talk().DATES[npc.config.name][npc.dates]
 	Hud.fade_screen("♥", func(): GameState.dayTime = minf(0.78, GameState.dayTime + 0.12), func(): play_lines(npc, lines, func():
 		npc.dates += 1
-		add_relation(npc, 12)
+		var got := add_relation(npc, 12)
 		Romance.on_date(npc)   # 다른 용이 봤을 수도 있다
 		Vfx.spawn_effect("HEART", npc.x, npc.y - 80, { color = "#ff7aa8", size = 1.4 })
-		Hud.pop("%s하고 데이트했습니다. (%d/3, 호감 ↑)" % [Names.npc(npc.config.name), npc.dates], "💕")))
+		Hud.pop("%s하고 데이트했습니다. (%d/3, %s)" % [Names.npc(npc.config.name), npc.dates, gain_note(got)], "💕")))
 
 
 static func _confess(npc) -> void:
@@ -648,7 +662,7 @@ static func _go_spar(npc) -> void:
 
 
 static func _begin_spar(npc) -> void:
-	GameState.activity = { type = "SPAR", npc = npc, hp = SPAR_HP, max = SPAR_HP, timer = 1.5 }
+	GameState.activity = { type = "SPAR", npc = npc, hp = SPAR_HP, max = SPAR_HP, foot = 1.5 }
 	npc.say("안 봐줄 거야!")
 	Hud.pop("대련 시작! 티아맷의 기력을 모두 깎으세요. (내 체력이 25% 아래로 떨어지면 패배)", "⚔️")
 
@@ -668,16 +682,17 @@ static func _end_activity(win: bool) -> void:
 	var p = GameState.player
 	GameState.activity = null
 	Hud.current.set_boss_bar(null)
+	npc.status.clear()   # 대련 중에 받은 상태 이상은 판이 끝나면 털어 낸다
 	var first: bool = npc.last_play_day != GameState.day   # 보상은 하루 첫 판이 크다
 	npc.last_play_day = GameState.day
 	var kp = _talk().KID_NPC_PLAY.get(npc.config.name)
 	if a.type == "SPAR":
 		if win:
-			add_relation(npc, 10 if first else 2)
+			var got := add_relation(npc, 10 if first else 2)
 			p.gold += 40 if first else 10
 			p.gain_xp(180 if first else 50)
 			npc.say("졌다. 인정할게.")
-			Hud.pop("대련 승리!" + (" (40G, 호감 ↑)" if first else " (10G)"), "🏆")
+			Hud.pop("대련 승리!" + (" (40G, %s)" % gain_note(got) if first else " (10G)"), "🏆")
 			Quests.notify("spar")
 			Skills.learn("BLINK")   # 첫 승리 때 티아맷의 기술을 배운다
 		else:
@@ -686,10 +701,10 @@ static func _end_activity(win: bool) -> void:
 			npc.say("아직 멀었어. 다시 와.")
 			Hud.pop("대련 패배… 티아맷이 일으켜 세워 줍니다.", "💫")
 	elif win:
-		add_relation(npc, 8 if first else 2)
+		var got := add_relation(npc, 8 if first else 2)
 		p.gold += 25 if first else 5
 		npc.say(kp.tagWin if kp else "으악 잡혔다! 한 판 더!")
-		Hud.pop("%s 잡았습니다!" % Util.josa(Names.npc(npc.config.name), "을", "를") + (" (25G, 호감 ↑)" if first else " (5G)"), "🎉")
+		Hud.pop("%s 잡았습니다!" % Util.josa(Names.npc(npc.config.name), "을", "를") + (" (25G, %s)" % gain_note(got) if first else " (5G)"), "🎉")
 		if kp:
 			for pn in kp.parents:
 				var par = World.any_npc(pn)
@@ -700,8 +715,33 @@ static func _end_activity(win: bool) -> void:
 		Hud.pop("시간 초과! %s 도망쳤습니다." % Util.josa(Names.npc(npc.config.name), "이", "가"), "⏱️")
 
 
-## 놀이 중인 NPC의 움직임. Dragon 의 _update_npc 가 부른다
+## 대련 상대의 발놀림: 옮겨 다니다가(STEP_TIME) 멈춰 서서 쏜다(PLANT_TIME). 멈춰 선 동안이 틈이다.
+## 쉬지 않고 옆으로만 돌면 겨눈 숨결이 늘 한 발 뒤로 빠져, 아무리 쏴도 닿지 않았다.
+## 쏠 차례면 true: 멈춰 선 첫머리와 그 중간에 한 번씩. 쏘는 게 보이면 그때가 기회다
+static func footwork(npc, a: Dictionary, dt: float, mv: float, speed: float) -> bool:
+	var was: float = a.get("foot", STEP_TIME)
+	a.foot = was - dt
+	if a.foot > 0:
+		if not a.get("planted"): npc.move_by(cos(mv), sin(mv), speed, dt)
+		return a.get("planted", false) and was > PLANT_TIME / 2 and a.foot <= PLANT_TIME / 2
+	a.planted = not a.get("planted", false)
+	a.foot = PLANT_TIME if a.planted else STEP_TIME
+	if a.planted:   # 나를 보고 선다
+		var p = GameState.player
+		npc.facing = Dragon.facing_from_vector(p.x - npc.x, p.y - npc.y, npc.facing)
+	return a.planted
+
+
+## 놀이 중인 NPC의 움직임. Dragon 의 _update_npc 가 부른다.
+## 대련 상대는 숨결의 상태 이상도 받는다: 불·독은 기력을 태우고, 느려지면 굼떠지고, 기절하면 그 자리에 선다
 static func update_activity_npc(npc, dt: float) -> void:
+	var fight: bool = GameState.activity.type == "SPAR" or GameState.activity.type == "DUEL"
+	var pace := Status.update(npc, dt) if fight else 1.0
+	_update_activity(npc, dt * pace)
+	if pace <= 0: npc.moving = false
+
+
+static func _update_activity(npc, dt: float) -> void:
 	if Story.is_drill(GameState.activity):
 		Story.update_drill(npc, dt)
 		return
@@ -713,10 +753,7 @@ static func update_activity_npc(npc, dt: float) -> void:
 	if a.type == "SPAR":
 		Hud.current.set_boss_bar("티아맷과 대련", a.hp / a.max)
 		var move := to_player if d > 300 else to_player + PI if d < 180 else to_player + PI / 2
-		npc.move_by(cos(move), sin(move), 170, dt)
-		a.timer -= dt
-		if a.timer <= 0:
-			a.timer = 0.95
+		if footwork(npc, a, dt, move, 170):
 			for off in ([-0.25, 0.0, 0.25] if a.hp < a.max / 2 else [0.0]):
 				Projectile.add(Projectile.new(npc.x, npc.y - 40, atan2(p.y - 30 - (npc.y - 40), p.x - npc.x) + off,
 					{ faction = "ENEMY", element = "THUNDER", damage = 6, speed = 330, life = 2.2, scale = 0.7 }))

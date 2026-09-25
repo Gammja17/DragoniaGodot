@@ -41,14 +41,23 @@ static func hittable(e) -> bool:
 	return true
 
 
-## 총알 충돌. ALLY 총알은 적/인간에게, ENEMY 총알은 플레이어(와 마을 용)에게만 맞는다
+## 내 숨결·스킬이 닿는 상대: 적 · 인간 · 보스. 대련 중이면 맞은편 용도 든다
+static func foes() -> Array:
+	var E: Dictionary = GameState.entities
+	var list: Array = E.enemies + E.humans + E.bosses
+	var act = GameState.activity
+	if act and (act.type == "SPAR" or act.type == "DUEL") and is_instance_valid(act.npc): list.append(act.npc)
+	return list
+
+
+## 총알 충돌. ALLY 총알은 적/인간(대련 중이면 그 상대)에게, ENEMY 총알은 플레이어(와 마을 용)에게만 맞는다
 static func resolve() -> void:
 	var E: Dictionary = GameState.entities
 	var player = GameState.player
 	for b in E.bullets:
 		if b.remove: continue
 		if b.faction == "ALLY":
-			var targets: Array = E.enemies + E.humans + E.bosses
+			var targets: Array = foes()
 			# 큰 상대(보스·대장)는 몸통이 넓다. 관통탄은 이미 맞힌 적을 건너뛴다
 			for e in targets:
 				if e.remove or b.hit_set.has(e): continue

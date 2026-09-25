@@ -43,7 +43,8 @@ border_color = Color(0.847, 0.698, 0.353, 0.38)
 [sub_resource type="LabelSettings" id="body_text"]
 font = ExtResource("4")
 font_size = 14
-line_spacing = 4.0
+line_spacing = 1.0
+paragraph_spacing = 6.0
 font_color = Color(0.925, 0.89, 0.812, 1)
 
 [node name="DialogueBox" type="PanelContainer"]

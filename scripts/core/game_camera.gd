@@ -101,12 +101,14 @@ func follow(target, smooth := 0.1) -> void:
 	var k := 1.0 if smooth >= 1.0 else 1.0 - pow(1.0 - smooth, frames)
 	cam_x += (tx - w / 2 - cam_x) * k
 	cam_y += (ty - h / 2 - cam_y) * k
-	# 지도가 화면보다 작으면 가운데에 둔다. 컷씬일 때는 경계를 조금 넘어가도 둔다 —
-	# 인물을 대화창 위로 올려야 하는데 작은 지도에서는 경계에 걸려 화면 아래쪽에 박혀 버린다 (어차피 띠가 가린다)
+	# 지도가 화면보다 작으면 가운데에 둔다. 지도 끝에서도 경계를 조금 넘어가 나를 따라간다 —
+	# 딱 멈추면 끝으로 걸어간 내가 화면 가장자리의 상태창·오른쪽 기둥 밑으로 숨는다 (넘어간 자리는 Terrain 이 어둡게 이어 그린다).
+	# 컷씬일 때는 더 넘어가도 둔다: 인물을 대화창 위로 올려야 하는데 작은 지도에서는 경계에 걸려 화면 아래쪽에 박혀 버린다 (어차피 띠가 가린다)
 	var b := Terrain.current_map_bounds()
-	var slack := h * 0.34 if shot != null else 0.0
-	cam_x = (b.x - w) / 2 if b.x <= w else clampf(cam_x, -slack, b.x - w + slack)
-	cam_y = (b.y - h) / 2 if b.y <= h and shot == null else clampf(cam_y, -slack, maxf(-slack, b.y - h + slack))
+	var slack_x := h * 0.34 if shot != null else w * 0.25
+	var slack_y := h * 0.34 if shot != null else h * 0.15
+	cam_x = (b.x - w) / 2 if b.x <= w else clampf(cam_x, -slack_x, b.x - w + slack_x)
+	cam_y = (b.y - h) / 2 if b.y <= h and shot == null else clampf(cam_y, -slack_y, maxf(-slack_y, b.y - h + slack_y))
 	_shake_power *= pow(0.86, frames)
 	shake_x = (randf() - 0.5) * _shake_power * 2
 	shake_y = (randf() - 0.5) * _shake_power * 2

@@ -10,6 +10,9 @@ static var _check_timer := 0.0
 static var _playing := false
 # 지금 흐르는 장면. Esc 로 대화창만 닫아 버리면 장면의 끝(then)이 영영 안 불려서 _playing 이 굳는다
 static var _current = null    # { skip }  장면을 통째로 건너뛰는 손잡이
+# 장면이 도는 중에 들어온 장면들. 앞 장면이 끝난 뒤에 차례로 튼다.
+# 겹쳐 틀면 앞 장면이 끝(then)을 못 맺어 _playing 이 굳고, 그 뒤로 사건이 하나도 안 열렸다
+static var _waiting := []
 static var _choosing := false  # 사건 끝의 선택지가 떠 있다 (건너뛸 수 없다)
 static var _party_cd := 0.0
 
@@ -237,7 +240,7 @@ static func _finish_event(ev: Dictionary) -> void:
 	Save.save_game()
 
 
-## 대사가 가리키는 것을 찾는다 (line.look). 'PROP:FOUNTAIN' · 'DEN:DEN_MINE' · 'Gron'
+## 대사가 가리키는 것을 찾는다 (line.look). 'PROP:FOUNTAIN' · 'DEN:DEN_MINE' · 'ENEMY:DUMMY' · 'Gron'
 static func _look_target(look: String):
 	var p = GameState.player
 	var props: Array = GameState.entities.props
@@ -246,6 +249,7 @@ static func _look_target(look: String):
 		return list[0] if not list.is_empty() else null
 	if look.begins_with("PROP:"): return nearest.call(props.filter(func(x): return x.type == look.substr(5)))
 	if look.begins_with("DEN:"): return nearest.call(props.filter(func(x): return x.type == "DEN_MOUTH" and x.den_id == look.substr(4)))
+	if look.begins_with("ENEMY:"): return nearest.call(GameState.entities.enemies.filter(func(x): return x.type == look.substr(6) and not x.remove))   # 첫날 광장의 허수아비
 	for n in GameState.entities.npcs:
 		if n.config.get("name") == look: return n
 	return null
@@ -263,6 +267,9 @@ static func _find(who):
 ## 여러 줄짜리 장면을 차례로 보여 준다. 아침 장면(Story)도 이걸 쓴다.
 ## line = { who: NPC 이름 | '나' | '???', text, look?, label?, do?, zoom?, auto? } — do·zoom·auto 는 Cutscene 의 연출 박자
 static func play_scene(title, lines: Array, then = null, cinematic := true, place = null) -> void:
+	if _current != null:
+		_waiting.append([title, lines, then, cinematic, place])
+		return
 	lines = _split_directions(lines.filter(func(l): return _chosen(l) and _with(l)))
 	# 장면이 벌어질 곳이 따로 있으면 먼저 그리로 간다
 	if place and place != GameState.map_id and not GameState.dungeon: World.travel_to(place)
@@ -285,6 +292,9 @@ static func play_scene(title, lines: Array, then = null, cinematic := true, plac
 			DialogueBox.current.hide_dialogue()
 			if cinematic: Cutscene.finish()
 			if then: then.call()
+			if _current == null and not _waiting.is_empty():   # 끝(then)이 새 장면을 열지 않았으면 기다리던 장면을 튼다
+				var w: Array = _waiting.pop_front()
+				play_scene(w[0], w[1], w[2], w[3], w[4])
 			return
 		var line: Dictionary = lines[st.i]
 		st.i += 1

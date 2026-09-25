@@ -22,6 +22,7 @@ static func reset_run() -> void:
 	Chronicle._playing = false
 	Chronicle._choosing = false
 	Chronicle._current = null
+	Chronicle._waiting = []
 	Chronicle._check_timer = 0.0
 	Cutscene.reset()
 	BossShow.reset()

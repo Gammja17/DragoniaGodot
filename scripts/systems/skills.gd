@@ -16,8 +16,7 @@ static func later(ms: float, fn: Callable) -> void:
 
 
 static func foes() -> Array:
-	var E: Dictionary = GameState.entities
-	return (E.enemies + E.humans + E.bosses).filter(func(e): return e.get("awake") != false)
+	return Combat.foes().filter(func(e): return e.get("awake") != false)
 
 
 static func power(p, element, m := 1.0) -> float:

@@ -173,6 +173,7 @@ static func _end_drill(win: bool) -> void:
 	var p = GameState.player
 	GameState.activity = null
 	Hud.current.set_boss_bar(null)
+	a.npc.status.clear()   # 대련 중에 받은 상태 이상은 판이 끝나면 털어 낸다
 	for d in a.get("dummies", []):
 		if is_instance_valid(d): d.remove = true   # 이미 깨져 치워진 허수아비도 있다
 	for b in GameState.entities.bullets:
@@ -256,11 +257,8 @@ static func update_drill(npc, dt: float) -> void:
 	# DUEL: 스승과 대련 (수련·승급 시험 공용). 기력(a.hp)은 Dragon.take_damage 가 깎는다
 	Hud.current.set_boss_bar(a.get("label", "승급 시험: 스승 카이론" if a.get("trial") else "스승과의 대련"), a.hp / a.max)
 	var mv := to_player if d > 320 else to_player + PI if d < 200 else to_player + PI / 2
-	npc.move_by(cos(mv), sin(mv), 185, dt)
-	a.timer -= dt
-	if a.timer <= 0:
+	if NpcActions.footwork(npc, a, dt, mv, 185):
 		var hard: bool = a.hp < a.max / 2.0
-		a.timer = 0.8 if hard else 1.1
 		a.wave = a.get("wave", 0) + 1
 		var aim := atan2(p.y - 30 - (npc.y - 50), p.x - npc.x)
 		if a.wave % 4 == 0:

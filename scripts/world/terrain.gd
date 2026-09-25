@@ -3,6 +3,9 @@ extends Node2D
 ## 2D판 world/terrain.js + mapgen.js 의 draw. "지금 밟고 있는 지도" 하나를 가리키고 바닥을 그린다.
 ## 구운 바닥 그림 한 장과, 그 위에서 흐르는 물비늘만 그린다.
 
+const EDGE := 400        # 지도 밖으로 이어 그리는 폭 (원본 px). 카메라가 끝을 넘어가도 빈 검정이 보이지 않게
+const EDGE_DIM := Color(0.02, 0.03, 0.05, 0.55)   # 지도 밖은 어둡게 덮어 여기가 끝이라는 걸 보인다
+
 static var active: GameMap = null
 
 
@@ -32,6 +35,7 @@ var _sparkle_tex: Texture2D
 func _ready() -> void:
 	_sparkle_tex = ImageTexture.create_from_image(TileImages.get_image("sparkle"))
 	z_index = -10
+	texture_repeat = CanvasItem.TEXTURE_REPEAT_MIRROR   # 지도 밖은 가장자리를 거울처럼 되비쳐 잇는다
 
 
 func _process(_dt: float) -> void:
@@ -41,7 +45,14 @@ func _process(_dt: float) -> void:
 func _draw() -> void:
 	if not active or not active.texture: return
 	var S := GameMap.TILE_SCALE
-	draw_texture_rect(active.texture, Rect2(0, 0, active.texture.get_width() * S, active.texture.get_height() * S), false)
+	var tw: float = active.texture.get_width()
+	var th: float = active.texture.get_height()
+	draw_texture_rect_region(active.texture, Rect2(-EDGE * S, -EDGE * S, (tw + EDGE * 2) * S, (th + EDGE * 2) * S), Rect2(-EDGE, -EDGE, tw + EDGE * 2, th + EDGE * 2))
+	var e := EDGE * S
+	var mw := tw * S
+	var mh := th * S
+	for r in [Rect2(-e, -e, e, mh + e * 2), Rect2(mw, -e, e, mh + e * 2), Rect2(0, -e, mw, e), Rect2(0, mh, mw, e)]:
+		draw_rect(r, EDGE_DIM)
 	_draw_sparkles()
 
 

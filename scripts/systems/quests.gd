@@ -126,14 +126,14 @@ static func step_goal_text(q: Dictionary) -> String:
 	return goal_text(st.goal) if st else "보고하러 간다"
 
 
-## 보상 한 줄
-static func reward_text(q: Dictionary) -> String:
+## 보상 한 줄. rel_got: 보고할 때 실제로 오른 호감 (-1 이면 아직 모른다). 하루 상한에 걸려 안 올랐으면 쓰지 않는다
+static func reward_text(q: Dictionary, rel_got := -1.0) -> String:
 	var r: Dictionary = q.reward if q.get("reward") else {}
 	var parts := []
 	if r.get("xp"): parts.append("경험치 %d" % r.xp)
 	if r.get("gold"): parts.append("%dG" % r.gold)
 	if r.get("meat"): parts.append("고기 %d" % r.meat)
-	if r.get("relation"): parts.append("호감 상승")
+	if r.get("relation") and rel_got != 0: parts.append("호감 상승")
 	return " · ".join(parts) if not parts.is_empty() else "-"
 
 
@@ -414,10 +414,10 @@ static func turn_in(q: Dictionary, npc, choice_id = null) -> bool:
 	if Q.tracked == q.id: Q.tracked = null
 	if r.get("meat"): p.inventory.meat += int(r.meat)
 	if r.get("gold"): p.gold += int(r.gold)
-	if r.get("relation") and npc: NpcActions.add_relation(npc, r.relation)   # 단계를 넘으면 사이 장면이 예약된다
+	var rel_got := NpcActions.add_relation(npc, r.relation) if r.get("relation") and npc else -1.0   # 단계를 넘으면 사이 장면이 예약된다
 	if r.get("clue"): add_clue(r.clue)
 	if r.get("element"): p.unlock_element(r.element)      # 싸워서 얻는 게 아니라 맡겨 받는 숨결
-	Hud.quest_banner("이야기 완료", q.title, reward_text(q))
+	Hud.quest_banner("이야기 완료", q.title, reward_text(q, rel_got))
 	if r.get("xp"): p.gain_xp(r.xp)
 	# 고른 선택지에 딸린 장면이 먼저, 그다음이 퀘스트 마무리 장면
 	if q.get("choice"):

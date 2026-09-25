@@ -38,7 +38,7 @@ class_name Cutscene
 const BAR := 0.11          # 레터박스 띠 높이 (화면의 몇 할)
 const STAGE := 168         # 말하는 쪽이 내 곁으로 와서 서는 거리
 const AIM := 0.42          # 인물을 화면 위에서 몇 할 지점에 놓을까 (대화창 위)
-const DIM := 0.55          # 얼마나 어둡게
+const DIM := 0.3           # 얼마나 어둡게 (0.55 는 대사 동안 화면이 너무 어두웠다)
 const BOOST := 1.18        # 카메라를 얼마나 당길까
 const BAR_RATE := 7.0      # 띠와 어둠이 드는 빠르기 (1초에 남은 거리의 몇 배)
 const PUSH_RATE := 1.5     # 장면이 열릴 때 카메라가 다가가는 빠르기. 느릴수록 천천히 밀고 들어간다
@@ -63,7 +63,6 @@ static var boost := 1.0
 static var focus = null    # 지금 말하는 쪽 (개체)
 static var poi = null      # { target, label } 이번 대사가 가리키는 것
 static var title := ""
-static var title_t := 0.0
 static var snap := true    # 장면이 막 시작했는데 카메라가 멀리 있으면 바로 옮긴다
 static var exact := false  # 카메라 박자가 자리를 정한 동안은 따라가기 없이 그 자리를 그대로 본다
 static var music := ""     # 이 장면에 깔 곡. "" 이면 평소대로, "none" 이면 정적 (Audio 가 읽는다)
@@ -103,7 +102,7 @@ static func reset() -> void:
 	on = false
 	bars = 0.0; dim = 0.0; boost = 1.0
 	focus = null; poi = null
-	title = ""; title_t = 0.0
+	title = ""
 	snap = true; exact = false
 	music = ""
 	tone = TONES.none.duplicate(); _tone_want = TONES.none
@@ -230,8 +229,6 @@ static func begin(t := "", speakers := []) -> void:
 	on = true
 	for e in speakers: _stage(e)
 	title = t
-	title_t = 2.6 if t != "" else 0.0
-	Hud.scene_title(t)
 	DialogueBox.current.set_cinematic(true)
 
 
@@ -292,8 +289,6 @@ static func finish() -> void:
 	_card_want = 0.0
 	_center = false
 	_zoom_line = null
-	title_t = 0.0
-	Hud.scene_title("")
 	DialogueBox.current.set_cinematic(false)
 
 
@@ -366,9 +361,6 @@ static func update(dt: float) -> void:
 	if card.get("stamp"):
 		card_hit += dt
 		if card_n < str(card.name).length(): _stamp(dt)
-	if title_t > 0:
-		title_t -= dt
-		if title_t <= 0: Hud.scene_title("")
 
 
 ## 세상이 멈춰 있는 동안(대화창) 무대 위의 이들이 숨을 쉬고 걷게 한다. 효과와 빛 알갱이도 흐른다 (main 이 부른다)
@@ -396,11 +388,9 @@ static func _walk_cast(dt: float) -> void:
 	for m in _cast:
 		var e = m.e
 		if not is_instance_valid(e): continue
-		var speaking: bool = focus == e and not m.get("player") and not m.get("exit")
-		var tx: float = m.to.x
-		var ty: float = m.to.y + (14 if speaking else 0)   # 말할 차례엔 앞으로 나선다
-		var dx: float = tx - e.x
-		var dy: float = ty - e.y
+		var at := _stand_spot(m)
+		var dx: float = at.x - e.x
+		var dy: float = at.y - e.y
 		var d := Vector2(dx, dy).length()
 		if d > 2:
 			var k := minf(1, (dt * float(m.get("speed", WALK))) / d)
@@ -426,6 +416,12 @@ static func _walk_cast(dt: float) -> void:
 		for m in _cast:
 			if m.e == p: mine = m
 		if mine == null or not mine.get("face_lock"): p.facing = _toward(p, focus)
+
+
+## 무대 위에서 그 이가 실제로 설 자리. 말할 차례엔 반걸음 앞으로 나선다
+static func _stand_spot(m: Dictionary) -> Vector2:
+	var speaking: bool = focus == m.e and not m.get("player") and not m.get("exit")
+	return Vector2(m.to.x, m.to.y + (14 if speaking else 0))
 
 
 ## a 가 b 쪽을 보는 방향. 마주 서서 말할 때는 옆얼굴이 자연스럽다
@@ -525,9 +521,12 @@ static func _start(spec: Dictionary) -> Dictionary:
 			if spec.has("speed"): m.speed = float(spec.speed)
 			m.erase("face_lock")
 			if not async:
-				b.until = func(): return not is_instance_valid(e) or Vector2(e.x - m.to.x, e.y - m.to.y).length() <= 3
+				# 말할 차례인 이는 반걸음 앞에 선다 (_stand_spot). 원래 자리만 보면 영영 안 닿아서, 인트로의 포코가 걸을 때마다 6초씩 섰다
+				b.until = func(): return not is_instance_valid(e) or Vector2(e.x, e.y).distance_to(_stand_spot(m)) <= 3
 				b.rush = func():
-					if is_instance_valid(e): e.x = m.to.x; e.y = m.to.y
+					if is_instance_valid(e):
+						var at := _stand_spot(m)
+						e.x = at.x; e.y = at.y
 	elif spec.has("place"):
 		# 걷지 않고 그 자리에 둔다 (장면이 열리기 전부터 거기 있던 것처럼). 나를 옮기면 무대의 기준점도 따라간다
 		var e = actor(spec.place)

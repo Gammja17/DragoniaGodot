@@ -353,13 +353,6 @@ func _end_chapter_card() -> void:
 	if d: d.call()
 
 
-# ---------- 장면 제목 (컷씬이 시작될 때 가운데에 한 번) ----------
-static func scene_title(text: String) -> void:
-	var l: Label = current.get_node("SceneTitle")
-	if text != "": l.text = text
-	l.create_tween().tween_property(l, "modulate:a", 1.0 if text != "" else 0.0, 0.5)
-
-
 ## 보스 체력바. name 이 null 이면 감춘다. 너비는 0.15초에 걸쳐 따라간다 (2D판 transition)
 func set_boss_bar(name_text, ratio := 0.0) -> void:
 	if name_text == null:

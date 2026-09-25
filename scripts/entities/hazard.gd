@@ -39,8 +39,7 @@ static func add(px: float, py: float, opts: Dictionary) -> Hazard:
 
 
 func _targets() -> Array:
-	var E: Dictionary = GameState.entities
-	var list: Array = [GameState.player] + Combat.allies() if faction == "ENEMY" else (E.enemies + E.humans + E.bosses).filter(func(e): return e.get("awake") != false)
+	var list: Array = [GameState.player] + Combat.allies() if faction == "ENEMY" else Combat.foes().filter(func(e): return e.get("awake") != false)
 	return list.filter(func(e):
 		var d := Util.dist(self, e)
 		return d <= r + (50 if e.def.get("scale") else 0) and d >= inner)

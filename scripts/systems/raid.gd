@@ -189,9 +189,9 @@ static func _end() -> void:
 	if ob:
 		for npc in GameState.entities.npcs:
 			if npc.config.get("name") == ob.name and not ob.failed:
-				NpcActions.add_relation(npc, 8)
+				var got := NpcActions.add_relation(npc, 8)
 				p.gold += 40; p.gain_xp(80)
-				Hud.pop("%s 끝까지 지켜 냈다! (40G, 호감 ↑)" % Util.josa(Names.npc(ob.name), "을", "를"), "🛡️")
+				Hud.pop("%s 끝까지 지켜 냈다! (40G, %s)" % [Util.josa(Names.npc(ob.name), "을", "를"), NpcActions.gain_note(got)], "🛡️")
 				npc.say("고, 고마워… 나 진짜 무서웠어." if ob.name == "Poco" else "덕분에 살았어. 고마워.")
 		raid.objective = null
 	Quests.notify("raid")

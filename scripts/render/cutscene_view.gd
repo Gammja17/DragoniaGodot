@@ -55,12 +55,18 @@ func _draw() -> void:
 	var size := get_viewport_rect().size
 	var z := camera.zoom.x
 	var t := Time.get_ticks_msec()
-	# 2) 말하는 쪽 머리 위에 작은 표시 (이름표를 감췄으니 대신)
-	if Cutscene.focus and is_instance_valid(Cutscene.focus) and Cutscene.dim > 0.4:
-		var sp := _to_screen(Cutscene.focus.x, Cutscene.focus.y)
-		var ty := sp.y - 104 * z + sin(t / 260.0) * 4
-		draw_colored_polygon(PackedVector2Array([Vector2(sp.x, ty + 11), Vector2(sp.x - 9, ty - 4), Vector2(sp.x + 9, ty - 4)]),
-			Color(1, 216 / 255.0, 74 / 255.0, minf(1, (Cutscene.dim - 0.4) / 0.4)))
+	# 2) 말하는 쪽 머리 위에 작은 표시 (이름표를 감췄으니 대신). 그 용의 그림 높이를 따라 머리 위에 띄운다
+	#    (늘 104px 위에 그려서 큰 용은 몸통에 박혔다). 머리 위 표시(!·? …)가 떠 있는 동안은 비켜 준다
+	var f = Cutscene.focus
+	if f and is_instance_valid(f) and Cutscene.dim > 0.4 and f is Dragon and f._emote == "":
+		var sp := _to_screen(f.x, f.y - Dragon.head_top(f.sheet) + f.hover_y)
+		var ty := sp.y - 14 + sin(t / 260.0) * 2
+		var a := minf(1, (Cutscene.dim - 0.4) / 0.4)
+		var tri := PackedVector2Array([Vector2(sp.x - 6, ty - 7), Vector2(sp.x + 6, ty - 7), Vector2(sp.x, ty)])
+		var rim := tri.duplicate()
+		rim.append(tri[0])
+		draw_polyline(rim, Color(20 / 255.0, 14 / 255.0, 0, 0.85 * a), 3, true)
+		draw_colored_polygon(tri, Color(1, 216 / 255.0, 74 / 255.0, a))
 	# 2-1) 가리키는 것: 천천히 뛰는 금빛 테와 이름표
 	if Cutscene.poi and is_instance_valid(Cutscene.poi.target) and Cutscene.dim > 0.4:
 		var tg = Cutscene.poi.target
@@ -74,13 +80,16 @@ func _draw() -> void:
 		draw_polyline(pts, Color(1, 216 / 255.0, 74 / 255.0, (0.55 + beat * 0.4) * a), 3, true)
 		var label: String = Cutscene.poi.label
 		if label != "":
-			var fs := 36 if z >= 1.5 else 24
+			# 이름표 · 길잡이 표시와 같은 12px. 36 · 24 로 키우면 글자가 판을 뚫고 나가 깨져 보였다. 판은 글자 크기에 맞춘다
+			var fs := 12
 			var font := Fonts.bold()
-			var tw := Fonts.text_width(font, label, fs) + 22
-			var ly := sp.y - 78 * z
-			draw_rect(Rect2(sp.x - tw / 2, ly - 17, tw, 26), Color(14 / 255.0, 13 / 255.0, 22 / 255.0, 0.9 * a))
-			draw_rect(Rect2(sp.x - tw / 2 + 0.5, ly - 16.5, tw - 1, 25), Color(216 / 255.0, 178 / 255.0, 90 / 255.0, 0.9 * a), false, 1)
-			Fonts.draw_centered(self, font, label, sp.x, ly + 2, fs, Color(1, 216 / 255.0, 74 / 255.0, a))
+			var asc := font.get_ascent(fs)
+			var bh := asc + font.get_descent(fs) + 10
+			var tw := Fonts.text_width(font, label, fs) + 20
+			var top := sp.y - 78 * z - bh / 2
+			draw_rect(Rect2(sp.x - tw / 2, top, tw, bh), Color(14 / 255.0, 13 / 255.0, 22 / 255.0, 0.9 * a))
+			draw_rect(Rect2(sp.x - tw / 2 + 0.5, top + 0.5, tw - 1, bh - 1), Color(216 / 255.0, 178 / 255.0, 90 / 255.0, 0.9 * a), false, 1)
+			Fonts.draw_centered(self, font, label, sp.x, top + 5 + asc, fs, Color(1, 216 / 255.0, 74 / 255.0, a))
 	# 3) 위아래 띠
 	var bar := roundf(size.y * Cutscene.BAR * Cutscene.bars)
 	if bar > 0:

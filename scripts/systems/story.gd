@@ -523,9 +523,12 @@ static func _kill_npc(nm: String) -> void:
 	if GameState.companion and GameState.companion.config.get("name") == nm: GameState.companion = null
 	for n in GameState.entities.npcs:
 		if n.config.get("name") == nm: n.remove = true
-	# 그 용이 맡겼던 일은 이제 보고할 데가 없다
+	# 그 용이 맡겼던 일은 이제 보고할 데가 없다. 그 용에게 물어보려던 대목(도란의 바늘을 그론에게)도 그렇다
 	for q in Quests.all():
-		if not GameState.quests.active.has(q.id) or q.act == "main" or Quests.turn_in_npc(q) != nm: continue
+		if not GameState.quests.active.has(q.id) or q.act == "main": continue
+		var st = Quests.cur_step(q)
+		var asks: bool = st != null and st.goal.type == "talk" and st.goal.get("target") == nm
+		if Quests.turn_in_npc(q) != nm and not asks: continue
 		GameState.quests.active.erase(q.id)
 		Hud.pop("%s에게 받은 부탁 [%s], 끝내 전하지 못했다." % [Names.npc(nm), q.title], "🕯️")
 	Quests.changed()

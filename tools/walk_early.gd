@@ -1,7 +1,8 @@
 extends Node
 ## 처음 하는 사람처럼 첫 며칠을 걸어 본다 (흐름 살피기용. 맞다 · 틀리다를 가리지 않는다).
 ## 추적창이 가리키는 대로 움직이고, 화면에 뜬 대사 · 알림 · 배너 · 추적창을 날짜 · 시각과 함께 찍는다.
-## 걷는 시간은 거리만큼 기다려서 흉내 낸다. 싸움은 한 대에 쓰러뜨린다.
+## 걷는 시간은 거리만큼 기다려서 흉내 낸다. 싸움은 한 대에 쓰러뜨린다 (보스도. 대련은 기력을 비워 이긴 셈 친다).
+## 굴 탐험 · 대장간 단련 대목은 건너뛴다 (지하 몇 층 · 단련 한 번을 한 셈 친다).
 ## 가리키는 곳이 아직 닫힌 지도면 [막힘], 찾아간 용이 할 말이 없으면 [헛걸음] 을 찍는다.
 ##   godot --headless --path . res://tools/walk_early.tscn -- [며칠째까지 (기본 3)]
 
@@ -16,6 +17,8 @@ var _qb = null
 var _toasts := {}
 var _visiting := ""
 var _idle_logged := ""
+var _stage_logged := false
+var _event_wait := ""
 
 
 func _ready() -> void:
@@ -29,7 +32,7 @@ func _ready() -> void:
 	_box = DialogueBox.current
 	Engine.time_scale = 3.0
 	var t0 := Time.get_ticks_msec()
-	while GameState.day <= _until and Time.get_ticks_msec() - t0 < 25 * 60 * 1000:
+	while GameState.day <= _until and Time.get_ticks_msec() - t0 < maxi(25, _until * 4) * 60 * 1000:
 		await get_tree().process_frame
 		_watch()
 		_status()
@@ -158,6 +161,14 @@ func _act():
 			else: await _pass(20)
 		"visit": await _go(g.target)
 		"sleep": await _sleep()
+		"boss": await _boss(str(g.id))
+		"event": await _event(st)
+		"spar": await _play_with("Tiamat")
+		"tag": await _play_with(str(g.get("target", "Poco")))
+		"delve", "upgrade":
+			_line("[봇] %s 대목은 건너뛴다" % g.type)
+			Quests.notify(g.type, int(g.get("count", 1)) if g.type == "delve" else null)
+			await _pass(3)
 		"tour": pass
 		_:
 			_line("[봇] 여기까지만 걷는다 (%s)" % g.type)
@@ -189,6 +200,7 @@ func _go(map: String):
 		return false
 	_line("[봇] %s(으)로 간다" % Names.map(map))
 	await _pass(GATE)
+	if _busy(): return false   # 가는 길에 장면이 열렸다. 사람은 대화 중에 지도를 넘지 못한다
 	World.travel_to(map)
 	await _real(0.6)
 	return true
@@ -198,7 +210,12 @@ func _walk_to(x: float, y: float):
 	var p = GameState.player
 	var d := Vector2(p.x, p.y).distance_to(Vector2(x, y))
 	await _pass(d / WALK)
+	if _busy(): return   # 걷는 사이 장면이 열렸다 (장면 도중에 자리를 옮기던 것)
 	p.x = x; p.y = y
+
+
+func _busy() -> bool:
+	return DialogueBox.is_open() or Cutscene.on or GameState.isDialogueOpen
 
 
 ## 그 적을 찾아 쓰러뜨린다. 없으면 사냥터로
@@ -212,16 +229,25 @@ func _hunt(target: String):
 	var e = foes[0]
 	await _walk_to(e.x - 200, e.y)
 	await _pass(1.5)
+	if _busy(): return
 	if is_instance_valid(e) and not e.remove: e.take_damage(99999)
 
 
 ## 승급 시험: 레벨이 모자라면 사냥, 차면 카이론에게 청한다
 func _stage():
 	var p = GameState.player
-	if p.level < 4: return await _hunt("")
+	var t = Story.next_trial()
+	if t and t.blocked:   # 레벨이 모자라면 사냥, 다른 게 모자라면 (수련 · 이야기) 그날 일과를 한다
+		if p.level < Story._stages()[int(t.stage)].minLevel: return await _hunt("")
+		if not _stage_logged:
+			_stage_logged = true
+			_line("[봇] 승급 시험이 막혀 있다: %s" % t.blocked)
+		return await _training()
+	_stage_logged = false
 	var k = World.any_npc("Kairon")
 	if not k or not GameState.entities.npcs.has(k): return await _visit("Kairon")
 	await _walk_to(k.x - 60, k.y)
+	if _busy(): return
 	_line("[봇] 카이론에게 가르침을 청한다")
 	NpcActions.show(k, "뭘 배우러 왔냐.", Story.master_options(k) + [{ label = "돌아간다", on_select = NpcActions.close }])
 
@@ -262,7 +288,65 @@ func _drill():
 			_line("[봇] %s 을 이긴 셈 친다" % a.type)
 			Story._end_drill(true)
 		return
-	await _pass(3)   # 대련 · 술래잡기는 하지 않는다
+	if a.get("type") == "SPAR":   # 티아맷과 대련: 기력을 비워 이긴 셈 친다
+		_line("[봇] 대련을 이긴 셈 친다")
+		a.hp = 0.0
+		return await _pass(1)
+	if a.get("type") == "TAG" and a.get("npc"):   # 술래잡기: 곁으로 가서 잡는다
+		GameState.player.x = a.npc.x; GameState.player.y = a.npc.y
+		return await _pass(1)
+	await _pass(3)
+
+
+## 대련 · 술래잡기 대목: 그 용 곁으로 가서 판을 바로 연다 (말을 걸면 메뉴가 떠서 헛걸음으로 찍히던 것)
+func _play_with(who: String):
+	var n = World.any_npc(who)
+	if not n or not GameState.entities.npcs.has(n) or n.is_hidden: return await _visit(who)
+	await _walk_to(n.x - 60, n.y)
+	if _busy() or GameState.activity: return
+	_line("[봇] %s와 %s" % [Names.npc(who), "대련한다" if who == "Tiamat" else "술래잡기를 한다"])
+	if who == "Tiamat": NpcActions._go_spar(n)
+	else: NpcActions._start_tag(n)
+	await _pass(2)
+
+
+## 보스: 그 둥지로 가서 깨어나기를 기다렸다가 쓰러뜨린다 (한 대에). 장면이 끼는 판은 넘기며 기다린다
+func _boss(id: String):
+	var at = Guide._boss_place(id)
+	if at == null:
+		_line("[봇] 보스 %s 의 자리를 모른다" % id)
+		_until = -1
+		return
+	if GameState.map_id != at.map:
+		await _go(at.map)
+		return
+	var b = null
+	for x in GameState.entities.bosses:
+		if x.id == id and not x.remove: b = x
+	if b == null: return await _pass(5)   # 사건을 겪어야 둥지에 보스가 있다
+	var p = GameState.player
+	await _walk_to(b.x, b.y + 380)
+	p.hp = p.max_hp
+	if not b.awake or b.dying > 0 or b.lingering or not Combat.hittable(b): return await _pass(2)
+	_line("[봇] %s 을 친다" % b.def.name)
+	b.take_damage(b.hp + 1)
+	await _pass(1)
+
+
+## 그 자리에 가 있기: 대목이 가리키는 자리(where · glint)로 가서 기다린다. 자리가 없으면 그 사건이 열릴 때까지 기다린다
+func _event(st: Dictionary):
+	var at = st.get("where") if st.get("where") else st.get("glint")
+	if at == null:
+		if _event_wait != str(st.goal.target):
+			_event_wait = str(st.goal.target)
+			_line("[봇] 사건(%s)을 기다린다" % st.goal.target)
+		return await _pass(10)
+	if GameState.map_id != at.map:
+		await _go(at.map)
+		return
+	var w := World.at(at.get("spot", at.get("at")))
+	await _walk_to(w.x, w.y + 60)
+	await _pass(4)
 
 
 func _defend():
@@ -280,6 +364,7 @@ func _sleep():
 	var nests = GameState.entities.nests
 	if nests.is_empty(): return await _pass(5)
 	await _walk_to(nests[0].x, nests[0].y + 40)
+	if _busy(): return
 	_line("[봇] 잠자리에 눕는다")
 	Story.open_nest_menu()
 

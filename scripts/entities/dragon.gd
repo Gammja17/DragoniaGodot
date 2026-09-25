@@ -762,9 +762,10 @@ func _update_fishing(dt: float, moved: bool) -> void:
 	else:
 		f.wait -= dt
 		if f.wait <= 0:
-			f.bite = 1.0
+			f.bite = 1.6 if GameState.quests.done.has("dr1") else 1.0   # 도란의 낚싯대: 한 박자 늦어도 안 놓친다
 			Particles.burst(f.x, f.y, "#bfe9ff", 0.5, 6)
 			Sfx.play("splash")
+			if f.get("big"): Hud.pop("찌가 쑥 빨려 들어간다! 큰 놈이다! [Space]", "🐟")
 
 
 ## 들고 있는 알을 곁의 둥지에 놓는다. 놓았거나 못 놓는 까닭을 알렸으면 true.
@@ -847,6 +848,13 @@ func interact() -> void:
 				return
 	# 낚시 중: 입질이 왔을 때 누르면 낚는다
 	if fishing:
+		if fishing.bite > 0 and fishing.get("big"):   # 도란의 '큰 놈' (dr1): 해 뜰 무렵의 호수에서만 올라온다
+			GameState.stats.fish = GameState.stats.get("fish", 0) + 1
+			Particles.burst(fishing.x, fishing.y, "#bfe9ff", 1.2, 18)
+			GameCamera.current.shake(4)
+			fishing = null
+			Quests.notify("fish", "BIG")
+			return
 		if fishing.bite > 0:
 			var n := 2 if randf() < 0.25 else 1
 			inventory.meat += n
@@ -854,6 +862,9 @@ func interact() -> void:
 			Vfx.spawn_text(x, y - 100 * stage.scale, "고기 +%d (물고기)" % n, "#9fe3ff", 16)
 			Particles.burst(fishing.x, fishing.y, "#bfe9ff", 0.7, 10)
 			gain_xp(6)
+			Quests.notify("fish", GameState.map_id)
+			if Quests.wants("fish", "BIG") and not _big_fish_hour():
+				Hud.pop("큰 놈이 아니다. 큰 놈은 해 뜰 무렵(새벽 다섯 시부터 여덟 시 전까지) 호수에서 올라온다.", "🎣")
 		else:
 			Hud.pop("너무 일찍 당겼습니다.", "🎣")
 		fishing = null
@@ -896,7 +907,17 @@ func interact() -> void:
 	var water = _near_water() if not carrying else null
 	if water:
 		fishing = { x = water.x, y = water.y, wait = Util.rand_range(1.5, 4.5), bite = 0.0 }
+		# 도란의 '큰 놈' (dr1): 해 뜰 무렵 호수에서 그 대목일 때만. 오래 기다리게 한다
+		if Quests.wants("fish", "BIG") and GameState.map_id == "LAKE" and _big_fish_hour():
+			fishing.big = true
+			fishing.wait = Util.rand_range(3.0, 5.5)
 		Hud.pop("낚싯줄을 드리웠습니다. 찌가 흔들릴 때 [Space]!", "🎣")
+
+
+## 해 뜰 무렵: 새벽 다섯 시부터 여덟 시 전까지 (큰 놈이 올라오는 때)
+static func _big_fish_hour() -> bool:
+	var h := GameState.dayTime * 24.0
+	return h >= 5.0 and h < 8.0
 
 
 ## [C] 고기를 먹는다. 상호작용과 섞어 두면 상자를 열려다 고기가 먹힌다

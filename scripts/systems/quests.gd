@@ -117,6 +117,7 @@ static func goal_text(g: Dictionary) -> String:
 		"upgrade": return "대장간 단련 %d회" % n
 		"chest": return "보물상자 %d개 개봉" % n
 		"delve": return "옛 굴 지하 %d층까지 내려가기" % n
+		"fish": return "큰 놈 낚기" if g.get("target") == "BIG" else "물고기 %d마리 낚기" % n
 	return "목표"
 
 
@@ -204,7 +205,7 @@ static func notify(type: String, target = null) -> void:
 		if not st or _from_bag(st.goal): continue
 		var g: Dictionary = st.goal
 		if g.type != type: continue
-		if (type == "kill" or type == "visit" or type == "talk" or type == "event") and g.get("target") != target: continue
+		if (type == "kill" or type == "visit" or type == "talk" or type == "event" or type == "fish") and g.get("target") != target: continue
 		if type == "boss" and g.id != target: continue
 		if type == "stage" and target < g.index: continue
 		var e = _entry(q)
@@ -215,6 +216,14 @@ static func notify(type: String, target = null) -> void:
 	chore_notify.call(type, target)
 	training.notify.call(type, target)
 	on_change.call()
+
+
+## 지금 대목 가운데 이 목표를 기다리는 것이 있나 (그 대목일 때만 달리 벌어지는 일: 새벽 호수의 '큰 놈')
+static func wants(type: String, target) -> bool:
+	for q in active_quests():
+		var st = cur_step(q)
+		if st and st.goal.type == type and st.goal.get("target") == target: return true
+	return false
 
 
 # ---------- 말을 걸어서 넘기는 대목 ----------

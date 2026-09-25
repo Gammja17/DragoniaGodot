@@ -346,7 +346,40 @@ static func _build_c() -> void:
 		"quests:QUESTS.n3.needs": func(s): return s.story.get("route") != "dark",
 		# 엘더와 함께 수련장에 들어서면 엘더가 약속을 거둔다
 		"chronicle:CHRONICLE.ev_nara_trial.when": func(c): return c.map == "DOJO" and c.active.call("n3") and int(c.s.quests.active.n3.step) == 2,
+
+		# ---- 마을 이웃 이야기 ----
+		# 도란의 '큰 놈': 호수가 열리고, 바늘을 보여 줄 그론이 살아 있을 때
+		"quests:QUESTS.dr1.needs": func(s): return Chapters.map_open(s, "LAKE") and not _dead(s, "Gron"),
+		# 단네 저녁상: 누리를 골짜기에서 찾아 준 뒤
+		"quests:QUESTS.sn1.needs": func(s): return s.quests.done.has("m4"),
+		# 해가 지면 단 · 소이네 집 앞에서
+		"chronicle:CHRONICLE.ev_nuri_dinner.when": func(c): return c.map == "VILLAGE" and c.active.call("sn1") and int(c.s.quests.active.sn1.step) == 0 \
+			and c.hour >= 17 and c.hour < 22 and Vector2(c.s.player.x - (26 * 96 + 48), c.s.player.y - (19 * 96 + 48)).length() < 380,
+		# 저녁상 다음 날 낮, 단이 나무하는 숲 어귀에서
+		"chronicle:CHRONICLE.ev_nuri_forest.when": func(c): return c.map == "EAST_ROAD" and c.active.call("sn1") and int(c.s.quests.active.sn1.step) == 1 \
+			and c.hour >= 7 and c.hour < 16 and c.day > int(c.s.story.get("eventDay", {}).get("ev_nuri_dinner", c.day)),
+		# 하루 · 세이란 · 유안 · 엠버: 어둠의 길로 들어선 판에서는 구름마루와 마을이 갈라선다
+		"quests:QUESTS.hr1.needs": func(s): return s.quests.done.has("m6w") and s.story.get("route") != "dark",
+		"quests:QUESTS.sr1.needs": func(s): return s.quests.done.has("m5g") and s.story.get("route") != "dark",
+		"quests:QUESTS.yu1.needs": func(s): return s.quests.done.has("m5c") and s.story.get("route") != "dark",
+		"quests:QUESTS.em1.needs": func(s): return s.quests.done.has("m5b") and s.story.get("route") != "dark",
+		# 하루의 조약돌: 마을 광장 분수 둘레에서
+		"chronicle:CHRONICLE.ev_haru_pebble.when": func(c): return c.map == "VILLAGE" and _step(c.s, "hr1") == 0 \
+			and Vector2(c.s.player.x - (17 * 96 + 48), c.s.player.y - (12 * 96 + 48)).length() < 300,
+		# 징검돌: 낮에 폭포 아래에서
+		"chronicle:CHRONICLE.ev_haru_stones.when": func(c): return c.map == "FALLS" and _step(c.s, "hr1") == 2 and c.hour >= 7 and c.hour < 18,
+		# 세이란의 샘: 밤에 구름마루에서
+		"chronicle:CHRONICLE.ev_seiran_pool.when": func(c): return c.map == "CLOUDTOP" and _step(c.s, "sr1") == 0 and (c.hour >= 20 or c.hour < 4),
+		# 누이의 알: 봉우리의 알 벽 앞에서 · 망루 자리: 낮에 폭포 아래에서
+		"chronicle:CHRONICLE.ev_yuan_egg.when": func(c): return c.map == "GLACIA_LAIR" and _step(c.s, "yu1") == 0,
+		"chronicle:CHRONICLE.ev_yuan_tower.when": func(c): return c.map == "FALLS" and _step(c.s, "yu1") == 1 and c.hour >= 7 and c.hour < 18,
 	}, true)
+
+
+## 맡고 있는 퀘스트의 지금 대목 번호. 안 맡았으면 -1
+static func _step(s, id: String) -> int:
+	var e = s.quests.active.get(id)
+	return int(e.step) if e else -1
 
 
 ## 5장: 봉우리에 눈이 퍼부을 때가 되었는가. 밀회를 본 날(Chronicle 이 적는다)로부터 사흘째.

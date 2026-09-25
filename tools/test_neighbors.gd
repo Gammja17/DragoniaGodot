@@ -109,6 +109,7 @@ func _ready() -> void:
 	await _talk(soi)
 	_check("소이에게 보고하고 끝낸다", G.quests.done.has("sn1"))
 	_check("누리가 보물을 준다", _saw("제일 반짝이는 거야"))
+	_check("누리의 조약돌이 굴 꾸미기 물건으로 들어온다", Den.owned("PEBBLE_NURI"), 1)
 
 	# ---------- 뒷장의 넷: 하루 · 세이란 · 유안 · 엠버 ----------
 	G.quests.done.append_array(["m5", "m5g", "m5a", "m6w", "m5b", "m5c"])
@@ -165,6 +166,13 @@ func _ready() -> void:
 	_check("티아맷과 유안이 망루를 같이 세운다", _saw("망루는 둘이 서면 덜 추워"))
 	await _talk(yuan)
 	_check("유안의 부탁을 마친다", G.quests.done.has("yu1"))
+	_check("하루의 돌이 굴 꾸미기 물건으로 들어온다", Den.owned("STONE_HARU"), 1)
+	# 이야기 흔적: 다시 폭포에 오면 징검돌과 망루가 서 있다
+	await _travel("VILLAGE")
+	await _travel("FALLS")
+	var stones: Array = G.entities.props.filter(func(x): return x.type == "STEPSTONE")
+	_check("폭포 아래 징검돌 여섯 (그림 하나에 돌 셋)", stones.size(), 2)
+	_check("폭포 아래 망루", G.entities.props.any(func(x): return x.type == "TOWER"))
 
 	# 엠버: 카이론에게 까닭을 묻고 → 엠버 → 티아맷에게 방패 → 보고
 	await _travel("VILLAGE")

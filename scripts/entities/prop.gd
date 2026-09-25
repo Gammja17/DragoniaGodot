@@ -109,9 +109,9 @@ func open() -> void:
 	if randf() < 0.22:
 		var id = Relics.random_relic()
 		if id: Relics.grant(id, x, y)
-	# 가끔 굴에 들여놓을 살림살이가 들어 있다
+	# 가끔 굴에 들여놓을 살림살이가 들어 있다 (이웃에게 받는 선물은 상자에서 나오지 않는다)
 	if randf() < 0.3:
-		var pool := Den.furniture().keys().filter(func(k): return Den.furniture()[k].cost.get("gold", 0) <= 120)
+		var pool := Den.furniture().keys().filter(func(k): return not Den.furniture()[k].get("gift") and Den.furniture()[k].cost.get("gold", 0) <= 120)
 		Den.give_furniture(pool.pick_random())
 	Hud.pop("보물상자를 열었습니다!", "🎁")
 	Quests.notify("chest")

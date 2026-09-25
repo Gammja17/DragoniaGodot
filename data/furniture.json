@@ -502,6 +502,36 @@
     "HIDE": 2
    },
    "note": "떨어지던 날의 하늘."
+  },
+  "PEBBLE_NURI": {
+   "name": "누리의 조약돌",
+   "tile": [
+    0,
+    1
+   ],
+   "span": [
+    1,
+    1
+   ],
+   "cozy": 2,
+   "cost": {},
+   "gift": true,
+   "note": "누리가 포코랑 숨겨 둔 보물 가운데 제일 반짝이는 것. 포코한테는 비밀이다."
+  },
+  "STONE_HARU": {
+   "name": "하루의 돌",
+   "tile": [
+    0,
+    1
+   ],
+   "span": [
+    1,
+    1
+   ],
+   "cozy": 2,
+   "cost": {},
+   "gift": true,
+   "note": "폭포 꼭대기 물살에 닳은 위 세상 돌. 하루가 준 것이다."
   }
  },
  "FURNITURE_IDS": [
@@ -531,6 +561,8 @@
   "FIREPLACE",
   "PLANT",
   "WINDOW",
-  "NIGHTSKY"
+  "NIGHTSKY",
+  "PEBBLE_NURI",
+  "STONE_HARU"
  ]
 }

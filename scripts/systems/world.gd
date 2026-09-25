@@ -191,8 +191,9 @@ static func _populate(id: String) -> Dictionary:
 		gate.portal = { side = p.side, to = p.to, name = p.get("name") if p.get("name") else Names.map(p.to), needsFlight = bool(p.get("needsFlight", false)) }
 		pools.props.append(gate)
 
-	# 3) 지도마다의 것들
+	# 3) 지도마다의 것들. done 이 달린 것은 그 이야기를 끝낸 뒤에만 선다 (하루와 놓은 징검돌 · 유안과 세운 망루)
 	for f in spec.get("fixtures", []):
+		if f.get("done") and not GameState.quests.done.has(f.done): continue
 		var pos := at(f.at) if f.get("at") else Vector2(m.w / 2.0, m.h / 2.0)
 		match f.t:
 			"PROP": pools.props.append(_prop(pos.x, pos.y, f.type))

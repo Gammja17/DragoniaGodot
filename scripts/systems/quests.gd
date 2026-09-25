@@ -135,6 +135,7 @@ static func reward_text(q: Dictionary, rel_got := -1.0) -> String:
 	if r.get("gold"): parts.append("%dG" % r.gold)
 	if r.get("meat"): parts.append("고기 %d" % r.meat)
 	if r.get("relation") and rel_got != 0: parts.append("호감 상승")
+	if r.get("furniture"): parts.append("살림살이: %s" % Den.furniture()[r.furniture].name)
 	return " · ".join(parts) if not parts.is_empty() else "-"
 
 
@@ -452,6 +453,9 @@ static func turn_in(q: Dictionary, npc, choice_id = null) -> bool:
 	var rel_got := NpcActions.add_relation(npc, r.relation) if r.get("relation") and npc else -1.0   # 단계를 넘으면 사이 장면이 예약된다
 	if r.get("clue"): add_clue(r.clue)
 	if r.get("element"): p.unlock_element(r.element)      # 싸워서 얻는 게 아니라 맡겨 받는 숨결
+	if r.get("furniture"):   # 받은 선물은 굴 꾸미기의 [가진 것]에 들어간다 (누리의 조약돌 · 하루의 돌)
+		GameState.furniture[r.furniture] = Den.owned(r.furniture) + 1
+		Hud.pop("%s 받았다. 내 굴에서 [E] 굴 꾸미기로 놓을 수 있다." % Util.josa(Den.furniture()[r.furniture].name, "을", "를"), "🪨")
 	Hud.quest_banner("이야기 완료", q.title, reward_text(q, rel_got))
 	if r.get("xp"): p.gain_xp(r.xp)
 	# 고른 선택지에 딸린 장면이 먼저, 그다음이 퀘스트 마무리 장면

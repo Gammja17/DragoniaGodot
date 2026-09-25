@@ -735,6 +735,33 @@
       11.46,
       10.15
      ]
+    },
+    {
+     "t": "PROP",
+     "type": "STEPSTONE",
+     "at": [
+      13.4,
+      6.9
+     ],
+     "done": "hr1"
+    },
+    {
+     "t": "PROP",
+     "type": "STEPSTONE",
+     "at": [
+      15.2,
+      6.9
+     ],
+     "done": "hr1"
+    },
+    {
+     "t": "PROP",
+     "type": "TOWER",
+     "at": [
+      5,
+      11
+     ],
+     "done": "yu1"
     }
    ],
    "sneak": {

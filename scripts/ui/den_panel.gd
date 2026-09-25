@@ -76,6 +76,7 @@ func _render() -> void:
 			empty = "아직 가진 살림살이가 없다. [엮는다]에서 만들어 보자."
 		"craft":
 			for id in F:
+				if F[id].get("gift"): continue   # 받은 선물(누리의 조약돌 · 하루의 돌)은 엮어 만들지 않는다
 				_item(id, Den.cost_text(id), not Den.can_afford(id), func():
 					if not Den.craft(id): Hud.pop("재료나 골드가 모자랍니다.", "🪵")
 					_render())

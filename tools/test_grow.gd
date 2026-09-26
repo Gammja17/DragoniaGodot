@@ -72,6 +72,7 @@ func _ready() -> void:
 	_check("포코: 나 이제 어른이야", _saw("나 이제 어른이야"))
 	_check("포코가 자랐다 (어른 칸 34 · 크기 0.95)", [poco.look, poco.config.scale], [34, 0.95])
 	_check("어른 초상화", poco.sheet.portrait, "poco_adult")
+	_check("어른 포코의 표정 여섯 가지 (기쁨 · 슬픔 · 화 · 놀람 · 걱정)", _faces("poco_adult"), 6)
 	_check("이야기에 적힌다", G.story.get("grown", []).has("Poco"))
 	await _talk(poco)
 	_check("포코에게 보고하고 끝낸다", G.quests.done.has("p3"))
@@ -97,6 +98,7 @@ func _ready() -> void:
 	await _play_until(func(): return Quests.is_complete(hr2) and _idle(), 40)
 	_check("리운: 부끄러운 일이 아니오", _saw("부끄러운 일이 아니오"))
 	_check("하루가 자랐다 (어른 칸 35)", haru.look, 35)
+	_check("어른 하루의 초상화 · 표정 여섯 가지", [haru.sheet.portrait, _faces("haru_adult")], ["haru_adult", 6])
 	await _talk(haru)
 	_check("하루에게 보고하고 끝낸다", G.quests.done.has("hr2"))
 
@@ -123,6 +125,12 @@ func _ready() -> void:
 
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit(1 if _fails else 0)
+
+
+## 그 초상화의 표정 그림이 몇 가지 있는지 (neutral 까지 여섯이면 다 있다)
+func _faces(portrait: String) -> int:
+	var P = load("res://scripts/ui/portrait.gd")
+	return ["neutral", "happy", "sad", "angry", "surprised", "worried"].filter(func(f): return P.face_texture(portrait, f) != null).size()
 
 
 func _travel(id: String) -> void:

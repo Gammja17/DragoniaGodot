@@ -45,7 +45,7 @@ func setup(d: Dictionary) -> void:
 
 
 ## 아래쪽 가운데 · 위쪽 가운데 (줄기를 이을 자리, 전역 좌표)
-func bottom_point() -> Vector2: return $Gem.global_position + Vector2($Gem.size.x / 2, $Gem.size.y)
+func bottom_point() -> Vector2: return global_position + Vector2(size.x / 2, size.y)   # 이름 아래 (선이 이름 글자를 가로지르지 않게)
 func top_point() -> Vector2: return $Gem.global_position + Vector2($Gem.size.x / 2, 0)
 
 

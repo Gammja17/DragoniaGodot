@@ -88,7 +88,7 @@ alignment = 1
 
 [node name="quests" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
@@ -99,7 +99,7 @@ text = "퀘스트"
 
 [node name="story" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
@@ -110,7 +110,7 @@ text = "지금까지 이야기"
 
 [node name="map" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
@@ -121,7 +121,7 @@ text = "지도"
 
 [node name="bag" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
@@ -132,7 +132,7 @@ text = "소지품"
 
 [node name="folk" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
@@ -143,7 +143,7 @@ text = "마을 용들"
 
 [node name="skills" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
@@ -154,7 +154,7 @@ text = "스킬"
 
 [node name="growth" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
@@ -165,7 +165,7 @@ text = "성장"
 
 [node name="relics" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
@@ -176,7 +176,7 @@ text = "유물"
 
 [node name="codex" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
@@ -187,7 +187,7 @@ text = "도감"
 
 [node name="record" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)
@@ -198,7 +198,7 @@ text = "기록"
 
 [node name="sound" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(64, 0)
 focus_mode = 0
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 theme_override_colors/font_hover_color = Color(0.925, 0.89, 0.812, 1)

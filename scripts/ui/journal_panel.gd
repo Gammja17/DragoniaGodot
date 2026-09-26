@@ -273,6 +273,7 @@ func _render_folk() -> void:
 			moon.add_theme_color_override("font_color", Color("#ffd84a"))
 		elif not Gathering.invited_up(): moon.text = "🌕 오늘 밤, 스무 해 만에 달맞이 모임이 다시 선다. 해가 지면 구름 폭포 아래로."
 		elif Gathering.is_gather_day(): moon.text = "🌕 오늘 밤이 달맞이 모임이다. 해가 지면 구름 폭포 아래로."
+		elif Gathering.paused(): moon.text = "🌑 " + Gathering.pause_reason()
 		else: moon.text = "🌘 다음 달맞이 모임까지 %d일. 달이 가장 밝은 밤이면 두 마을이 구름 폭포 아래에 모인다." % Gathering.days_to_gather()
 	# 사이 단계는 대화창 머리 · 사이 장면 제목과 같은 문턱이다. 짝이 된 용만 '짝'
 	var tiers := [[75, "절친"], [50, "친구"], [25, "아는 사이"], [0, "낯선 사이"]]

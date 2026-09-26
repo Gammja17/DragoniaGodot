@@ -564,7 +564,7 @@ static func quest_log() -> Array:
 			progress = "완료" if done else "보고 대기" if complete else "%d / %d" % [progress(q), step_total(q)],
 			chapter = "대목 %d / %d" % [mini(si + 1, total), total] if total > 1 and active else "",
 			steps = st_rows,
-			doneText = q.done if done else "",
+			doneText = q.get("done", "") if done else "",   # 보고 없이 끝나는 대목(첫 밤 m1n)은 마무리 글이 없다
 			endScene = q.reward.scene if done and q.get("reward") and q.reward.get("scene") else null,
 			done = done, complete = complete, tracked = Q.tracked == q.id,
 		})

@@ -60,6 +60,10 @@ func _ready() -> void:
 	await _play_until(func(): return G.story.scenes.has("ch1") and _idle(), 60)
 	_check("둘째 날 아침", G.day, 2)
 	_check("'첫 밤' 대목은 자고 나면 보고 없이 끝난다", G.quests.done.has("m1n") and not G.quests.active.has("m1n"))
+	var log_ids := []
+	for g in Quests.quest_log():
+		for r in g.rows: log_ids.append(r.get("id", ""))
+	_check("일지 [퀘스트]: 끝낸 '첫 밤'도 목록에 나온다 (마무리 글이 없어 목록이 통째로 비던 것)", log_ids.has("m1n") and log_ids.has("m1"))
 	_check("아침에 엘더가 카이론을 소개한다", _saw("내 오랜 친구인데"))
 	_check("다음에 할 일이 더는 '오늘은 여기까지'가 아니다", Quests.suggestion().title != "오늘은 여기까지")
 

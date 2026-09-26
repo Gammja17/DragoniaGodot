@@ -67,6 +67,14 @@ static func at_war() -> bool:
 	return GameState.quests.done.has("m5a") and not GameState.quests.done.has("m6w")
 
 
+## 모임이 멈춘 까닭 한 줄 (일지). 멈추지 않았으면 ""
+static func pause_reason() -> String:
+	if not paused(): return ""
+	if GameState.story.get("route") == "dark": return "잿빛 날개 편에 선 뒤로 폭포 아래 모임에는 나갈 수 없다."
+	if GameState.quests.active.has("m5a"): return "봉우리에 한여름 눈이 내린 뒤로 달맞이 모임이 멈춰 있다."
+	return "폭포에서 두 마을이 부딪친 뒤로 달맞이 모임이 멈춰 있다."
+
+
 ## 폭포 위로 올라가 본 적이 있는가 (모임에 한 번 나가면 열린다)
 static func invited_up() -> bool:
 	return GameState.story.events.has("ev_gathering")

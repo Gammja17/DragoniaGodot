@@ -251,6 +251,8 @@ static func _heart_count(npc):
 	if Romance.heart_closed(npc): return null   # 헤어졌거나 마음을 접게 한 뒤로 한동안은 말을 꺼낼 수 없다
 	var gate = _talk().ROMANCE_GATES.get(npc.config.name)
 	if gate and not gate.gate.call(GameState): return null   # 아직 때가 아니다
+	# 같이 자라는 아이(포코 · 하루): 나만 먼저 어른이 되면 그 아이가 자랄 때까지 데이트도 쉰다
+	if Story.still_kid(npc) and GameState.player.stage_index >= Story._adult(): return " (자랄 때까지)" if dates > 0 else null
 	if dates >= 3 and npc.relation >= 80: return " (고백할 수 있다)"
 	if npc.relation >= _date_threshold(npc): return " (데이트 %d/3)" % dates
 	return null
@@ -271,6 +273,8 @@ static func _heart_menu(npc) -> void:
 		elif hint: sub.append({ label = hint, on_select = hub })
 		elif Romance.vowed(npc): sub.append({ label = "(평생을 약속한 사이다)", on_select = hub })
 		sub.append({ label = "…우리 그만하자", on_select = func(): Romance.break_up(npc, ui) })
+	elif Story.still_kid(npc) and GameState.player.stage_index >= Story._adult():
+		sub.append({ label = "(%s 아직 어리다. 자랄 때까지는 친구로 곁에 있어 주자.)" % Util.josa(Names.npc(npc.config.name), "은", "는"), on_select = hub })
 	elif dates >= 3 and npc.relation >= 80:
 		sub.append({ label = "♥ 마음을 고백한다", on_select = func(): _confess(npc) })
 	elif npc.relation >= _date_threshold(npc) and dates < 3:
@@ -469,6 +473,9 @@ static func _confess(npc) -> void:
 	if GameState.player.stage_index < 2:
 		show(npc, "(아직 너무 어리다. [성체]가 되면 마음을 전하자.)", [{ label = "조금만 더 크자.", on_select = hub }])
 		return
+	if Story.still_kid(npc):   # 둘 다 어른이 된 뒤에
+		show(npc, "(%s 아직 어리다. 자란 뒤에 마음을 전하자.)" % Util.josa(Names.npc(npc.config.name), "은", "는"), [{ label = "…그래.", on_select = hub }])
+		return
 	# 지금 짝과의 일을 먼저 매듭지어야 한다
 	if GameState.partner and GameState.partner != npc:
 		show(npc, "(지금은 %s 짝이다. 이 말을 꺼내려면 그쪽과의 일을 먼저 매듭지어야 한다.)" % Util.josa(Names.npc(GameState.partner.config.name), "이", "가"), [{ label = "…그래.", on_select = hub }])
@@ -488,6 +495,9 @@ static func _family_talk(npc) -> void:
 	var nests: Array = GameState.entities.nests
 	var nest = nests[0] if not nests.is_empty() else null
 	var back := [{ label = "그래.", on_select = func(): open_hub(npc) }]
+	if Story.still_kid(npc):   # 예전 세이브에서 아이인 채로 짝이 된 용
+		show(npc, "나 아직 어리잖아. 그런 건 어른이 되고 나서 얘기하자.", back)
+		return
 	if not GameState.den.get("built"):
 		show(npc, "아직 둥지가 없잖아. 굴에 둥지부터 짓자. (내 굴 잠자리 앞에서 [E]. 나뭇가지 8개, 30G)", back)
 		return

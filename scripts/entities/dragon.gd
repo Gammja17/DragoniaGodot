@@ -209,6 +209,14 @@ func say(text: String) -> void:
 	chat_fade = 3.0
 
 
+## 겉모습 칸을 바꾼다 (자라서 모습이 달라진 마을 용: Story.apply_growth)
+func set_look(new_look: int) -> void:
+	look = new_look
+	sheet = DragonSprites.get_sheet(species, colors, look)
+	animator = SpriteSheet.Animator.new(sheet)
+	_outline = null
+
+
 ## 세상이 멈춘 동안(대화·컷씬) 겉모습만 움직인다: 숨쉬기 · 걷는 발 · 날갯짓. 자리와 싸움은 그대로 둔다
 func animate_only(dt: float) -> void:
 	hover_y = sin(GameState.game_time * 2 + anim_phase) * 6 if sheet.flying else 0.0

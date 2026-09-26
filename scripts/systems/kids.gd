@@ -43,18 +43,28 @@ static func add_affection(baby, amount: float) -> void:
 ## 다른 부모 b 의 이름도 적어 둔다 (parent, 부모 없이 품은 알이면 ""). 유전 정보는 둥지 · 아기 · 세이브를
 ## 그대로 따라다니므로, 짝이 바뀐 뒤에도 아이는 제 부모를 안다
 static func mix_genes(a, b) -> Dictionary:
-	if not b: return { species = a.species, colors = a.colors.duplicate(), look = a.look, parent = "" }
+	if not b: return { species = a.species, colors = a.colors.duplicate(), look = _base_look(a), parent = "" }
 	var nm: String = b.config.get("name", "")
 	# 한 장짜리 외형(LOOK)은 섞을 수 없으니 부모 한쪽을 그대로 닮는다
 	if a.species == "LOOK" or b.species == "LOOK":
 		var p = a if randf() < 0.5 else b
-		return { species = p.species, colors = p.colors.duplicate(), look = p.look, parent = nm }
+		return { species = p.species, colors = p.colors.duplicate(), look = _base_look(p), parent = nm }
 	var t := Util.rand_range(0.25, 0.75)
+	var side = a if randf() < 0.5 else b   # 몸은 이쪽 부모를 닮는다. 칸 번호(look)도 이쪽 것이어야 한다
 	return {
-		species = a.species if randf() < 0.5 else b.species,
+		species = side.species,
 		colors = { body = "#" + Color(a.colors.body).lerp(Color(b.colors.body), t).to_html(false), wing = "#" + Color(a.colors.wing).lerp(Color(b.colors.wing), 1 - t).to_html(false) },
+		look = _base_look(side),
 		parent = nm,
 	}
+
+
+## 아이가 물려받는 칸 번호. 주인공 프리셋(HERO)은 아기 칸부터, 마을 용(CAST)은 그 용의 어릴 적 그림이 있으면 그것
+## (칸 번호 없이 섞어 마을 용의 아이가 엘더(0번 칸)로 태어나던 것 · 자란 포코의 아이가 어른 포코를 줄여 놓은 모습이 되지 않게)
+static func _base_look(d) -> int:
+	if d.species == "HERO": return d.preset * 3
+	if d.species == "CAST": return int(d.config.get("kidLook", d.look))
+	return d.look
 
 
 ## 이 아이의 다른 부모 (용 이름). 없으면 ""

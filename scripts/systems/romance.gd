@@ -262,7 +262,7 @@ static func _only(npc) -> bool:
 static func can_vow(npc) -> bool:
 	var l := L()
 	return npc == GameState.partner and not l.vow and not l.cheated and l.since != null and GameState.day - l.since >= 5 \
-		and _only(npc) and not is_sulking(npc)
+		and _only(npc) and not is_sulking(npc) and not Story.still_kid(npc)
 
 
 ## 왜 아직 안 되는지 한 줄 (마음 메뉴에 흐리게 띄운다). 영영 안 되는 경우는 null

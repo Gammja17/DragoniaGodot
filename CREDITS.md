@@ -13,6 +13,10 @@
 | `looks.png` (앉은 용 26종) | **출처·라이선스 확인 필요** — 사용자가 내려받은 `pxl drAHHgon.png`, `image (84).png` 를 64px 칸으로 재배치 | (확인 후 기입) |
 | `shadow.png` (최종 보스) | "Shadow Demon Dragon Asset Pack" — 프레임을 잘라 절반 크기로 재배치. **작가·라이선스 확인 필요** | itch.io (확인 후 기입) |
 
+`cast.png` 가운데 구름마루 인물(리운 · 세이란 · 유안 · 온 · 비류, 14 · 15 · 17 · 28 · 29번 칸)과 자란 포코 · 하루(34 · 35번 칸),
+`assets/portraits/poco_adult_neutral.png` · `haru_adult_neutral.png` 는 이 게임을 위해 VARCO 3D 워크플로우의 이미지 생성(gpt-image-2.5-flare)으로
+각 인물의 대화 초상화와 기존 칸의 그림체를 참고로 넣어 새로 그렸다. 단색 바탕을 지운 뒤 칸 크기로 줄였다.
+
 변경 사항: 게임 실행 중에 플레이어/NPC 색상에 맞춰 색조를 바꿔 그린다(`src/render/tint.js`).
 CC BY-SA 에셋(`behemoth`, `bone`)을 수정한 결과물은 같은 CC BY-SA 3.0 조건을 따른다.
 

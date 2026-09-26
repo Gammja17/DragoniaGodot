@@ -58,7 +58,12 @@
    "maxHp": 220,
    "power": 8,
    "x": 816,
-   "y": 1860
+   "y": 1860,
+   "kidLook": 2,
+   "grown": {
+    "look": 34,
+    "scale": 0.95
+   }
   },
   {
    "name": "Gron",
@@ -532,7 +537,12 @@
    "maxHp": 250,
    "power": 10,
    "x": 0,
-   "y": 0
+   "y": 0,
+   "kidLook": 16,
+   "grown": {
+    "look": 35,
+    "scale": 0.95
+   }
   },
   {
    "name": "On",

@@ -372,6 +372,11 @@ static func _build_c() -> void:
 			and c.hour >= 7 and c.hour < 16 and c.day > int(c.s.story.get("eventDay", {}).get("ev_nuri_dinner", c.day)),
 		# 하루 · 세이란 · 유안 · 엠버: 어둠의 길로 들어선 판에서는 구름마루와 마을이 갈라선다
 		"quests:QUESTS.hr1.needs": func(s): return s.quests.done.has("m6w") and s.story.get("route") != "dark",
+		# 같이 자라기: 포코는 그론을 보낸 다음 날부터 성체 시험을 청하고, 하루는 징검돌 뒤에 성년례를 치른다
+		"quests:QUESTS.p3.needs": func(s): return _dead(s, "Gron") and s.day > int(s.story.get("deathDay", {}).get("Gron", 99999)) and s.story.get("route") != "dark",
+		"quests:QUESTS.hr2.needs": func(s): return s.quests.done.has("hr1") and s.story.get("route") != "dark",
+		"chronicle:CHRONICLE.ev_poco_trial.when": func(c): return c.map == "DOJO" and _step(c.s, "p3") == 0 and c.hour >= 7 and c.hour < 18,
+		"chronicle:CHRONICLE.ev_haru_rite.when": func(c): return c.map == "CLOUDTOP" and _step(c.s, "hr2") == 0 and c.hour >= 6 and c.hour < 18,
 		"quests:QUESTS.sr1.needs": func(s): return s.quests.done.has("m5c") and s.story.get("route") != "dark",   # 샘물이 맑아진 뒤 (5장 모임 때는 물이 흐려 읽지 못했다)
 		"quests:QUESTS.yu1.needs": func(s): return s.quests.done.has("m5c") and s.story.get("route") != "dark",
 		"quests:QUESTS.em1.needs": func(s): return s.quests.done.has("m5b") and s.story.get("route") != "dark",

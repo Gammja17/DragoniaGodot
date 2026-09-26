@@ -390,6 +390,8 @@ static func on_flag(flag: String) -> void:
 	GameState.story.flags[flag] = true
 	match flag:
 		"gron_dead": _kill_npc("Gron")
+		"grown_poco": grow_up("Poco")   # 포코의 성체 시험 (p3). 장면의 grow 박자가 먼저 부르고, 건너뛰어도 여기서
+		"grown_haru": grow_up("Haru")   # 하루의 성년례 (hr2)
 		"nuri_found": _warm({ Dan = 25, Soi = 25, Nuri = 15 })   # 3장: 골짜기 끝에서 누리를 데려온 날, 누리네가 마음을 연다
 		# 이그나르 앞에서 고르는 순간 결말이 흐른다 (걸어서 돌아가 보고하고 잠들 필요 없이)
 		"ignar_slain":
@@ -524,6 +526,29 @@ static func _warm(by: Dictionary) -> void:
 	for nm in by:
 		var n = World.any_npc(nm)
 		if n: NpcActions.add_relation(n, by[nm], false)   # 이야기가 주는 것은 하루 상한에 넣지 않는다
+
+
+# ---------- 같이 자라는 아이들 (포코 · 하루) ----------
+## 자란 모습(grown)이 있는 마을 용 가운데 아직 자라지 않은 용. 아이와는 짝을 맺지 않는다 (NpcActions · Romance)
+static func still_kid(npc) -> bool:
+	return npc != null and npc.config.get("grown") != null and not GameState.story.get("grown", []).has(npc.config.get("name"))
+
+
+## 자란다: 이야기에 적고 곧바로 어른 모습으로 (성체 시험 · 성년례 장면이 부른다)
+static func grow_up(nm: String) -> void:
+	if not GameState.story.has("grown"): GameState.story.grown = []
+	if not GameState.story.grown.has(nm): GameState.story.grown.append(nm)
+	apply_growth()
+
+
+## 자란 용에게 어른 모습을 입힌다. 마을 용의 설정은 저장하지 않으므로 세이브를 불러온 뒤에도 부른다 (Save.apply)
+static func apply_growth() -> void:
+	for nm in GameState.story.get("grown", []):
+		var n = World.any_npc(nm)
+		if n == null or not n.config.get("grown"): continue
+		var g: Dictionary = n.config.grown
+		n.config.scale = g.scale
+		if n.look != int(g.look): n.set_look(int(g.look))
 
 
 ## 이야기에서 용이 죽는다. 일과와 명단에서 빠지고, 곁에 있었다면 떠난다

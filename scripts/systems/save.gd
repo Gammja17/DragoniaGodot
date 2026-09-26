@@ -229,6 +229,8 @@ static func apply(data: Dictionary) -> void:
 			# 기다리라고 해 둔 짝은 그대로 둔다. 이 값이 없는 예전 세이브는 따라오던 것으로 본다
 			npc.state = "WANDER" if data.get("partnerFollowing") == false else "PARTNER_FOLLOW"
 
+	Story.apply_growth()   # 자란 마을 용(포코 · 하루)은 어른 모습으로 (마을 용의 설정은 저장하지 않는다)
+
 	# 아이들. 지도를 옮길 때 따라오므로 개체만 만들어 두면 된다
 	for k in data.get("kids", []):
 		var baby := BabyDragon.make(k.x, k.y, k.genes)

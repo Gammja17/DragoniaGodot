@@ -15,6 +15,17 @@ static func _peaceful() -> bool:
 	return (b and b.get("safe")) or (spec and spec.get("safe")) or World.map_has_boss() or GameState.dungeon != null
 
 
+## 굶는 계절 (4장): 모르가스를 보낸 뒤부터 잘고라를 잡을 때까지. 봉우리 바람이 찬 봄이라 새끼 친 짐승이 드물고,
+## 남은 짐승은 잘고라가 막은 남쪽 밀림으로 내려갔다. 밀림 밖에서는 사냥감이 거의 안 나오고 적도 고기를 덜 떨군다
+static func famine() -> bool:
+	return GameState.quests.done.has("m4") and not GameState.bossesDefeated.get("ZALGORA", false)
+
+
+## 이번에 내보낼 사냥감을 건너뛰는가 (굶는 계절의 밀림 밖: 다섯에 넷)
+static func _scarce(type) -> bool:
+	return type == "PREY" and famine() and Terrain.active_biome() != "JUNGLE" and randf() < 0.8
+
+
 ## 이 지도에 한 번에 있을 수 있는 적 수
 static func _cap() -> float:
 	var spec = World.maps().get(GameState.map_id)
@@ -49,11 +60,13 @@ static func spawn_pack(force_type = null) -> void:
 	var pack = { units = [{ t = force_type, n = 3 }] } if force_type else _pick_pack(Terrain.active_biome())
 	if pack == null:
 		var type: String = World.map_enemies().pick_random()
+		if _scarce(type): return
 		World.add_entity("enemies", Enemy.make(spot.x, spot.y, type, type != "PREY" and randf() < ELITE_CHANCE))
 		return
 	var i := 0
 	for u in pack.units:
 		for k in int(u.n):
+			if force_type == null and _scarce(u.t): continue
 			var a := (i / 7.0) * TAU
 			var r := 0.0 if i == 0 else 40.0 + i * 14
 			var x: float = spot.x + cos(a) * r

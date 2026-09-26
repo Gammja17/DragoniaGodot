@@ -217,8 +217,12 @@ static func _populate(id: String) -> Dictionary:
 				if GameState.bossesDefeated.get(f.id): continue
 				if f.id == "IGNAR" and GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): continue
 				# 사건을 겪기 전에는 둥지가 비어 있다. 지나가다 덜컥 마주치지 않게
+				# 그래도 잡으러 가는 대목이 걸려 있으면 둥지에 있다: 사건은 앞 지도(밀림 등)에서만 열리는데, 거기서 싸우며 지나치면
+				# (싸움 중에는 사건이 안 열린다) 퀘스트를 받고 둥지에 와도 보스가 없어 영영 막혔다. 그때는 사건을 본 것으로 친다
 				var need = Data.get_module("enemies").BOSSES.get(f.id, {}).get("needs")
-				if need and not GameState.story.get("events", []).has(need): continue
+				if need and not GameState.story.get("events", []).has(need):
+					if not Quests.hunting(f.id): continue
+					GameState.story.events.append(need)
 				var boss := Boss.make(f.id)
 				boss.x = pos.x; boss.y = pos.y
 				boss.home = pos

@@ -56,6 +56,7 @@ static func open_hub(baby) -> void:
 			baby.element = p.element
 			Particles.burst(baby.x, baby.y - 30, el.color, 1, 16)
 			_show(baby, kid, _line(kid, "learn"), [{ label = "잘했어!", on_select = back }]) })
+	if KidFlight.can_teach(kid): opts.append(KidFlight.option(baby, kid, back))   # 어린 용일 때만 배울 수 있다
 	if kid.stage != "ADULT":
 		opts.append({ label = "둥지를 지키고 있으렴" if kid.mode == "FOLLOW" else "같이 가자", on_select = func():
 			Kids.toggle_mode(kid)

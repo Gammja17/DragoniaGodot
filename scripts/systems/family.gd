@@ -30,17 +30,20 @@ static func morning() -> bool:
 			kid = k
 			break
 	if not kid: return false
-	var job: Dictionary = _d().KID_JOBS[kid.personality]
+	# 나한테 나는 법을 배운 아이는 성격과 상관없이 망루에 선다 (KidFlight). 나머지는 성격대로
+	var flies: bool = kid.get("flies", false)
+	kid.job = "BRAVE" if flies else kid.personality
+	var job: Dictionary = _d().KID_JOBS[kid.job]
 	# 일을 가르쳐 줄 용이 죽고 없으면 다른 용이 맡는다
 	var mentor: String = job.fallback if Routine.is_dead(job.mentor) else job.mentor
-	kid.job = kid.personality
 	var say: Dictionary = _d().FAMILY_LINES[kid.personality]
 	# 아이의 다른 부모가 그 자리의 어른이면 부르는 말이 달라진다 (엘더의 아이면 '촌장 할아버지'가 아니라 '아빠')
-	var rite: String = say.get("riteWith", {}).get(Kids.parent_of(kid), say.rite)
+	var rite: String = _d().FLY_JOB.rite if flies else say.get("riteWith", {}).get(Kids.parent_of(kid), say.rite)
+	var offer: String = _d().FLY_JOB.offer if flies and mentor == job.mentor else job.offer.get(mentor, job.offer.default)
 	Chronicle.play_scene("%s의 성년식" % kid.name, [
 		{ who = "Elder", text = "오늘부터 %s도 이 마을의 어엿한 용이란다. 알에서 나오던 날이 엊그제 같은데 벌써 이만큼 컸구나…" % kid.name },
 		{ who = "나", text = "(%s: \"%s\")" % [kid.name, rite] },
-		{ who = mentor, text = job.offer.get(mentor, job.offer.default) },
+		{ who = mentor, text = offer },
 		{ who = "나", text = "(%s %s 밑에서 [%s] 일을 맡았다. 이제 아침마다 뭔가를 들고 돌아온다.)" % [iga(kid.name), Names.npc(mentor), job.name] },
 	], Save.save_game, true, "VILLAGE")
 	return true

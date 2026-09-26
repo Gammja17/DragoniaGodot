@@ -182,6 +182,8 @@ static func _own_menu(npc, nm: String):
 	if nm == "Biryu":   # 나는 하늘로, 비류는 물로 (Race)
 		var race = Race.menu_option(npc)
 		if race: sub.append(race)
+	var contest = Contest.menu_option(npc)   # 달맞이 모임 밤의 겨루기 (그날 밤 맞수만)
+	if contest: sub.append(contest)
 	# 마을 아이들: 성체가 돼야 놀아 줄 수 있다. 놀아 주면 부모의 호감도 같이 오른다
 	var kp = _talk().KID_NPC_PLAY.get(nm)
 	if kp:

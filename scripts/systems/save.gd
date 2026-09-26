@@ -145,7 +145,7 @@ static func save_game() -> void:
 		kids = GameState.kids.map(func(k): return {
 			name = k.name, stage = k.stage, affection = k.affection, mode = k.mode, personality = k.personality,
 			lastPlayDay = k.get("lastPlayDay"), lastTrainDay = k.get("lastTrainDay"), job = k.get("job"), fedDay = k.get("fedDay"), fedCount = k.get("fedCount", 0),
-			element = k.entity.element, growth = k.entity.growth, genes = k.entity.genes, x = k.entity.x, y = k.entity.y,
+			flies = k.get("flies", false), element = k.entity.element, growth = k.entity.growth, genes = k.entity.genes, x = k.entity.x, y = k.entity.y,
 		}),
 	}
 	var f := FileAccess.open(path(slot), FileAccess.WRITE)
@@ -275,6 +275,7 @@ static func apply(data: Dictionary) -> void:
 		if k.get("personality"): kid.personality = k.personality
 		kid.lastPlayDay = k.get("lastPlayDay"); kid.lastTrainDay = k.get("lastTrainDay"); kid.job = k.get("job")
 		kid.fedDay = k.get("fedDay"); kid.fedCount = k.get("fedCount", 0)
+		kid.flies = k.get("flies", false)   # 나한테 나는 법을 배웠다 (KidFlight)
 		Kids.set_stage(baby, k.stage)
 
 	# 마지막으로 있던 지도로 (여기서 소품·NPC·보스·가족이 전부 새로 깔린다)

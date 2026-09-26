@@ -215,6 +215,7 @@ static func caught(kind: Dictionary, p) -> void:
 		Vfx.spawn_text(p.x, p.y - 70, "물렸다!", "#ff8a7a", 14)
 	if first: Hud.pop("처음 잡았다: %s. %s" % [kind.name, kind.note], "🐟")
 	Quests.notify("fish", GameState.map_id)
+	Contest.on_catch(kind)   # 모임의 낚시 겨루기: 큰 고기를 먼저 건지면 이긴다
 
 
 ## 낚싯대에 걸린 물고기: 지금 여기서 사는 작은 물고기 가운데 하나

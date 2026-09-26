@@ -95,6 +95,10 @@ static func _hints() -> Array:
 		  say = { Doran = "허, 하늘에서 보니께 물속이 훤하지? 그림자 바로 위에서 내리꽂으면 낚싯대보다 빠르구먼. 큰 놈은 힘을 꽉 모았다가 한 번에 덮쳐야 혀." },
 		  text = "내 그림자를 물고기 그림자에 겹치고 [Space]로 내리꽂는다. 큰 그림자는 꾹 눌러 힘을 다 모았다가 뗀다.",
 		  alone = "물속에 물고기 그림자가 보인다. 내 그림자를 겹치고 [Space]로 내리꽂는다. 큰 그림자는 꾹 눌러 힘을 다 모았다가 뗀다." },
+		# 하늘에서만 보이는 흔적이 처음 눈에 들어올 때 (광장의 내 자리가 보통 첫째다)
+		{ id = "trace", icon = "🪶", me = "(위에서 보니 바닥에 무슨 모양이 보인다. 걸어 다닐 때는 못 보던 거다.)",
+		  when = func(s): return s.player.flying and Traces.near_unfound(700.0),
+		  text = "반짝이는 곳 위로 날아가면 살펴본다. 하늘에서 본 것은 [J] 일지 [기록]에 적힌다." },
 		{ id = "kid", icon = "🐣", who = ["Elder", "Miru"],
 		  when = func(s): return not s.kids.is_empty() and not s.tutorial.get("kids_panel"),
 		  say = { Elder = "허허, 네 아이로구나. 아이는 배고프면 보채고, 크면 제멋대로 돌아다닌단다. 자주 들여다봐 주거라.",

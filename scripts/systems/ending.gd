@@ -157,7 +157,8 @@ static func life_lines(route: String) -> Array:
 		var k: Dictionary = kids[0]
 		var parent := Kids.parent_of(k)
 		var looks: String = L.looks.replace("{parent}", Names.npc(parent)) if parent != "" else ""
-		out.append(L.kid.get(k.stage, L.kid.BABY).replace("{kid}", k.name).replace("{looks}", looks))
+		var key: String = "FLY" if k.get("flies", false) else k.stage   # 나한테 나는 법을 배운 아이
+		out.append(L.kid.get(key, L.kid.BABY).replace("{kid}", k.name).replace("{looks}", looks))
 	elif kids.size() > 1:
 		out.append(L.kids.replace("{kids}", ", ".join(PackedStringArray(kids.map(func(k): return k.name)))))
 	var tier: int = Den.cozy_of(Den.MY_DEN).tier

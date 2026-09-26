@@ -35,6 +35,7 @@ var max_hp := 0.0          # 회복 기술이 건드리지 않게 (아이에게�
 var hp := 0.0
 var down_timer := 0.0
 var moving := false
+var fly_h := 0.0           # 날 줄 아는 아이가 나와 같이 날 때 떠 있는 높이 (KidFlight)
 var stage_alpha := 1.0:
 	set(v):
 		stage_alpha = v
@@ -114,10 +115,13 @@ func update(dt: float) -> void:
 		x += cos(a) * 160 * dt
 		y += sin(a) * 160 * dt
 	var kid = Kids.find(self)
-	if stage != "BABY": _fight(dt, kid)
-	# 성체이거나 '둥지 지키기'를 시킨 아이는 둥지 주변에 머문다
-	if stage == "ADULT" or (kid and kid.mode == "STAY"): _update_adult(dt)
-	else: _update_young(dt)
+	var act = GameState.activity
+	if act and act.get("baby") == self: KidFlight.update(self, dt)   # 나는 법을 배우는 중
+	else:
+		if stage != "BABY": _fight(dt, kid)
+		# 성체이거나 '둥지 지키기'를 시킨 아이는 둥지 주변에 머문다
+		if stage == "ADULT" or (kid and kid.mode == "STAY"): _update_adult(dt)
+		else: _update_young(dt, kid)
 	moving = Vector2(x - px, y - py).length() > 0.01
 	if moving: facing = Dragon.facing_from_vector(x - px, y - py, facing)
 	animator.play_base("move" if moving else "idle")
@@ -127,12 +131,20 @@ func update(dt: float) -> void:
 	queue_redraw()
 
 
-func _update_young(dt: float) -> void:
+func _update_young(dt: float, kid) -> void:
 	var t = GameState.player
 	angle = atan2(t.y - y, t.x - x)
 	var keep := 70 + follow_gap   # 아이마다 조금씩 다른 거리에서 따라온다
-	if Util.dist(self, t) > keep:
-		Collision.slide_move(self, x + cos(angle) * 190 * dt, y + sin(angle) * 190 * dt, 12)
+	# 날 줄 아는 아이는 내가 날면 같이 난다. 물 · 벽 위에서는 내 곁에 닿을 때까지 내려앉지 않는다
+	var up: bool = kid != null and kid.get("flies", false) and (t.flying or (fly_h > 0 and Collision.solid_at(x, y, 12)))
+	fly_h = move_toward(fly_h, KidFlight.FLY_H if up else 0.0, dt * 90)
+	var perch: bool = up and not t.flying   # 내가 내려앉았는데 아이 발밑이 막혀 있다: 내 곁으로 와서 내려앉는다
+	if Util.dist(self, t) > keep or (perch and Util.dist(self, t) > 8):
+		var speed := 260.0 if up else 190.0
+		if up or fly_h > 0:   # 하늘에서는 물도 벽도 못 막는다
+			x += cos(angle) * speed * dt
+			y += sin(angle) * speed * dt
+		else: Collision.slide_move(self, x + cos(angle) * speed * dt, y + sin(angle) * speed * dt, 12)
 
 
 ## 청소년·성체는 근처의 적에게 불을 쏜다. 애정이 높을수록 아프다
@@ -169,14 +181,16 @@ func _update_adult(dt: float) -> void:
 
 func _draw() -> void:
 	var s: float = STAGE_SCALE[stage]
+	var up := clampf(fly_h / KidFlight.FLY_H, 0, 1)   # 날면 그림자가 작고 옅어진다
 	draw_set_transform(Vector2.ZERO, 0, Vector2(1, 0.4))
-	draw_circle(Vector2.ZERO, 34 * s, Color(0, 0, 0, 0.4))
+	draw_circle(Vector2.ZERO, 34 * s * (1 - 0.3 * up), Color(0, 0, 0, 0.4 - 0.15 * up))
 	draw_set_transform(Vector2.ZERO)
 	if GameState.talkTarget == self:
 		var pts := PackedVector2Array()
 		for i in 49: pts.append(Vector2(cos(TAU * i / 48.0) * (40 * s + 10), sin(TAU * i / 48.0) * (16 * s + 4)))
 		draw_polyline(pts, Color("#ffd84a"), 3, true)
 	var hover := sin(GameState.game_time * 3 + x) * 4 * s if sheet.flying else 0.0
+	if fly_h > 0: hover -= fly_h + sin(GameState.game_time * 9 + follow_gap) * 3 * up   # 날갯짓
 	var f := animator.frame(facing)
 	if _outline == null: _outline = Dragon.outline_for(f, false)
 	SpriteSheet.draw_frame(self, sheet, f, 0, hover, s,
@@ -200,7 +214,7 @@ func _draw_shell(sc: float, hover: float) -> void:
 
 # ---------- 이름표와 말풍선 (Overlay 가 화면 픽셀로) ----------
 func crisp_anchor() -> Vector2:
-	return Vector2(roundf(x), roundf(y - Dragon.head_top(sheet, STAGE_SCALE[stage]) - 6))
+	return Vector2(roundf(x), roundf(y - Dragon.head_top(sheet, STAGE_SCALE[stage]) - 6 - fly_h))
 
 
 func draw_crisp(ci: CanvasItem, _zoom: float) -> void:

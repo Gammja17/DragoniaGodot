@@ -236,13 +236,15 @@ func _render_record() -> void:
 	# 내 기록: 스스로 세워 볼 만한 것들
 	var nara: Dictionary = GameState.story.get("nara", {})
 	var deep := Achievements.deepest()
-	_section("내 기록", [
+	var mine := [
 		["나라와 겨룬 판", "%d승 %d패" % [int(nara.get("me", 0)), int(nara.get("her", 0))] if not nara.is_empty() else "아직 없다", nara.is_empty()],
 		["낚은 물고기", "%d마리" % int(GameState.stats.get("fish", 0))],
 		["옛 굴 가장 깊은 곳", "지하 %d층" % deep if deep > 0 else "아직 안 내려갔다", deep == 0],
 		["게시판 잡일", "%d번" % int(GameState.stats.get("chores", 0))],
 		Race.record_line(),
-	])
+	]
+	if Gathering.invited_up(): mine.append(Contest.record_line())   # 달맞이 모임을 알기 전에는 겨루기도 모른다
+	_section("내 기록", mine)
 	# 물고기 도감: 못 잡은 것은 어디서 · 언제 잡히는지를 적어 두어, 다음에 날아가 볼 곳을 일러 준다
 	var book: Dictionary = GameState.stats.get("fishKinds", {})
 	var fish_rows := []
@@ -250,6 +252,9 @@ func _render_record() -> void:
 		if book.has(k.id): fish_rows.append([k.name, "%d마리 · %s" % [int(book[k.id]), k.note]])
 		else: fish_rows.append(["???", k.hint, true])
 	_section("물고기 도감 %d / %d" % [DiveFish.kinds().filter(func(k): return book.has(k.id)).size(), DiveFish.kinds().size()], fish_rows)
+	# 하늘에서 본 것: 걸어서는 모르던 흔적. 못 찾은 것은 가 본 곳이면 어디쯤인지만. 날 수 있게 되기 전에는 안 띄운다
+	if GameState.player.stage_index >= Story._adult() or Traces.found_count() > 0:
+		_section("하늘에서 본 것 %d / %d" % [Traces.found_count(), Traces.LIST.size()], Traces.journal_rows())
 	# 업적: 이룬 것은 밝게, 아직인 것은 무엇을 하면 되는지 흐리게
 	var A: Dictionary = Data.get_module("achievements")
 	var got: Array = Achievements.earned()
@@ -298,10 +303,10 @@ func _render_folk() -> void:
 		var moon := _note("")
 		moon.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		if Gathering.is_gather_now():
-			moon.text = "🌕 지금 구름 폭포에서 달맞이 모임이 열리고 있다. 두 마을 용들이 모두 내려와 있다."
+			moon.text = "🌕 지금 구름 폭포에서 달맞이 모임이 열리고 있다. 두 마을 용들이 모두 내려와 있다." + Contest.tonight_note()
 			moon.add_theme_color_override("font_color", Color("#ffd84a"))
 		elif not Gathering.invited_up(): moon.text = "🌕 오늘 밤, 스무 해 만에 달맞이 모임이 다시 선다. 해가 지면 구름 폭포 아래로."
-		elif Gathering.is_gather_day(): moon.text = "🌕 오늘 밤이 달맞이 모임이다. 해가 지면 구름 폭포 아래로."
+		elif Gathering.is_gather_day(): moon.text = "🌕 오늘 밤이 달맞이 모임이다. 해가 지면 구름 폭포 아래로." + Contest.tonight_note()
 		elif Gathering.paused(): moon.text = "🌑 " + Gathering.pause_reason()
 		else: moon.text = "🌘 다음 달맞이 모임까지 %d일. 달이 가장 밝은 밤이면 두 마을이 구름 폭포 아래에 모인다." % Gathering.days_to_gather()
 	# 사이 단계는 대화창 머리 · 사이 장면 제목과 같은 문턱이다. 짝이 된 용만 '짝'

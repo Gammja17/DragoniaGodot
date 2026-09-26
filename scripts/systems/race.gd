@@ -3,7 +3,8 @@ class_name Race
 ## 그동안 비류는 신비의 호수를 세 바퀴 헤엄친다. 구름마루 용은 날개가 없어 물을 탄다 (날개가 있는 건 유안뿐이다).
 ## 비류는 달맞이 모임으로 두 마을이 다시 오가게 된 뒤로 오후마다 호수에 내려와 헤엄친다 (routines.json).
 ## 한 판 질 때마다 물살을 새로 읽어 더 빨라진다 (세 판). 가장 빠른 기록은 일지 [기록]에 남는다.
-##   GameState.activity = { type = "RACE", npc, t (음수면 출발 전), ring, target, level }
+## 달맞이 모임의 겨루기(Contest)도 같은 판을 폭포 길에서 쓴다 (course · onEnd).
+##   GameState.activity = { type = "RACE", npc, course, t (음수면 출발 전), ring, target, level, onEnd }
 ##   GameState.story.race = { best, level (이긴 판 수), winDay }
 
 const MAP := "LAKE"
@@ -21,6 +22,11 @@ const WIN_LINES := [
 	"또 졌어! 물살 읽는 법까지 새로 익혔는데. …좋아, 마지막 판이다. 이번엔 진짜 온 힘으로 간다.",
 	"…인정. 구름마루에서 나를 이긴 용은 이제 너 하나야. 가끔 붙어 줘. 몸이 굳지 않게.",
 ]
+
+
+## 경주 길: 지도 · 고리 · 비류가 도는 물 한가운데와 둘레 · 막대에 적는 이름. 기본은 호수 한 바퀴
+static func lake_course() -> Dictionary:
+	return { map = MAP, rings = RINGS, center = LAKE, swim_r = SWIM_R, title = "비류와 경주" }
 
 
 static func _r() -> Dictionary:
@@ -59,22 +65,24 @@ static func _offer(npc) -> void:
 	NpcActions.show(npc, "기록 깨러 왔어? 좋지. 이번엔 몇 초 안에 들어오나 보자." if lv >= TIMES.size() else "몸은 풀었어? 이번엔 %.1f초 안에 세 바퀴 돈다." % TIMES[lv], start)
 
 
-## 출발: 첫 고리 앞에서 날아오른 채 셋을 센다
-static func start(npc) -> void:
+## 출발: 첫 고리 앞에서 날아오른 채 셋을 센다. course · target · on_end(이겼나, 걸린 초)는 모임 겨루기가 넘긴다
+static func start(npc, course := {}, target := 0.0, on_end = null) -> void:
 	NpcActions.close()
 	_r()
+	if course.is_empty(): course = lake_course()
 	var p = GameState.player
 	if not p.flying: p.toggle_flight()
 	if not p.flying: return   # 천장이 있다 · 배가 고프다
-	var s := Vector2(RINGS[0][0], RINGS[0][1] + 40)
+	var s := Vector2(course.rings[0][0], course.rings[0][1] + 40)
 	p.x = s.x; p.y = s.y
 	if not GameState.entities.npcs.has(npc):
 		npc.remove = false; npc.is_hidden = false
 		World.add_entity("npcs", npc)
 	npc.walk_to = null
 	var lv := mini(level(), TIMES.size() - 1)
-	GameState.activity = { type = "RACE", npc = npc, t = -COUNT, ring = 0, target = TIMES[lv], level = lv, count = COUNT + 1.0 }
-	_swim(npc, 0.0, 1.0)
+	GameState.activity = { type = "RACE", npc = npc, course = course, t = -COUNT, ring = 0, target = target if target > 0 else TIMES[lv],
+		level = lv, count = COUNT + 1.0, onEnd = on_end }
+	_swim(npc, 0.0, 1.0, course)
 	Hud.pop("비류가 물속으로 뛰어들었다! 물안개 고리를 차례로 빠져나가자. [Shift]를 누르고 있으면 더 빨리 난다.", "🏁")
 
 
@@ -82,48 +90,51 @@ static func start(npc) -> void:
 static func update(npc, dt: float) -> void:
 	var a: Dictionary = GameState.activity
 	var p = GameState.player
+	var c: Dictionary = a.course
 	a.t += dt
 	if a.t < 0:   # 출발 전: 첫 고리 앞에 붙들어 두고 셋을 센다
-		p.x = RINGS[0][0]; p.y = RINGS[0][1] + 40
+		p.x = c.rings[0][0]; p.y = c.rings[0][1] + 40
 		var n := ceili(-a.t)
 		if n < a.count:
 			a.count = n
 			Vfx.spawn_text(p.x, p.y - 150, str(n), "#ffd84a", 28)
 			Sfx.play("pop")
-		Hud.current.set_boss_bar("비류와 경주 · 곧 출발", 1.0)
-		_swim(npc, 0.0, a.target)
+		Hud.current.set_boss_bar("%s · 곧 출발" % c.title, 1.0)
+		_swim(npc, 0.0, a.target, c)
 		return
 	if a.count > 0:
 		a.count = 0
 		Vfx.spawn_text(p.x, p.y - 150, "출발!", "#ffd84a", 28)
 		Sfx.play("dash")
-	_swim(npc, a.t, a.target)
-	Hud.current.set_boss_bar("비류와 경주 · %.1f초" % a.t, 1.0 - a.t / a.target)
-	if not p.flying or GameState.map_id != MAP:   # 내려앉았거나 호수를 떠났다
+	_swim(npc, a.t, a.target, c)
+	Hud.current.set_boss_bar("%s · %.1f초" % [c.title, a.t], 1.0 - a.t / a.target)
+	if not p.flying or GameState.map_id != c.map:   # 내려앉았거나 판을 떠났다
 		_finish(false, "내려앉으면 끝이지. 다음엔 끝까지 날아.")
 		return
-	var goal := _goal(int(a.ring))
+	var goal := _goal(int(a.ring), c.rings)
 	if Vector2(p.x - goal.x, p.y - goal.y).length() < RING_R:
 		a.ring += 1
 		Particles.burst(goal.x, goal.y - 60, "#bfe9ff", 0.8, 14)
 		Sfx.play("pickup")
-		if int(a.ring) > RINGS.size():
+		if int(a.ring) > c.rings.size():
 			_finish(a.t < a.target, "")
 			return
 	if a.t >= a.target: _finish(false, "내가 먼저다! 하늘이 넓어도 물길이 더 곧은 법이지. 또 붙을래?")
 
 
 ## 다음에 빠져나갈 고리. 열 개를 다 돌면 첫 고리가 결승
-static func _goal(i: int) -> Vector2:
-	var r: Array = RINGS[i % RINGS.size()]
+static func _goal(i: int, rings: Array = RINGS) -> Vector2:
+	var r: Array = rings[i % rings.size()]
 	return Vector2(r[0], r[1])
 
 
-## 비류는 호수를 세 바퀴 돈다 (꼭대기에서 시계 방향으로). 바닥에 누운 둘레라 위아래는 납작하게
-static func _swim(npc, t: float, target: float) -> void:
+## 비류는 물을 세 바퀴 돈다 (꼭대기에서 시계 방향으로). 바닥에 누운 둘레라 위아래는 납작하게
+static func _swim(npc, t: float, target: float, course := {}) -> void:
+	var center: Vector2 = course.get("center", LAKE)
+	var r: float = course.get("swim_r", SWIM_R)
 	var ang := clampf(t / target, 0.0, 1.0) * LAPS * TAU
-	var nx := LAKE.x + sin(ang) * SWIM_R
-	var ny := LAKE.y - cos(ang) * SWIM_R * 0.7
+	var nx := center.x + sin(ang) * r
+	var ny := center.y - cos(ang) * r * 0.7
 	npc.facing = Dragon.facing_from_vector(nx - npc.x, ny - npc.y, npc.facing)
 	npc.moving = t > 0 and t < target
 	npc.x = nx; npc.y = ny
@@ -138,6 +149,9 @@ static func _finish(win: bool, line: String) -> void:
 	Hud.current.set_boss_bar(null)
 	npc.walk_to = null
 	npc.home_x = npc.x; npc.home_y = npc.y
+	if a.get("onEnd"):   # 모임 겨루기: 결과는 그쪽이 맡는다
+		a.onEnd.call(win, float(a.t))
+		return
 	var r := _r()
 	if not win:
 		NpcActions.add_relation(npc, 1)
@@ -178,10 +192,11 @@ static func record_line() -> Array:
 static func draw(ci: CanvasItem) -> void:
 	var a = GameState.activity
 	if a == null or a.get("type") != "RACE": return
+	var rings: Array = a.course.rings
 	var i := int(a.ring)
 	for k in 3:
-		if i + k > RINGS.size(): break
-		var g := _goal(i + k)
+		if i + k > rings.size(): break
+		var g := _goal(i + k, rings)
 		var next := k == 0
 		var pulse := 0.75 + sin(GameState.game_time * 8.0) * 0.25 if next else 0.35
 		var col := Color("#ffd84a") if next else Color("#dff4ff")
@@ -195,8 +210,8 @@ static func draw(ci: CanvasItem) -> void:
 		ci.draw_set_transform_matrix(Transform2D.IDENTITY)
 	# 다음 고리가 어느 쪽인지 내 곁에 작은 화살표
 	var p = GameState.player
-	if a.t >= 0 and i <= RINGS.size():
-		var g := _goal(i)
+	if a.t >= 0 and i <= rings.size():
+		var g := _goal(i, rings)
 		var d := Vector2(g.x - p.x, g.y - p.y)
 		if d.length() > 160:
 			var dir := d.normalized()

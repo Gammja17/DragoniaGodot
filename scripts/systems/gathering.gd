@@ -133,6 +133,7 @@ static func doing_of(name: String) -> String:
 
 ## 매 프레임 (Routine 이 부른다. 대화나 장면이 떠 있는 동안은 세상과 함께 멈춰 있다)
 static func update(dt: float) -> void:
+	Contest.update(dt)   # 모임 겨루기: 오늘 밤 겨루기 알림 · 낚시 겨루기의 시계 · 응원
 	if GameState.map_id != GATHER_MAP or not is_gather_now() or GameState.raid.active:
 		_talk = null
 		return

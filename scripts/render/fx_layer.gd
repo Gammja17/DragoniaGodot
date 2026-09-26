@@ -27,6 +27,7 @@ func _draw() -> void:
 	match mode:
 		Mode.TELLS:
 			DiveFish.draw(self)   # 물속 물고기 그림자 (날 때만)
+			Traces.draw(self)     # 하늘에서만 보이는 옛 흔적 (날 때만)
 			for h in E.hazards: h.draw(self)   # 바닥 장판은 개체들 밑에
 			for e in E.enemies: EnemyAI.draw_tell(self, e)
 		Mode.BULLETS, Mode.BULLETS_ADD:
@@ -39,6 +40,7 @@ func _draw() -> void:
 			for fx in E.effects:
 				if fx.additive == add: fx.draw(self)
 			if not add: Race.draw(self)   # 비류와 경주: 물안개 고리
+			if not add: KidFlight.draw(self)   # 아이의 날기 수업: 고리
 			if add: NightEvents.draw(self)   # 떨어지는 별의 꼬리
 		Mode.PARTICLES:
 			for p in E.particles: p.draw(self)

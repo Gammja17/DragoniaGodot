@@ -174,6 +174,7 @@ func _update(dt: float) -> void:
 		Routine.update(dt, World.get_npc)
 		Tour.update(dt)
 		Chronicle.update(dt)
+		Traces.update(dt)   # 하늘에서만 보이는 옛 흔적
 		Story.update_bedtime()
 		Story.update_chapter()
 		Chatter.update(dt)

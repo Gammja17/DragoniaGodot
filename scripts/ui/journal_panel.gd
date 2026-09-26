@@ -241,6 +241,7 @@ func _render_record() -> void:
 		["낚은 물고기", "%d마리" % int(GameState.stats.get("fish", 0))],
 		["옛 굴 가장 깊은 곳", "지하 %d층" % deep if deep > 0 else "아직 안 내려갔다", deep == 0],
 		["게시판 잡일", "%d번" % int(GameState.stats.get("chores", 0))],
+		Race.record_line(),
 	])
 	# 물고기 도감: 못 잡은 것은 어디서 · 언제 잡히는지를 적어 두어, 다음에 날아가 볼 곳을 일러 준다
 	var book: Dictionary = GameState.stats.get("fishKinds", {})

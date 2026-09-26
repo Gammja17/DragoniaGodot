@@ -42,6 +42,8 @@ static func _build() -> void:
 			return (s.story.get("route") == "redeem" and s.quests.done.has("m6")) \
 				or (s.story.get("route") == "dark" and s.quests.done.has("m7d")),
 		"routines:ROUTINES.Ignar.variants.0.when": func(s): return s.story.get("route") == "dark",
+		# 비류: 달맞이 모임으로 두 마을이 다시 오가기 전에는 구름마루를 떠나지 않는다 (그 뒤로 오후엔 호수에서 헤엄친다)
+		"routines:ROUTINES.Biryu.variants.0.when": func(s): return not s.story.get("events", []).has("ev_gathering") or s.story.get("route") == "dark",
 		"routines:ROUTINES.Doran.variants.0.when": func(s): return _flag(s, "couple_egg") and not _flag(s, "couple_hatched"),
 		"routines:ROUTINES.Miru.variants.0.when": func(s): return _flag(s, "couple_egg") and not _flag(s, "couple_hatched"),
 		"routines:ROUTINES.Iseul.when": func(s): return _flag(s, "couple_hatched"),

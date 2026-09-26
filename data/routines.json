@@ -1794,6 +1794,77 @@
     ],
     "doing": "비를 맞으며 길목에 버티고 서 있다"
    }
+  },
+  "Biryu": {
+   "job": "구름마루의 싸움꾼",
+   "day": [
+    {
+     "h": 0,
+     "map": "CLOUDTOP",
+     "spot": [
+      13,
+      9
+     ],
+     "doing": "물가에 몸을 말고 자고 있다",
+     "sleep": true
+    },
+    {
+     "h": 6,
+     "map": "CLOUDTOP",
+     "spot": [
+      13,
+      9
+     ],
+     "doing": "지느러미를 펴고 몸을 푼다"
+    },
+    {
+     "h": 13,
+     "map": "LAKE",
+     "spot": [
+      8.5,
+      5.6
+     ],
+     "doing": "호수를 몇 바퀴째 헤엄치다가 물가에서 숨을 고른다"
+    },
+    {
+     "h": 18,
+     "map": "CLOUDTOP",
+     "spot": [
+      13,
+      9
+     ],
+     "doing": "오늘 헤엄친 바퀴 수를 자랑하고 다닌다"
+    },
+    {
+     "h": 22,
+     "map": "CLOUDTOP",
+     "spot": [
+      13,
+      9
+     ],
+     "doing": "물가에 몸을 말고 잔다",
+     "sleep": true
+    }
+   ],
+   "variants": [
+    {
+     "when": {
+      "$fn": "s => !(s.story.events || []).includes('ev_gathering') || s.story.route === 'dark'",
+      "$at": "ROUTINES.Biryu.variants.0.when"
+     },
+     "day": [
+      {
+       "h": 0,
+       "map": "CLOUDTOP",
+       "spot": [
+        13,
+        9
+       ],
+       "doing": "마을 한가운데서 지느러미를 세우고 몸을 푼다"
+      }
+     ]
+    }
+   ]
   }
  }
 }

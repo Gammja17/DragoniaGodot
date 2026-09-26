@@ -38,6 +38,7 @@ func _draw() -> void:
 			var add := mode == Mode.EFFECTS_ADD
 			for fx in E.effects:
 				if fx.additive == add: fx.draw(self)
+			if not add: Race.draw(self)   # 비류와 경주: 물안개 고리
 			if add: NightEvents.draw(self)   # 떨어지는 별의 꼬리
 		Mode.PARTICLES:
 			for p in E.particles: p.draw(self)

@@ -179,6 +179,9 @@ static func _own_menu(npc, nm: String):
 	if own: sub.append(own)
 	if nm == "Tiamat": sub.append({ label = "⚔️ 대련을 신청한다", on_select = func(): _start_spar(npc) })
 	if nm == "Poco": sub.append({ label = "🎾 술래잡기하자!", on_select = func(): _start_tag(npc) })
+	if nm == "Biryu":   # 나는 하늘로, 비류는 물로 (Race)
+		var race = Race.menu_option(npc)
+		if race: sub.append(race)
 	# 마을 아이들: 성체가 돼야 놀아 줄 수 있다. 놀아 주면 부모의 호감도 같이 오른다
 	var kp = _talk().KID_NPC_PLAY.get(nm)
 	if kp:
@@ -752,6 +755,9 @@ static func update_activity_npc(npc, dt: float) -> void:
 
 
 static func _update_activity(npc, dt: float) -> void:
+	if GameState.activity.type == "RACE":
+		Race.update(npc, dt)
+		return
 	if Story.is_drill(GameState.activity):
 		Story.update_drill(npc, dt)
 		return

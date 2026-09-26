@@ -194,7 +194,7 @@ func die() -> void:
 	Vfx.spawn_effect("PUFF" if def.get("flying") else "SMOKE", x, y - 16, { size = 1.8 if elite else 1.0 })
 	Vfx.spawn_effect("SHOCKWAVE", x, y, { size = 1.2 if elite else 0.6, color = def.color })
 	Sfx.play("dieBig" if elite else "die")
-	var meat: int = int(def.meat) if def.get("meat") != null else (1 if randf() < 0.45 else 0)
+	var meat: int = int(def.meat) if def.get("meat") != null else (1 if randf() < (0.2 if Spawner.famine() else 0.45) else 0)   # 굶는 계절엔 덜 떨군다
 	for i in meat: World.add_entity("items", Item.make(x + i * 22, y, "MEAT"))
 	if randf() < 0.7: World.add_entity("items", Item.make(x - 16, y, "GOLD", maxi(2, roundi(def.xp / 7.0)) * bonus))
 	# 대장간 소재. 정예는 확실히, 보통은 절반쯤 떨어뜨린다

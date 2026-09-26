@@ -28,7 +28,8 @@ var _choice := { species = "HERO", look = 0 }
 var _cells := []
 var _on_yes: Callable
 var _recolor_at := -1.0    # 색을 끄는 동안에는 큰 미리보기만 칠하고, 손을 멈추면 이때 생김새 칸들까지 칠한다
-var _live := false         # 색이 바뀌었다: 이번 프레임에 큰 미리보기를 다시 칠한다 (한 프레임에 한 번)
+var _live := false         # 색이 바뀌었다: 큰 미리보기를 다시 칠한다 (휴대폰에서 끄는 손이 버벅이지 않게 0.06초에 한 번까지)
+var _live_at := 0.0        # 마지막으로 큰 미리보기를 칠한 때
 var _repaint := []         # 아직 새 색으로 칠하지 않은 외형 칸 (한 프레임에 하나씩)
 
 
@@ -54,8 +55,10 @@ func _ready() -> void:
 
 
 func _process(_dt: float) -> void:
-	if _live:   # 끄는 동안에도 색이 따라온다 (예전에는 손을 멈춰야 바뀌었다). 스치는 색은 담아 두지 않는다
+	var now := Time.get_ticks_msec() / 1000.0
+	if _live and now - _live_at >= 0.06:   # 끄는 동안에도 색이 따라온다 (예전에는 손을 멈춰야 바뀌었다). 스치는 색은 담아 두지 않는다
 		_live = false
+		_live_at = now
 		if _choice.species != "LOOK":
 			_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), preview_look(_choice), false)
 			_preview.queue_redraw()

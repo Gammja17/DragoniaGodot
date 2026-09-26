@@ -406,7 +406,10 @@ static func on_flag(flag: String) -> void:
 				if b.id == "IGNAR": b.reset()
 		"dark_duel": _dark_duel()
 		"couple_egg": GameState.story.coupleEggDay = GameState.day
-		"couple_hatched":   # 도란과 미루의 아이. 이름은 플레이어가 짓는다
+		"couple_hatched":   # 도란과 미루의 아이. 옛 둥지에서 "예쁘다고 해 주세요"를 골랐으면 이름은 내가 짓고, 아니면 도란이 벌써 지었다
+			if GameState.quests.choices.get("mi1") != "pretty":
+				Hud.pop("아이의 이름은 %s. 도란이 지었다. 내일부터 마을을 뛰어다닌다." % Names.npc("Iseul"), "🐣")
+				return
 			NameInput.ask("도란과 미루의 아이 이름을 지어 주세요 (6자까지)", "이슬", func(n: String):
 				if not GameState.story.has("npcNames"): GameState.story.npcNames = {}
 				GameState.story.npcNames.Iseul = n
@@ -426,7 +429,9 @@ static func _yuan_duel() -> void:
 	var y = World.any_npc("Yuan")
 	if not y: return
 	y.x = p.x + 200; y.y = p.y; y.walk_to = null
-	start_drill(y, { type = "DUEL", hp = 600 + p.level * 18 }, { label = "구름마루의 유안", who = "유안", element = "WATER",
+	# 폭포 대치에서 나라 곁에 섰으면 유안이 더 독하게 나오고, 막아섰으면 한 수 접어 준다
+	var mood: float = { "follow": 1.2, "stop": 0.8 }.get(GameState.story.get("choices", {}).get("ev_border"), 1.0)
+	start_drill(y, { type = "DUEL", hp = (600 + p.level * 18) * mood }, { label = "구름마루의 유안", who = "유안", element = "WATER",
 		onEnd = func(win: bool):
 			Chronicle.play_scene("등을 물린 아이들", _data().YUAN_DUEL.win if win else _data().YUAN_DUEL.lose, func():
 				Quests.notify("event", "yuan_duel")
@@ -471,7 +476,9 @@ static func nara_result(won: bool) -> void:
 
 ## 나라가 지금 얼마나 올라와 있나 (1 이 보통). 내기 · 겨루기의 세기에 곱한다
 static func nara_form() -> float:
-	return 1.0 + float(GameState.story.get("nara", {}).get("form", 0.0))
+	# 티아맷의 요령("한 박자만 늦게")을 전해 줬으면 나라가 한 박자 기다릴 줄 안다
+	var tip := 0.1 if GameState.quests.choices.get("n1") == "tip" else 0.0
+	return 1.0 + float(GameState.story.get("nara", {}).get("form", 0.0)) + tip
 
 
 ## 어둠의 길 끝. 마을 어귀를 스승이 막아선다. 이기면 마을이 넘어가고, 지면 스승이 끌고 돌아온다
@@ -494,6 +501,12 @@ static func _dark_duel() -> void:
 			Chronicle.play_scene("집에 가자", dark.lose, func():
 				GameState.story.route = null
 				GameState.story.flags.turned_back = true
+				# 돌아온 대가: 이그나르가 기억하고(ev_ignar_fall 의 turned_back 줄), 스승은 사흘 동안 수련장 문을 열지 않고, 티아맷은 한동안 눈을 피한다
+				if not GameState.story.has("choices"): GameState.story.choices = {}
+				GameState.story.choices.turned_back = "yes"
+				GameState.story.turnedBackDay = GameState.day
+				Quests.shift_relation("Tiamat", -15)
+				Hud.pop("카이론은 사흘 동안 수련장 문을 열지 않는다.", "🚪")
 				GameState.quests.active.erase("m7d")
 				var m6 = Quests.by_id("m6")
 				if m6 and not GameState.quests.done.has("m6"):

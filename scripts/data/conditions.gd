@@ -96,7 +96,7 @@ static func _build_story() -> void:
 		"quests:QUESTS.6.needs": func(s): return not s.quests.done.has("m5a") and not s.quests.active.has("m5a"),
 		"quests:QUESTS.10.needs": func(s): return not _boss(s, "IGNAR"),
 		"quests:QUESTS.17.needs": func(s): return s.quests.done.has("m3") and not _dead(s, "Gron"),
-		"quests:QUESTS.18.needs": _lessons_at(2),
+		"quests:QUESTS.18.needs": func(s): return _lessons(s) >= 2 and s.quests.done.has("m3"),   # 나라의 첫 부탁(n1)은 첫 습격을 같이 막은 뒤에
 		"quests:QUESTS.23.needs": _done("m5c"),
 		"quests:QUESTS.24.needs": _lessons_at(2),
 		"quests:QUESTS.25.needs": func(s): return _lessons(s) >= 4 and Chapters.map_open(s, "VOLCANO"),
@@ -115,12 +115,13 @@ static func _build_story() -> void:
 		"story:SCENES.9.when": func(s): return s.quests.done.has("m6") and s.story.get("route") != "redeem" and s.story.get("route") != "dark",
 		"story:SCENES.10.when": func(s): return s.quests.done.has("m6") and s.story.get("route") == "redeem",
 		"story:TRIALS.0.needs": _lessons_at(1),
-		"story:TRIALS.1.needs": func(s): return _lessons(s) >= 2 and s.quests.done.has("m3"),
+		"story:TRIALS.1.needs": func(s): return _lessons(s) >= 3 and s.quests.done.has("m3"),   # 성체는 8일째쯤 (레벨 10 · 수련 셋)
 
 		# ---- training.js: 스승이 쉬는 날 · 데리고 나가는 날 ----
 		"training:RESTS.0.when": func(_s = null): return true,
-		"training:RESTS.1.when": _lessons_at(2),
-		"training:RESTS.2.when": _lessons_at(4),
+		# 엘더네 밥 · 수련장 그늘은 나라가 제자가 되기 전의 이야기다 ("제자로 안 받아 주니", "문 앞에서 기웃거리는 놈")
+		"training:RESTS.1.when": func(s): return _lessons(s) >= 2 and not s.quests.done.has("n3"),
+		"training:RESTS.2.when": func(s): return _lessons(s) >= 4 and not s.quests.done.has("n3"),
 		"training:TRIPS.0.when": func(_s = null): return true,
 		"training:TRIPS.1.when": _lessons_at(3),
 		"training:TRIPS.2.when": func(s): return _boss(s, "MORGATH"),
@@ -230,7 +231,8 @@ static func _build_chronicle() -> void:
 	}
 	for i in w: _table["chronicle:CHRONICLE.%d.when" % i] = w[i]
 	_table["chronicle:CHRONICLE.15.choice.options.1.when"] = func(c): return c.flag.call("messenger")
-	_table["chronicle:CHRONICLE.16.choice.options.1.when"] = func(c): return c.clueCount >= 4
+	# 이그나르를 살리는 길: 단서 개수(본편만 해도 다 모인다) 대신, 카이론의 옛이야기(k2)를 들었는가
+	_table["chronicle:CHRONICLE.16.choice.options.1.when"] = func(c): return c.done.call("k2")
 
 	# ---- [세션 D] 해 질 녘 폭포 ----
 	# 누구나 한 번은 보는 밀회 (설정집 5-0). 포코의 귓속말(하루와 사귀는 중이면 하루의 초대)로 s1 이 걸리고,
@@ -365,7 +367,7 @@ static func _build_c() -> void:
 			and c.hour >= 7 and c.hour < 16 and c.day > int(c.s.story.get("eventDay", {}).get("ev_nuri_dinner", c.day)),
 		# 하루 · 세이란 · 유안 · 엠버: 어둠의 길로 들어선 판에서는 구름마루와 마을이 갈라선다
 		"quests:QUESTS.hr1.needs": func(s): return s.quests.done.has("m6w") and s.story.get("route") != "dark",
-		"quests:QUESTS.sr1.needs": func(s): return s.quests.done.has("m5g") and s.story.get("route") != "dark",
+		"quests:QUESTS.sr1.needs": func(s): return s.quests.done.has("m5c") and s.story.get("route") != "dark",   # 샘물이 맑아진 뒤 (5장 모임 때는 물이 흐려 읽지 못했다)
 		"quests:QUESTS.yu1.needs": func(s): return s.quests.done.has("m5c") and s.story.get("route") != "dark",
 		"quests:QUESTS.em1.needs": func(s): return s.quests.done.has("m5b") and s.story.get("route") != "dark",
 		# 하루의 조약돌: 마을 광장 분수 둘레에서

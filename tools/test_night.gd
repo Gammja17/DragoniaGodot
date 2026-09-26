@@ -87,14 +87,26 @@ func _ready() -> void:
 
 	# 2장 뒤: 본 이야기가 성체 승급을 기다리면 추적창이 그렇다고 말한다 (곁가지 부탁만 가리키던 것)
 	G.quests.done.append_array(["m2", "m3"])
-	G.story.lessons = ["L1", "L2"]
+	G.story.lessons = ["L1", "L2", "L3"]
 	G.player.stage_index = 1
 	G.player.level = 5
 	var sug = Quests.suggestion()
-	_check("레벨이 모자라면: 성체까지 자라기 (레벨 5 / 8)", sug.get("kind") == "trial" and str(sug.title).contains("5 / 8"))
-	G.player.level = 8
+	_check("레벨이 모자라면: 성체까지 자라기 (레벨 5 / 10)", sug.get("kind") == "trial" and str(sug.title).contains("5 / 10"))
+	G.player.level = 10
 	sug = Quests.suggestion()
 	_check("레벨이 차면: 스승에게 승급 시험을 청하자 (화살표는 카이론)", sug.get("kind") == "trial" and sug.who == "Kairon" and sug.main)
+
+	# 습격 때: 그론이 살아 있으면 포코는 모루 밑에 숨고 쏘지 않는다. 그론을 보낸 뒤로는 어른들 곁에 선다 · 아기들은 싸우지 않는다
+	var poco = World.any_npc("Poco")
+	var nuri = World.any_npc("Nuri")
+	G.raid.active = true
+	_check("습격 · 그론이 살아 있으면 포코는 숨는다", [poco.stays_back(), Routine.plan_for("Poco").doing.contains("모루 밑")], [true, true])
+	_check("습격 · 아기(누리)는 싸우지 않는다", nuri.stays_back())
+	var dead_was: Array = G.story.get("dead", []).duplicate()
+	G.story.dead = dead_was + ["Gron"]
+	_check("습격 · 그론을 보낸 뒤로 포코는 어른들 곁에 선다", [poco.stays_back(), Routine.plan_for("Poco").doing.contains("어른들 곁")], [false, true])
+	G.story.dead = dead_was
+	G.raid.active = false
 
 	# 일과가 없는 용은 사는 곳을 말한다 (뿌리골의 모스를 "마을 어딘가에 있다"고 하던 것)
 	_check("모스를 찾을 곳: 뿌리골", Quests.whereabouts("Moss"), "뿌리골에 있다")

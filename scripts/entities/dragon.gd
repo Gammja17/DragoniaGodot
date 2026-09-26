@@ -1022,13 +1022,21 @@ func _update_npc(dt: float) -> void:
 		facing = facing_from_vector(walk_to.x - x, walk_to.y - y, facing)
 		return
 	var following := state != "WANDER"
-	var fights: bool = config.get("fixed") or following
+	# 싸움에 끼지 않는 용은 쏘지 않는다. 따라나선 포코도 습격 때는 숨는다 (들판의 사냥은 같이 한다)
+	var hides: bool = stays_back() and (not following or GameState.raid.active)
+	var fights: bool = (config.get("fixed") or following) and not hides
 	var dodging: bool = fights and _dodge(dt)   # 발밑의 예고부터 비킨다. 비키는 동안에도 쏘기는 한다
 	if following and not dodging and Party.role_id(self) == "MEDIC" and _mend(dt): return   # 살리기: 쓰러진 용부터 일으킨다
 	var busy: bool = fights and _fight(dt, following, not dodging)
 	if dodging: pass
 	elif following: _update_partner(dt, busy)
 	elif not busy: _update_wander(dt)
+
+
+## 싸움에 끼지 않는 용: 어린아이들, 그리고 그론이 떠나기 전의 포코 (나팔이 울리면 그론의 모루 밑에 숨는다)
+func stays_back() -> bool:
+	if config.get("kid"): return true
+	return config.get("name") == "Poco" and not Routine.is_dead("Gron")
 
 
 ## 마을 용·짝·동료의 전투. 싸우는 중이면 true

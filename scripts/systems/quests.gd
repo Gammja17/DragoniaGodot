@@ -46,6 +46,23 @@ static func changed() -> void: on_change.call()
 static func raise_flag(flag: String) -> void: on_flag.call(flag)
 
 
+## 선택의 대가로 그 용과의 사이가 오르내린다 (하루 상한을 따지지 않는다). 알림으로 보여 준다
+static func shift_relation(nm: String, by: float) -> void:
+	var n = World.any_npc(nm)
+	if n == null or by == 0: return
+	NpcActions.add_relation(n, by, false)
+	var who := Util.josa(Names.npc(nm), "과", "와")
+	Hud.pop("%s 조금 가까워졌다." % who if by > 0 else "%s 사이가 조금 멀어졌다." % who, "💞" if by > 0 else "💢")
+
+
+## 고른 선택지에 딸린 대가 (퀘스트 선택지): relation { 이름: 얼마 } · clue · meat · flag
+static func apply_pick(o: Dictionary) -> void:
+	for nm in o.get("relation", {}): shift_relation(nm, float(o.relation[nm]))
+	if o.get("clue"): add_clue(o.clue)
+	if o.get("meat"): GameState.player.inventory.meat += int(o.meat)
+	if o.get("flag"): raise_flag(o.flag)
+
+
 # ---------- 대목 ----------
 
 ## 대목 목록. steps 가 없는 옛 모양(goal 하나)도 그대로 돈다
@@ -490,6 +507,8 @@ static func turn_in(q: Dictionary, npc, choice_id = null) -> bool:
 	if r.get("xp"): p.gain_xp(r.xp)
 	# 고른 선택지에 딸린 장면이 먼저, 그다음이 퀘스트 마무리 장면
 	if q.get("choice"):
+		for o in q.choice.options:
+			if o.id == choice_id: apply_pick(o)   # 고른 것의 대가 (사이 · 단서 · 깃발)
 		for o in q.choice.get("options", []):
 			if o.id == choice_id and o.get("scene"): _queue_scene(q.title, o.scene, o.get("place"))
 	if r.get("scene"): _queue_scene(q.title, r.scene, r.get("place"))

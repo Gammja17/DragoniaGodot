@@ -283,7 +283,9 @@ static func _play(view: SneakView, dt: float) -> void:
 	p.x = me.x; p.y = me.y
 	var speed: float = me.distance_to(r.last) / maxf(dt, 0.001)
 	r.last = me
-	var tune: Dictionary = TUNE[mini(int(_state().fails), TUNE.size() - 1)]
+	# 포코가 약속대로 먼저 귀띔해 줬으면(p1 "네 말이 맞았어") 한 단 쉽게 시작한다
+	var tip := 1 if GameState.quests.choices.get("p1") == "told" else 0
+	var tune: Dictionary = TUNE[mini(int(_state().fails) + tip, TUNE.size() - 1)]
 	if loud: _noise(r, me, tune)
 	_director(r, me, tune, dt)
 	var seen_by = null

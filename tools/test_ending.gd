@@ -69,7 +69,7 @@ func _setup() -> void:
 	var p: Dragon = G.player
 	G.elderTutorialDone = true
 	G.tutorial.finished = true
-	G.quests.done = ["m0", "m1", "m2", "m3", "m4", "m5", "m5g", "m5a", "m6w", "m5b", "m5c"]
+	G.quests.done = ["m0", "m1", "m2", "m3", "m4", "m5", "m5g", "m5a", "m6w", "m5b", "m5c", "k2"]   # k2: 이그나르를 살리는 길이 열린다
 	G.quests.active = { m6 = { step = 3, n = 0 } }
 	G.quests.tracked = "m6"
 	G.bossesDefeated = { MORGATH = true, ZALGORA = true, GLACIA = true, BASIL = true }

@@ -109,7 +109,7 @@ func _ready() -> void:
 	_check("둘이 다 깨면 이긴다", _saw("손발은 좀 맞는군"))
 
 	# 전적 → 8장 한 줄 · 내기 대사
-	_check("나라가 한 번도 못 이긴 판: 원래 줄", _nara_ch6(), "한 번도 못 이겼단")
+	_check("아직 한 번도 겨루지 않은 판: 붙어 보지도 못했단", _nara_ch6(), "붙어 보지도")
 	Story.nara_result(false)
 	_check("한 번씩 이기면 비겼다", G.story.choices.nara_record, "even")
 	_check("8장: 비긴 채로 도망가는 게 어딨어", _nara_ch6(), "비긴 채로")
@@ -143,7 +143,7 @@ func _nara_ch6() -> String:
 	var ch6 = Data.get_module("story").SCENES.filter(func(s): return s.id == "ch6")[0]
 	var lines: Array = ch6.lines.filter(func(l): return l.who == "Nara" and l.text.begins_with("돌아와") and Chronicle._chosen(l))
 	if lines.size() != 1: return "줄이 %d개" % lines.size()
-	for key in ["한 번도 못 이겼단", "비긴 채로", "진 채로", "이긴 채로"]:
+	for key in ["붙어 보지도", "비긴 채로", "진 채로", "이긴 채로"]:
 		if lines[0].text.contains(key): return key
 	return lines[0].text
 

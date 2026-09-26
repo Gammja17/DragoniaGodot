@@ -195,6 +195,7 @@ static func _choose(ev: Dictionary, done: Callable) -> void:
 		if not GameState.story.has("choices"): GameState.story.choices = {}
 		GameState.story.choices[ev.id] = o.id
 		play_scene(ev.title, o.get("lines", []) if o.get("lines") else [], func():
+			for nm in o.get("relation", {}): Quests.shift_relation(nm, float(o.relation[nm]))   # 고른 것의 대가
 			if o.get("clue"): add_clue(o.clue)
 			if o.get("grant"):
 				var q = Quests.by_id(o.grant)

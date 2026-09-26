@@ -93,7 +93,7 @@ func _ready() -> void:
 	G.dayTime = 0.76   # 저녁 여섯 시 무렵
 	p.x = 26 * 96 + 48; p.y = 19 * 96 + 48 + 120
 	await _play_until(func(): return _step("sn1") == 1 and _idle(), 30)
-	_check("해 지면 저녁상이 차려진다", _saw("고기 제일 큰 덩이"))
+	_check("해 지면 저녁상이 차려진다", _saw("내 그릇이 빌 때마다"))
 	_check("단이 내일 숲에 데려가겠다고 한다", _saw("누리는 내 옆에서 한 발짝도 떨어지지 말고"))
 	# 같은 날 숲에 가면 아직이다 ("내일")
 	await _travel("EAST_ROAD")
@@ -108,7 +108,7 @@ func _ready() -> void:
 	await _travel("VILLAGE")
 	await _talk(soi)
 	_check("소이에게 보고하고 끝낸다", G.quests.done.has("sn1"))
-	_check("누리가 보물을 준다", _saw("제일 반짝이는 거야"))
+	_check("누리가 보물을 준다", _saw("제일 반짝이는 거래"))
 	_check("누리의 조약돌이 굴 꾸미기 물건으로 들어온다", Den.owned("PEBBLE_NURI"), 1)
 
 	# ---------- 뒷장의 넷: 하루 · 세이란 · 유안 · 엠버 ----------
@@ -222,7 +222,7 @@ func _ready() -> void:
 	# 결말의 "그 뒤로": 들어준 이웃들의 이야기가 이어진다 (많으면 넷까지, 어둠의 길은 빼고)
 	G.quests.done.append_array(["dr1"])
 	var life: Array = Ending.life_lines("guardian")
-	var told := life.filter(func(t): return t.contains("망루에서는 밤마다") or t.contains("징검돌은") or t.contains("창 대신 방패") or t.contains("숲 어귀까지") or t.contains("큰 놈의 새끼") or t.contains("별비늘"))
+	var told := life.filter(func(t): return t.contains("새 망루에서도") or t.contains("징검돌은") or t.contains("창 대신 방패") or t.contains("숲 어귀까지") or t.contains("큰 놈의 새끼") or t.contains("별비늘"))
 	_check("결말에 이웃 이야기가 넷 이어진다", told.size(), 4)
 	_check("어둠의 길 결말에는 없다", Ending.life_lines("dark").any(func(t): return t.contains("징검돌")), false)
 

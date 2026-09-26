@@ -80,10 +80,13 @@ static func plan_for(name: String, hour := -1.0):
 	# 달이 가장 밝은 밤에는 두 마을이 모두 폭포 아래로 내려온다
 	if gather: slot = { map = Gathering.GATHER_MAP, spot = spot, doing = Gathering.doing_of(name) }
 	var own = variant if variant != null else r
-	if GameState.raid.active and own.get("raid"): slot = own.raid   # 마을이 불타는 것보다 급한 모임은 없다
+	# 습격 때 설 자리. raidAfter 는 그 용이 떠난 뒤의 자리다 (그론을 보낸 뒤로 포코는 모루 밑에 숨지 않는다)
+	var raid_slot = own.get("raid")
+	if own.get("raidAfter") and is_dead(own.raidAfter.of): raid_slot = own.raidAfter
+	if GameState.raid.active and raid_slot: slot = raid_slot   # 마을이 불타는 것보다 급한 모임은 없다
 	if GameState.raid.active and GameState.raid.get("kind") == "war" and WAR_AWAY.has(name):
 		slot = { map = "FALLS", spot = [10, 10], doing = "폭포에서 마을로 달려오고 있다" }
-	elif not (GameState.raid.active and own.get("raid")) and not Gathering.is_gather_now() and own.get("rain") and (GameState.weather.type == "RAIN" or GameState.weather.type == "SNOW"):   # 습격 칸을 비 칸이 덮지 않게
+	elif not (GameState.raid.active and raid_slot) and not Gathering.is_gather_now() and own.get("rain") and (GameState.weather.type == "RAIN" or GameState.weather.type == "SNOW"):   # 습격 칸을 비 칸이 덮지 않게
 		slot = own.rain
 	# 짝은 제 굴 대신 내 굴에서 잔다. 손님은 저녁에 내 굴에 들른다. 비가 와도 그대로이고, 모임과 습격이 먼저다
 	if home and not gather and not GameState.raid.active: slot = home

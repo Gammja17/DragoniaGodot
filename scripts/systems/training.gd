@@ -72,6 +72,9 @@ static func todays_plan():
 	if GameState.story.get("route") == "dark" and GameState.quests.done.has("m7d"): return null
 	var plan = GameState.story.get("plan")
 	if plan and plan.day == GameState.day: return plan
+	# 어둠의 길에서 돌아온 뒤 사흘은 스승이 수련장 문을 열지 않는다
+	var back = GameState.story.get("turnedBackDay")
+	if back != null and GameState.day - int(back) < 3: return null
 	# 새 수련은 날이 밝아야 정해진다 (자정을 넘기자마자 '카이론을 찾아가'가 뜨고, 한밤중 스승의 굴에서 수련을 받던 것)
 	if GameState.dayTime < NightEvents.DAWN: return plan if plan and plan.stage == "active" else null
 	if plan and plan.stage == "active": _end_company()       # 어제 것을 못 끝내고 날이 넘어갔다

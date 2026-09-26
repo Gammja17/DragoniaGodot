@@ -151,7 +151,7 @@
     },
     {
      "who": "Kairon",
-     "text": "너는 빗자루 저기 있다. 구석까지 쓸어라."
+     "text": "(카이론이 턱으로 나를 가리켰다.) 빗자루는 저기 있다. 구석까지 쓸어라."
     }
    ],
    "offerHerWon": [
@@ -191,7 +191,7 @@
     },
     {
      "who": "Kairon",
-     "text": "안다. 그래서 점점 붙는 거다."
+     "text": "안다. 그래서 점점 따라붙는 거다."
     },
     {
      "who": "Kairon",
@@ -272,11 +272,11 @@
    "done": [
     {
      "who": "Kairon",
-     "text": "봤냐, 티아맷은 서두르지 않고 기다렸다가 한 번에 끝내지 않더냐."
+     "text": "봤냐. 티아맷은 서두르지 않는다. 기다렸다가 한 번에 끝내지."
     },
     {
      "who": "Kairon",
-     "text": "나라는 맨날 먼저 들어가다가 맞는데, 너도 똑같으니까 웃지 마라."
+     "text": "나라는 맨날 먼저 들어가다가 맞지. …나라만 그런 게 아니니까 너도 웃지 마라."
     }
    ]
   },
@@ -328,7 +328,7 @@
    "offer": [
     {
      "who": "Kairon",
-     "text": "오늘은 둘이 붙어라. 허수아비 말고 서로를 상대로. 먼저 쓰러지는 쪽이 청소다."
+     "text": "오늘은 허수아비 말고 너희 둘이 붙어라. 먼저 쓰러지는 쪽이 청소다."
     },
     {
      "who": "Nara",
@@ -409,7 +409,7 @@
    "place": "VILLAGE",
    "fade": "엘더의 굴 앞",
    "when": {
-    "$fn": "s => s.story.lessons.length >= 2",
+    "$fn": "s => s.story.lessons.length >= 2 && !s.quests.done.includes('n3')",
     "$at": "RESTS.1.when"
    },
    "offer": [
@@ -445,7 +445,7 @@
     },
     {
      "who": "Elder",
-     "text": "수련장에 있겠지. 네가 제자로 안 받아 주니 저러는 것 아니냐."
+     "text": "수련장에 있겠지. 받아 주지도 않는 데를, 오늘도…"
     },
     {
      "who": "Kairon",
@@ -464,7 +464,7 @@
    "place": "DOJO",
    "fade": "수련장 그늘",
    "when": {
-    "$fn": "s => s.story.lessons.length >= 4",
+    "$fn": "s => s.story.lessons.length >= 4 && !s.quests.done.includes('n3')",
     "$at": "RESTS.2.when"
    },
    "offer": [

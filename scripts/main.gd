@@ -180,6 +180,7 @@ func _update(dt: float) -> void:
 	Training.update()
 	Tutorial.update()
 	Achievements.update(dt)
+	Den.deliver_orders()   # 맡겨 둔 살림살이는 날이 밝으면 굴 앞에
 
 
 ## 컷씬에서는 무대에 오른 이들만 보인다. 적이 화면을 가로지르고 딴 용이 어슬렁대면 장면이 장면 같지 않다

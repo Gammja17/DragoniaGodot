@@ -105,7 +105,7 @@ func _ready() -> void:
 	print("[굴 꾸미기] 보임=%s [가진 것] %d줄 · %s" % [DenPanel.panel_open(), list.get_child_count(), hud.get_node("Den/Frame/Lines/Body/Meta/Cozy").text])
 	hud.get_node("Den/Frame/Lines/Body/Tabs/craft").pressed.emit()
 	await get_tree().process_frame
-	print("[굴 꾸미기] [엮는다] %d줄" % list.get_child_count())
+	print("[굴 꾸미기] [맡긴다] %d줄" % list.get_child_count())
 	get_tree().quit()
 
 

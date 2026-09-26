@@ -266,7 +266,7 @@ func _update_player(dt: float) -> void:
 	var hunger_slow: float = [1.0, 0.86, 0.7][hunger_level]
 	var base_speed: float = WALK_SPEED * stage.speed * (1 + 0.04 * GameState.upgrades.get("spd", 0)) * (1 + Growth.stat("speed")) \
 		* (1.08 if Relics.has("WIND_FEATHER") else 1.0) * (0.55 if slow_timer > 0 else 1.0) * hunger_slow
-	var locked := channels.any(func(c): return c.get("lock"))   # 급강하 중엔 조작 불가
+	var locked := channels.any(func(c): return c.get("lock")) or DiveFish.plunge != null   # 급강하 · 물고기를 덮치는 중엔 조작 불가
 	# Shift 를 탁 누르면 대시(잠깐 무적), 계속 누르고 있으면 달리기
 	if locked: pass   # 스킬이 몸을 움직이는 중
 	elif GameInput.pressed("sprint") and ax != Vector2.ZERO and dash_cd <= 0:
@@ -290,7 +290,7 @@ func _update_player(dt: float) -> void:
 			Hazard.add(x, y, { faction = "ALLY", r = 60, delay = 0.05, linger = 2.2, damage = 4 * damage_mult, dps = 9 * damage_mult, color = "#ff7a2a", effect = "FLAMES", effectSize = 0.9, status = { type = "BURN", duration = 2 } })
 		Particles.burst(x, y - 30 * stage.scale, colors.get("body", "#ffffff"), 0.35)
 	elif ax != Vector2.ZERO:
-		move_by(ax.x, ax.y, base_speed * (SPRINT_MULT if GameInput.down("sprint") else 1.0) * (1.45 if flying else 1.0), dt)
+		move_by(ax.x, ax.y, base_speed * (SPRINT_MULT if GameInput.down("sprint") else 1.0) * (1.45 if flying else 1.0) * DiveFish.move_mult(), dt)
 		hunger -= 0.22 * dt * hunger_mult * (3 if flying else 1)   # 나는 건 배가 빨리 꺼진다
 		Tutorial.mark("moved")
 	else:
@@ -321,6 +321,7 @@ func _update_player(dt: float) -> void:
 	if GameInput.pressed("prevElement"): cycle_element(-1)
 	if beam: _update_beam(dt)
 	if GameInput.pressed("interact"): interact()
+	DiveFish.update(self, dt)   # 물 위를 날면 물고기 그림자가 보이고, 덮쳐서 잡는다
 	if GameInput.pressed("eat"): eat()
 
 	# 보는 방향은 프레임 끝에 딱 한 번, 아래 순서대로 정한다.
@@ -696,12 +697,16 @@ func _update_talk() -> bool:
 	var stone_first: bool = stone != null and not nest_near and (not target or Util.dist(self, stone) < 95 or Util.dist(self, stone) < Util.dist(self, target))
 	var tip := ""
 	var tip_at = null
+	var dive_tip: String = DiveFish.tip(self) if flying else ""
 	if nest_near:
 		tip_at = nest_near
 		tip = "Space · E 둥지에서 잔다" if Den.in_my_den() else "Space 둥지에서 쉬기"
 	elif stone_first:
 		tip_at = stone
 		tip = "Space 석비로 건너뛴다"
+	elif dive_tip != "":
+		tip_at = self
+		tip = dive_tip
 	elif target:
 		tip_at = target
 		tip = "Space 아이와 대화" if is_kid else "Space 대화"
@@ -817,6 +822,7 @@ func nearby_thing():
 	if not r: r = hit.call(props.filter(func(p): return p.type == "CAVE"), 120, "굴에 들어간다")
 	if not r: r = hit.call(props.filter(func(p): return p.type == "STAIRS_DOWN" or p.type == "STAIRS_UP"), 100, "오르내린다")
 	if not r and not carrying: r = hit.call(props.filter(func(p): return p.type == "BOARD"), 90, "게시판을 본다")
+	if not r and not carrying and Gathering.share_here(): r = hit.call(props.filter(func(p): return p.type == "CAMPFIRE"), 130, "고기를 나눈다")
 	if not r: r = hit.call(E.items.filter(func(it): return not it.remove and (it.type == "MEAT" or (it.type == "EGG" and not carrying))), 60, "줍는다")
 	if not r and not GameState.den.get("built"): r = hit.call(props.filter(func(p): return p.type == "STUMP" and p.ripe), 80, "나뭇가지를 줍는다")
 	if not r and hunger < 95: r = hit.call(props.filter(func(p): return p.type == "BERRY" and p.ripe), 80, "열매를 딴다")
@@ -830,6 +836,7 @@ func interact() -> void:
 	if GameState.activity: return   # 대련·술래잡기 중에는 상자도 석비도 나중이다
 	# 알을 들고 둥지 앞에 섰으면 놓는 것이 먼저다 (굴 안에서는 아래 Den 이 [E] 를 늘 채 가기 때문에)
 	if not fishing and carrying == "EGG" and _put_egg_in_nest(): return
+	if not fishing and not carrying and Gathering.try_share(): return   # 달맞이 모임: 모닥불에 고기를 올려 나눈다
 	if not fishing and Arena.nearby():          # 수련장 시험 표지
 		Arena.open()
 		return
@@ -856,13 +863,8 @@ func interact() -> void:
 			Quests.notify("fish", "BIG")
 			return
 		if fishing.bite > 0:
-			var n := 2 if randf() < 0.25 else 1
-			inventory.meat += n
-			GameState.stats.fish = GameState.stats.get("fish", 0) + 1   # 낚은 물고기 수 (SKEAM 도전 과제)
-			Vfx.spawn_text(x, y - 100 * stage.scale, "고기 +%d (물고기)" % n, "#9fe3ff", 16)
 			Particles.burst(fishing.x, fishing.y, "#bfe9ff", 0.7, 10)
-			gain_xp(6)
-			Quests.notify("fish", GameState.map_id)
+			DiveFish.caught(DiveFish.rod_catch(), self)   # 여기 물에 사는 작은 물고기 하나 (도감에 적힌다)
 			if Quests.wants("fish", "BIG") and not _big_fish_hour():
 				Hud.pop("큰 놈이 아니다. 큰 놈은 해 뜰 무렵(새벽 다섯 시부터 여덟 시 전까지) 호수에서 올라온다.", "🎣")
 		else:
@@ -904,7 +906,7 @@ func interact() -> void:
 	for k in E.babies:
 		if Util.dist(self, k) < 80 and not carrying and k.pet(): return
 	# 5) 물가라면 낚시
-	var water = _near_water() if not carrying else null
+	var water = _near_water() if not carrying and not flying else null   # 하늘에서는 낚싯줄 대신 덮친다 (DiveFish)
 	if water:
 		fishing = { x = water.x, y = water.y, wait = Util.rand_range(1.5, 4.5), bite = 0.0 }
 		# 도란의 '큰 놈' (dr1): 해 뜰 무렵 호수에서 그 대목일 때만. 오래 기다리게 한다

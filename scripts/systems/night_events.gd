@@ -46,7 +46,7 @@ static func update(dt: float, prev_day_time: float) -> void:
 	var t := GameState.dayTime
 	if prev_day_time < DUSK and t >= DUSK and not GameState.event:
 		var r := randf()
-		if r < 0.28:
+		if r < 0.28 and not Gathering.is_gather_day():   # 달맞이 모임 밤에는 붉은 달이 뜨지 않는다 (다들 폭포 아래 모여 있다)
 			GameState.event = "BLOOD_MOON"
 			Hud.pop("붉은 달이 떠오릅니다… 몬스터가 들끓지만 경험치가 1.5배!", "🌕")
 		elif r < 0.56:

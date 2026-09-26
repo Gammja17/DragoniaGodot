@@ -89,6 +89,12 @@ static func _hints() -> Array:
 		  when = func(s): return s.player.stage_index >= Story._adult() and not s.tutorial.get("flew") \
 			and (s.story.get("events", []).has("ev_nuri_lost") or s.quests.done.has("m4")),
 		  text = "[Z]로 날아오른다. 하늘에선 물도 벽도 못 막지만 배가 빨리 꺼진다." },
+		# 물 위를 처음 날 때: 물속 물고기 그림자가 보인다. 낚시꾼 도란이 곁에 있으면 도란이 먼저 알려 준다
+		{ id = "dive", icon = "🐟", who = ["Doran"], urgent = true,
+		  when = func(s): return s.player.flying and not DiveFish.shadows.is_empty(),
+		  say = { Doran = "허, 하늘에서 보니께 물속이 훤하지? 그림자 바로 위에서 내리꽂으면 낚싯대보다 빠르구먼. 큰 놈은 힘을 꽉 모았다가 한 번에 덮쳐야 혀." },
+		  text = "내 그림자를 물고기 그림자에 겹치고 [Space]로 내리꽂는다. 큰 그림자는 꾹 눌러 힘을 다 모았다가 뗀다.",
+		  alone = "물속에 물고기 그림자가 보인다. 내 그림자를 겹치고 [Space]로 내리꽂는다. 큰 그림자는 꾹 눌러 힘을 다 모았다가 뗀다." },
 		{ id = "kid", icon = "🐣", who = ["Elder", "Miru"],
 		  when = func(s): return not s.kids.is_empty() and not s.tutorial.get("kids_panel"),
 		  say = { Elder = "허허, 네 아이로구나. 아이는 배고프면 보채고, 크면 제멋대로 돌아다닌단다. 자주 들여다봐 주거라.",

@@ -14,7 +14,9 @@
     "gold": 35,
     "meat": 1,
     "xp": 60
-   }
+   },
+   "from": "Poco",
+   "thanks": "빨래터가 반짝반짝해! 약속대로 빨래는 내가 할게. …진짜로 할 거야!"
   },
   {
    "id": "c_goblin",
@@ -34,7 +36,9 @@
     "gold": 50,
     "meat": 2,
     "xp": 120
-   }
+   },
+   "from": "Gron",
+   "thanks": "조용하군. 오늘은 낮잠 좀 자겠다."
   },
   {
    "id": "c_bat",
@@ -50,7 +54,9 @@
     "gold": 60,
     "meat": 2,
     "xp": 160
-   }
+   },
+   "from": "Tiamat",
+   "thanks": "밤 순찰 나가는 애들이 이제 안 물리겠네. 고마워."
   },
   {
    "id": "c_meat",
@@ -64,7 +70,9 @@
    "reward": {
     "gold": 70,
     "xp": 90
-   }
+   },
+   "from": "Elder",
+   "thanks": "부엌이 든든하구나. 오늘 저녁은 다 같이 배불리 먹겠구나."
   },
   {
    "id": "c_any12",
@@ -79,7 +87,9 @@
     "gold": 55,
     "meat": 1,
     "xp": 150
-   }
+   },
+   "from": "Kairon",
+   "thanks": "숲이 좀 조용해졌군. …수고했다."
   },
   {
    "id": "c_elite",
@@ -94,7 +104,9 @@
     "gold": 140,
     "meat": 2,
     "xp": 380
-   }
+   },
+   "from": "Tiamat",
+   "thanks": "우두머리가 없으니 무리가 흩어졌어. 한시름 놨다."
   },
   {
    "id": "c_chest",
@@ -112,7 +124,9 @@
    "reward": {
     "gold": 90,
     "xp": 220
-   }
+   },
+   "from": "Gron",
+   "thanks": "상자 속 건 네 거다. 옛 용들도 누가 열어 주길 기다렸을 거다."
   },
   {
    "id": "c_upgrade",
@@ -131,7 +145,9 @@
     "gold": 60,
     "meat": 2,
     "xp": 140
-   }
+   },
+   "from": "Gron",
+   "thanks": "모루가 따뜻하군. 값은 약속대로 깎아 줬다."
   },
   {
    "id": "c_upgrade_ember",
@@ -150,7 +166,9 @@
     "gold": 60,
     "meat": 2,
     "xp": 140
-   }
+   },
+   "from": "Ember",
+   "thanks": "모루가 안 식었어. 아저씨도 좋아하실 거야."
   },
   {
    "id": "c_tag",
@@ -165,7 +183,9 @@
     "gold": 40,
     "meat": 2,
     "xp": 110
-   }
+   },
+   "from": "Poco",
+   "thanks": "헉, 헉… 너 진짜 빠르다! 간식은 약속대로 줄게. 반만!"
   },
   {
    "id": "c_spar",
@@ -179,7 +199,9 @@
    "reward": {
     "gold": 80,
     "xp": 200
-   }
+   },
+   "from": "Tiamat",
+   "thanks": "역시 허수아비보다 네가 낫다. 또 붙자."
   },
   {
    "id": "c_raid",
@@ -198,7 +220,9 @@
     "gold": 160,
     "meat": 3,
     "xp": 400
-   }
+   },
+   "from": "Elder",
+   "thanks": "덕분에 한숨 돌렸단다. 고맙구나."
   },
   {
    "id": "c_delve",
@@ -213,7 +237,93 @@
     "gold": 120,
     "meat": 2,
     "xp": 300
-   }
+   },
+   "from": "Kairon",
+   "thanks": "아래 공기는 어떻더냐. …다녀왔으면 됐다."
+  },
+  {
+   "id": "c_fish3",
+   "title": "생선국 거리",
+   "min": 1,
+   "from": "Doran",
+   "when": {
+    "$fn": "s => mapOpen(s, 'LAKE')",
+    "$at": "CHORES.c_fish3.when"
+   },
+   "note": "호숫가에서 물고기 셋만 낚아다 주게. 미루가 생선국을 끓인다는구먼. — 도란",
+   "goal": {
+    "type": "fish",
+    "count": 3
+   },
+   "reward": {
+    "gold": 45,
+    "meat": 1,
+    "xp": 80
+   },
+   "thanks": "허허, 손맛 좋았지? 미루가 국 끓이면 한 그릇 떠다 주겄네."
+  },
+  {
+   "id": "c_fish_moon",
+   "title": "모임 날 먹거리",
+   "min": 8,
+   "from": "Doran",
+   "when": {
+    "$fn": "s => (s.story.events || []).includes('ev_gathering') && s.story.route !== 'dark'",
+    "$at": "CHORES.c_fish_moon.when"
+   },
+   "note": "모임 날엔 두 마을이 다 먹어야 혀. 물고기 다섯 마리만 부탁혀. — 도란",
+   "goal": {
+    "type": "fish",
+    "count": 5
+   },
+   "reward": {
+    "gold": 90,
+    "meat": 2,
+    "xp": 200
+   },
+   "thanks": "이번 모임엔 구름마루 쪽에도 넉넉히 돌리겄구먼."
+  },
+  {
+   "id": "c_deep5",
+   "title": "녹슬기 전에",
+   "min": 10,
+   "from": "Kairon",
+   "when": {
+    "$fn": "s => !!s.story.endingSeen",
+    "$at": "CHORES.c_deep5.when"
+   },
+   "note": "이제 네 앞을 막을 놈도 없다. 굴 다섯 층, 네 발로 내려가 봐라. 몸이 녹슬기 전에. — 카이론",
+   "goal": {
+    "type": "delve",
+    "count": 5
+   },
+   "reward": {
+    "gold": 220,
+    "meat": 2,
+    "xp": 600
+   },
+   "thanks": "다섯 층이라. …이제 가르칠 게 없다는 말은 아직 안 하련다."
+  },
+  {
+   "id": "c_elite3",
+   "title": "숲의 금빛 놈들",
+   "min": 10,
+   "from": "Tiamat",
+   "when": {
+    "$fn": "s => !!s.story.endingSeen",
+    "$at": "CHORES.c_elite3.when"
+   },
+   "note": "습격은 멎었지만 숲의 금빛 놈들은 그대로야. 셋만 부탁해. — 티아맷",
+   "goal": {
+    "type": "elite",
+    "count": 3
+   },
+   "reward": {
+    "gold": 200,
+    "meat": 2,
+    "xp": 500
+   },
+   "thanks": "나팔을 안 부는 밤이 이어지는 건 네 덕도 있어."
   }
  ]
 }

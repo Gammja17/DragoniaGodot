@@ -83,8 +83,8 @@ static func earned() -> Array:
 		hundred_days = G.day >= 100,
 		# 탐험
 		waystones = Travel.stone_maps().all(func(id): return G.waystones.has(id)),
-		delve_5 = _deepest() >= 5,
-		delve_8 = _deepest() >= 8,
+		delve_5 = deepest() >= 5,
+		delve_8 = deepest() >= 8,
 		angler = st.get("fish", 0) >= 20,
 		relic_collector = G.relics.size() >= 10,
 		sneak_caught = int(s.get("tryst", {}).get("fails", 0)) >= 1,
@@ -108,7 +108,7 @@ static func _moon_kills(kills: int) -> int:
 
 
 ## 옛 굴에서 가장 깊이 내려간 층. 지금 내려가 있는 층도 센다 (굴을 나올 때에야 적히는 기록을 기다리지 않게)
-static func _deepest() -> int:
+static func deepest() -> int:
 	var n: int = int(GameState.dungeon.depth) if GameState.dungeon else 0
 	var rec: Dictionary = GameState.story.get("delve", {})
 	for id in rec: n = maxi(n, int(rec[id].best))

@@ -26,6 +26,7 @@ func _draw() -> void:
 	if E.is_empty(): return
 	match mode:
 		Mode.TELLS:
+			DiveFish.draw(self)   # 물속 물고기 그림자 (날 때만)
 			for h in E.hazards: h.draw(self)   # 바닥 장판은 개체들 밑에
 			for e in E.enemies: EnemyAI.draw_tell(self, e)
 		Mode.BULLETS, Mode.BULLETS_ADD:

@@ -86,6 +86,15 @@ static func _close() -> void:
 	DialogueBox.current.hide_dialogue()
 
 
+## 쪽지의 값은 내가 자란 만큼 오른다 (떼어 갈 수 있는 레벨보다 높을수록. 골드 · 경험치만)
+static func _reward(ch: Dictionary) -> Dictionary:
+	var k := 1.0 + 0.1 * maxf(0.0, GameState.player.level - int(ch.get("min", 1)))
+	var r: Dictionary = ch.reward.duplicate()
+	for key in ["gold", "xp"]:
+		if r.get(key): r[key] = int(round(float(r[key]) * k / 5.0) * 5)
+	return r
+
+
 static func _reward_line(r: Dictionary) -> String:
 	var parts := []
 	if r.get("gold"): parts.append("%dG" % r.gold)
@@ -103,7 +112,7 @@ static func open_board() -> void:
 	for id in c.taken:
 		var ch = _by_id(id)
 		if not ch: continue
-		if _filled(ch): opts.append({ label = "✅ 값을 받는다 — %s (%s)" % [ch.title, _reward_line(ch.reward)], on_select = func(): _pay_out(ch) })
+		if _filled(ch): opts.append({ label = "✅ 값을 받는다 — %s (%s)" % [ch.title, _reward_line(_reward(ch))], on_select = func(): _pay_out(ch) })
 		else: opts.append({ label = "📌 %s — %s %d/%d" % [ch.title, Quests.goal_text(ch.goal), _progress(ch), _count(ch)], on_select = func(): _drop(ch) })
 	# 새로 붙은 쪽지
 	var room: int = MAX_TAKEN - c.taken.size()
@@ -111,7 +120,7 @@ static func open_board() -> void:
 		if c.taken.has(id) or c.done.has(id): continue
 		var ch = _by_id(id)
 		if not ch or not _open(ch): continue   # 아침에 붙은 뒤로 사정이 바뀌었다 (쪽지를 쓴 용이 떠났다)
-		if room > 0: opts.append({ label = "📄 %s — %s (%s)" % [ch.title, Quests.goal_text(ch.goal), _reward_line(ch.reward)], on_select = func(): _read(ch) })
+		if room > 0: opts.append({ label = "📄 %s — %s (%s)" % [ch.title, Quests.goal_text(ch.goal), _reward_line(_reward(ch))], on_select = func(): _read(ch) })
 		else: opts.append({ label = "📄 %s (이미 두 장을 떼어 왔다)" % ch.title, on_select = func(): _board("한 번에 두 장까지만 떼어 갈 수 있다. 하던 것부터 끝내라.") })
 	opts.append({ label = "돌아선다", on_select = _close })
 	_board("%d일째 아침에 붙은 쪽지들이다.\n(잡일은 이야기와 상관없다. 하고 싶을 때만 떼어 가면 된다.)" % GameState.day, opts)
@@ -151,7 +160,7 @@ static func _drop(ch: Dictionary) -> void:
 static func _pay_out(ch: Dictionary) -> void:
 	var c := _c()
 	var p = GameState.player
-	var r: Dictionary = ch.reward
+	var r: Dictionary = _reward(ch)
 	if ch.goal.type == "collect": p.inventory.meat -= _count(ch)
 	c.taken.erase(ch.id)
 	c.done.append(ch.id)
@@ -159,6 +168,12 @@ static func _pay_out(ch: Dictionary) -> void:
 	if r.get("gold"): p.gold += r.gold
 	if r.get("meat"): p.inventory.meat += r.meat
 	Hud.pop("잡일 완료: %s (%s)" % [ch.title, _reward_line(r)], "💰")
+	# 쪽지를 쓴 용이 고마워한다 (조금 가까워진다)
+	var from = ch.get("from")
+	if from and not Routine.is_dead(from):
+		var n = World.any_npc(from)
+		if n: NpcActions.add_relation(n, 3)
+		if ch.get("thanks"): Hud.pop("%s: %s" % [Names.npc(from), ch.thanks], "💬")
 	Sfx.play("quest")
 	if r.get("xp"): p.gain_xp(r.xp)
 	Save.save_game()

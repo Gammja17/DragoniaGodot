@@ -77,7 +77,7 @@ text = "가진 것"
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
-text = "엮는다"
+text = "맡긴다"
 
 [node name="placed" type="Button" parent="Frame/Lines/Body/Tabs"]
 layout_mode = 2

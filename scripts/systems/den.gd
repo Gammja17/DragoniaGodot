@@ -175,9 +175,40 @@ static func craft(id: String) -> bool:
 	GameState.player.gold -= int(c.get("gold", 0))
 	for m in c:
 		if m != "gold": Forge.add_material(m, -c[m])
-	give_furniture(id, 1)
-	Sfx.play("relic")
+	var maker = maker_of(id)
+	if maker == null:   # 마른 풀 · 모아 둔 돌은 내 손으로 엮는다
+		give_furniture(id, 1)
+		Sfx.play("relic")
+		return true
+	# 마을 용에게 맡긴다: 값은 그 용에게 가고, 다음 날 아침 굴 앞에 놓여 있다
+	if not GameState.story.has("orders"): GameState.story.orders = []
+	GameState.story.orders.append({ id = id, maker = maker, day = GameState.day })
+	var n = World.any_npc(maker)
+	if n: NpcActions.add_relation(n, 2)
+	Hud.pop("%s %s 맡겼다. 내일 아침 굴 앞에 놓여 있을 것이다." % [Util.josa(Names.npc(maker), "에게", "에게"), Util.josa(furniture()[id].name, "을", "를")], "🪵")
+	Sfx.play("quest")
+	Save.save_game()
 	return true
+
+
+## 그 살림살이를 만들어 줄 용. 그론이 떠난 뒤로는 엠버가 모루를 맡는다. 없으면 null (내 손으로 엮는다)
+static func maker_of(id: String):
+	var m = furniture()[id].get("maker")
+	if m == "Gron" and Routine.is_dead("Gron"): m = "Ember"
+	return m if m and not Routine.is_dead(m) else null
+
+
+## 맡겨 둔 살림살이: 날이 밝으면 굴 앞에 놓여 있다 (main 이 틈틈이 부른다)
+static func deliver_orders() -> void:
+	var orders: Array = GameState.story.get("orders", [])
+	if orders.is_empty() or GameState.dayTime < NightEvents.DAWN: return
+	var left := []
+	for o in orders:
+		if int(o.day) < GameState.day:
+			GameState.furniture[o.id] = owned(o.id) + 1
+			Hud.pop("%s %s 굴 앞에 두고 갔다." % [Util.josa(Names.npc(o.maker), "이", "가"), Util.josa(furniture()[o.id].name, "을", "를")], "🪵")
+		else: left.append(o)
+	if left.size() != orders.size(): GameState.story.orders = left
 
 
 ## 굴에서 자고 일어날 때의 덤. 아늑할수록 더 낫는다

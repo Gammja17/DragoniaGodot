@@ -8,6 +8,7 @@ class_name Gathering
 const GATHER_EVERY := 8        # 며칠마다
 const GATHER_FROM := 20        # 몇 시부터
 const GATHER_MAP := "FALLS"
+const SHARE_MEAT := 3          # 모닥불에 올려 나누는 고기
 
 static var _talk = null        # 지금 주고받는 말 { lines, i, t }
 static var _talk_wait := 8.0   # 다음 주고받기까지 (초)
@@ -88,6 +89,38 @@ static func knows_cloudtop() -> bool: return GameState.story.get("events", []).h
 static func spot_of(name: String):
 	var p = _phases().get(phase())
 	return p.spots.get(name) if p else null
+
+
+## 모닥불 곁에서 [E]: 고기를 불에 올려 두 마을과 나눈다 (한 밤에 한 번). 처리했으면 true
+static func try_share() -> bool:
+	if not share_here(): return false
+	var p = GameState.player
+	if GameState.story.get("sharedDay") == GameState.day:
+		Hud.pop("오늘 밤 몫은 벌써 나눴다. 불가에 앉아 이야기를 듣자.", "🔥")
+		return true
+	if p.inventory.meat < SHARE_MEAT:
+		Hud.pop("나눌 고기가 모자라다. 고기 %d개가 있어야 한다 (낚은 물고기도 고기로 친다)." % SHARE_MEAT, "🍖")
+		return true
+	p.inventory.meat -= SHARE_MEAT
+	GameState.story.sharedDay = GameState.day
+	var near := []
+	for n in GameState.entities.npcs:
+		if n.remove or not n.config.get("fixed") or Util.dist(n, p) > 1100: continue
+		NpcActions.add_relation(n, 4)
+		near.append(n)
+	Particles.burst(p.x, p.y - 30, "#ffb35c", 1.0, 14)
+	Sfx.play("pickup")
+	Hud.pop("고기 %d개를 불에 올려 두 마을과 나눴다. 불가의 용들과 조금씩 가까워졌다." % SHARE_MEAT, "🔥")
+	if not near.is_empty(): near.pick_random().say(["잘 먹을게!", "오, 굽는 냄새 좋다.", "이런 밤엔 역시 고기지.", "아래 마을 고기 맛이 이렇구나."].pick_random())
+	return true
+
+
+## 지금 모닥불에 고기를 나눌 수 있는 자리인가 (모임 밤, 폭포 아래 모닥불 곁)
+static func share_here() -> bool:
+	if GameState.map_id != GATHER_MAP or not is_gather_now(): return false
+	for x in GameState.entities.props:
+		if x.type == "CAMPFIRE" and Util.dist(GameState.player, x) < 130: return true
+	return false
 
 
 ## 모임에서 이 용이 하는 일 (일지 · 인사 앞 한 줄)

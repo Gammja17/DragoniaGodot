@@ -1,0 +1,183 @@
+{
+ "_doc": "물고기 (DiveFish). where: 지도 id 또는 \"biome:바이옴\", 없으면 어느 물이나. hours: [부터, 까지) 24시 기준, 자정을 넘길 수 있다. weather: RAIN | STORM. night: BLOOD_MOON | METEOR | GATHER(달맞이 모임). big: 하늘에서 힘을 모아 덮쳐야 잡힌다 (낚싯대로는 안 올라온다). glow: 물속에서 빛나는 빛깔. bite: 잡을 때 물리는 체력. note: 잡은 뒤 도감에 적히는 글. hint: 아직 못 잡았을 때 도감에 적히는 글.",
+ "FISH": [
+  {
+   "id": "minnow",
+   "name": "피라미",
+   "weight": 6,
+   "meat": 1,
+   "note": "어느 물에나 사는 은빛 잔고기. 떼로 다녀서 손쉽게 잡힌다.",
+   "hint": "어느 물에서나 잡힌다."
+  },
+  {
+   "id": "crucian",
+   "name": "붕어",
+   "weight": 4,
+   "meat": 1,
+   "where": [
+    "LAKE",
+    "EAST_ROAD",
+    "SOUTH_ROAD",
+    "FALLS"
+   ],
+   "hours": [
+    6,
+    19
+   ],
+   "note": "낮에 물풀 사이를 느긋하게 도는 붕어. 도란이 생선국을 끓일 때 꼭 이걸 쓴다.",
+   "hint": "낮에, 숲길과 호수의 물에서."
+  },
+  {
+   "id": "rainbow",
+   "name": "무지개송어",
+   "weight": 5,
+   "meat": 2,
+   "weather": "RAIN",
+   "note": "비가 오면 물 위로 올라와 빗방울을 받아먹는다. 비늘에 일곱 빛깔이 번진다.",
+   "hint": "비 오는 날, 어느 물에서나."
+  },
+  {
+   "id": "icetrout",
+   "name": "얼음송어",
+   "weight": 5,
+   "meat": 2,
+   "where": [
+    "biome:SNOW"
+   ],
+   "note": "얼음장 밑 차가운 물에서만 사는 송어. 살이 단단하고 달다.",
+   "hint": "눈 덮인 고개와 능선의 물에서."
+  },
+  {
+   "id": "cloudkoi",
+   "name": "구름잉어",
+   "weight": 5,
+   "meat": 1,
+   "where": [
+    "CLOUDTOP",
+    "SKY_RUINS"
+   ],
+   "glow": "#e8f4ff",
+   "note": "구름 위 연못에만 사는 흰 잉어. 비늘이 햇빛을 머금어 물속에서도 희게 빛난다.",
+   "hint": "구름 위 연못에서."
+  },
+  {
+   "id": "fangfish",
+   "name": "이빨고기",
+   "weight": 5,
+   "meat": 2,
+   "where": [
+    "biome:JUNGLE"
+   ],
+   "bite": 6,
+   "note": "밀림 물웅덩이에 사는, 이빨 달린 물고기. 잡히는 순간까지 물고 늘어진다.",
+   "hint": "밀림의 물웅덩이에서. 잡을 때 물리지 않게 조심."
+  },
+  {
+   "id": "maplefish",
+   "name": "단풍쏘가리",
+   "weight": 5,
+   "meat": 2,
+   "where": [
+    "AUTUMN"
+   ],
+   "note": "단풍골 물에 사는 얼룩무늬 쏘가리. 물에 뜬 단풍잎 그늘에 숨어 있다.",
+   "hint": "단풍골의 물에서."
+  },
+  {
+   "id": "starminnow",
+   "name": "별빛송사리",
+   "weight": 5,
+   "meat": 1,
+   "night": "METEOR",
+   "glow": "#fff2b0",
+   "note": "유성우가 내리는 밤에만 보이는 송사리. 물에 떨어진 별빛을 쪼아 먹어 몸이 반짝인다.",
+   "hint": "유성우가 내리는 밤, 어느 물에서나."
+  },
+  {
+   "id": "oldcarp",
+   "name": "늙은 잉어",
+   "big": true,
+   "weight": 2,
+   "meat": 3,
+   "where": [
+    "LAKE",
+    "FALLS",
+    "EAST_ROAD",
+    "SOUTH_ROAD",
+    "AUTUMN"
+   ],
+   "note": "등지느러미에 이끼가 낄 만큼 오래 산 잉어. 웬만한 낚싯줄은 끊고 달아난다.",
+   "hint": "숲과 호수의 물 어디서나. 큰 놈이라 하늘에서 덮쳐야 잡힌다."
+  },
+  {
+   "id": "catfish",
+   "name": "달빛메기",
+   "big": true,
+   "weight": 3,
+   "meat": 3,
+   "where": [
+    "LAKE",
+    "biome:HOLLOW"
+   ],
+   "hours": [
+    20,
+    4
+   ],
+   "note": "밤이면 바닥에서 올라오는 커다란 메기. 긴 수염이 달빛에 희게 비친다.",
+   "hint": "밤에, 호수나 골짜기의 물에서. 큰 놈이라 하늘에서 덮쳐야 잡힌다."
+  },
+  {
+   "id": "salmon",
+   "name": "폭포연어",
+   "big": true,
+   "weight": 4,
+   "meat": 3,
+   "where": [
+    "FALLS"
+   ],
+   "hours": [
+    5,
+    11
+   ],
+   "note": "아침마다 폭포를 거슬러 오르는 힘센 연어. 구름마루까지 뛰어오르는 놈도 있다고 한다.",
+   "hint": "아침에, 구름 폭포 아래에서. 큰 놈이라 하늘에서 덮쳐야 잡힌다."
+  },
+  {
+   "id": "bloodeel",
+   "name": "붉은뱀장어",
+   "big": true,
+   "weight": 5,
+   "meat": 4,
+   "night": "BLOOD_MOON",
+   "note": "붉은 달이 뜬 밤에만 올라오는 뱀장어. 몬스터가 들끓는 밤이면 물속도 들끓는다.",
+   "hint": "붉은 달이 뜬 밤, 어느 물에서나. 큰 놈이라 하늘에서 덮쳐야 잡힌다."
+  },
+  {
+   "id": "moonkoi",
+   "name": "달맞이잉어",
+   "big": true,
+   "weight": 6,
+   "meat": 3,
+   "where": [
+    "FALLS"
+   ],
+   "night": "GATHER",
+   "glow": "#ffd98a",
+   "note": "달맞이 모임이 서는 밤이면 폭포 웅덩이로 모여드는 금빛 잉어. 두 마을 용들은 이 잉어도 모임을 보러 온다고 믿는다.",
+   "hint": "달맞이 모임이 서는 밤, 구름 폭포 아래에서. 큰 놈이라 하늘에서 덮쳐야 잡힌다."
+  },
+  {
+   "id": "stormray",
+   "name": "폭풍가오리",
+   "big": true,
+   "weight": 6,
+   "meat": 4,
+   "where": [
+    "LAKE"
+   ],
+   "weather": "STORM",
+   "note": "폭풍이 치면 호수 한가운데로 떠오르는 넓적한 가오리. 번개가 칠 때마다 물속 그림자가 드러난다.",
+   "hint": "폭풍이 치는 날, 신비의 호수에서. 큰 놈이라 하늘에서 덮쳐야 잡힌다."
+  }
+ ]
+}

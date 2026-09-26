@@ -233,6 +233,34 @@ func _render_record() -> void:
 		["연 보물상자", "%d / %d" % [GameState.openedChests.size(), chest_count]],
 		["끝낸 퀘스트", str(GameState.quests.done.size())],
 	])
+	# 내 기록: 스스로 세워 볼 만한 것들
+	var nara: Dictionary = GameState.story.get("nara", {})
+	var deep := Achievements.deepest()
+	_section("내 기록", [
+		["나라와 겨룬 판", "%d승 %d패" % [int(nara.get("me", 0)), int(nara.get("her", 0))] if not nara.is_empty() else "아직 없다", nara.is_empty()],
+		["낚은 물고기", "%d마리" % int(GameState.stats.get("fish", 0))],
+		["옛 굴 가장 깊은 곳", "지하 %d층" % deep if deep > 0 else "아직 안 내려갔다", deep == 0],
+		["게시판 잡일", "%d번" % int(GameState.stats.get("chores", 0))],
+	])
+	# 물고기 도감: 못 잡은 것은 어디서 · 언제 잡히는지를 적어 두어, 다음에 날아가 볼 곳을 일러 준다
+	var book: Dictionary = GameState.stats.get("fishKinds", {})
+	var fish_rows := []
+	for k in DiveFish.kinds():
+		if book.has(k.id): fish_rows.append([k.name, "%d마리 · %s" % [int(book[k.id]), k.note]])
+		else: fish_rows.append(["???", k.hint, true])
+	_section("물고기 도감 %d / %d" % [DiveFish.kinds().filter(func(k): return book.has(k.id)).size(), DiveFish.kinds().size()], fish_rows)
+	# 업적: 이룬 것은 밝게, 아직인 것은 무엇을 하면 되는지 흐리게
+	var A: Dictionary = Data.get_module("achievements")
+	var got: Array = Achievements.earned()
+	_note("업적 %d / %d" % [got.filter(func(id): return A.LIST.any(func(a): return a.id == id)).size(), A.LIST.size()])
+	for g in A.GROUPS:
+		var rows := []
+		for a in A.LIST:
+			if a.group != g: continue
+			if got.has(a.id): rows.append(["✔ " + a.name, "이뤘다"])
+			elif g == "이야기": rows.append(["???", "이야기를 따라가다 보면 알게 된다", true])   # 결말 · 보스는 미리 말하지 않는다
+			else: rows.append([a.name, a.desc, true])
+		_section("업적 · %s" % g, rows)
 	# 정체의 단서. 승급 의식과 사건에서 모인다
 	var clues_def: Dictionary = Data.get_module("chronicle").CLUES
 	var clues: Array = GameState.story.get("clues", []).filter(func(id): return clues_def.has(id))

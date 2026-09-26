@@ -2,7 +2,7 @@ class_name DenPanel
 extends GamePanel
 ## 2D판 ui/denPanel.js. 굴 꾸미기 판. [E] 로 열고, 줄을 누르면 그 살림살이를 들고 놓는 자리로 간다.
 ##  · [가진 것]    놓을 수 있는 것들. 누르면 들고 나간다
-##  · [엮는다]     골드와 소재로 새로 만든다
+##  · [맡긴다]     마을 용에게 골드와 소재를 주고 맡긴다 (다음 날 아침 굴 앞에 놓여 있다)
 ##  · [놓아 둔 것] 치워서 되돌린다
 
 const ITEM := preload("res://scenes/ui/den_item.tscn")
@@ -73,11 +73,14 @@ func _render() -> void:
 				_item(id, "%s (가진 것 %d개)" % [F[id].note, Den.owned(id)], false, func():
 					Sfx.play("ui")
 					_hold(id))
-			empty = "아직 가진 살림살이가 없다. [엮는다]에서 만들어 보자."
+			empty = "아직 가진 살림살이가 없다. [맡긴다]에서 마을 용들에게 맡겨 보자."
 		"craft":
 			for id in F:
-				if F[id].get("gift"): continue   # 받은 선물(누리의 조약돌 · 하루의 돌)은 엮어 만들지 않는다
-				_item(id, Den.cost_text(id), not Den.can_afford(id), func():
+				if F[id].get("gift"): continue   # 받은 선물(누리의 조약돌 · 하루의 돌)은 맡기지 않는다
+				var maker = Den.maker_of(id)
+				var who: String = "%s 맡긴다" % Util.josa(Names.npc(maker), "에게", "에게") if maker else "내 손으로 엮는다"
+				var waiting: int = GameState.story.get("orders", []).filter(func(o): return o.id == id).size()
+				_item(id, "%s · %s%s" % [who, Den.cost_text(id), " · 내일 아침 %d개 도착" % waiting if waiting > 0 else ""], not Den.can_afford(id), func():
 					if not Den.craft(id): Hud.pop("재료나 골드가 모자랍니다.", "🪵")
 					_render())
 		"placed":

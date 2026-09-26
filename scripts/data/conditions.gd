@@ -266,6 +266,11 @@ static func _build_fix() -> void:
 		"chores:CHORES.c_upgrade_ember.when": func(s): return _dead(s, "Gron") and s.day - int(s.story.get("deathDay", {}).get("Gron", s.day)) >= 3,
 		# 게시판: 결말을 본 뒤로는 습격이 오지 않는다 (Raid._still_coming 과 같은 판단. Raid 를 부르면 Data 가 서기 전에 지도 스크립트까지 끌려와 튕긴다)
 		"chores:CHORES.c_raid.when": func(s): return not (s.story.get("route") == "dark" and s.quests.done.has("m7d")) and s.story.get("endingSeen", "") == "",
+		# 도란의 물고기 쪽지 (호수가 열린 뒤 · 모임이 다시 선 뒤) · 결말 뒤에 습격 쪽지 대신 붙는 것들
+		"chores:CHORES.c_fish3.when": func(s): return Chapters.map_open(s, "LAKE") and not _dead(s, "Doran"),
+		"chores:CHORES.c_fish_moon.when": func(s): return s.story.get("events", []).has("ev_gathering") and s.story.get("route") != "dark",
+		"chores:CHORES.c_deep5.when": func(s): return s.story.get("endingSeen", "") != "",
+		"chores:CHORES.c_elite3.when": func(s): return s.story.get("endingSeen", "") != "",
 		# 잡담: 미라가 폭포 일을 털어놓은(s1) 뒤로 엘더가 모르는 척 묻지 않는다
 		"chatter:CHATTER.elder_mira_falls.when": func(s): return not s.quests.done.has("s1"),
 		# 잡담: 봉우리의 알 소식 뒤로 전쟁 전까지 도란이 수군거린다 (6장에서 도란이 "그 소리, 처음 꺼낸 게 나여" 하고 사과한다)

@@ -379,7 +379,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "날아오르기 · 내려앉기 (성체부터). 하늘에선 벽도 물도 없지만 배가 빨리 꺼진다"
+text = "날아오르기 · 내려앉기 (성체부터). 하늘에선 벽도 물도 없지만 배가 빨리 꺼진다. 물 위에선 물고기 그림자를 [Space]로 덮친다"
 autowrap_mode = 3
 
 [node name="Row6" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
@@ -632,4 +632,23 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 text = "일지의 [지금까지 이야기]에 끝낸 장의 줄거리가 쌓인다"
+autowrap_mode = 3
+
+[node name="Row20" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Key" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row20"]
+custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "낚시"
+label_settings = SubResource("key")
+
+[node name="Text" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row20"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
+text = "물가에서 [E]로 낚싯줄을 드리운다. 성체가 되면 물 위를 날며 물고기 그림자를 덮친다. 큰 놈은 하늘에서만 잡힌다. 잡아 본 물고기는 일지 [기록]의 도감에 적힌다"
 autowrap_mode = 3

@@ -107,6 +107,12 @@ achievements:
   - id: requests
     name: "마을의 부탁"
     desc: "마을 용들의 부탁을 여섯 가지 들어주세요"
+  - id: kid_flight
+    name: "첫 날갯짓"
+    desc: "어린 용이 된 아이에게 나는 법을 가르치세요"
+  - id: contest_all
+    name: "두 마을의 대표"
+    desc: "달맞이 모임의 겨루기 셋(폭포 경주, 낚시, 겨루기)을 모두 이기세요"
   - id: hundred_days
     name: "백 일째 아침"
     desc: "백 일째 아침을 맞으세요"
@@ -129,6 +135,9 @@ achievements:
   - id: sneak_caught
     name: "무궁화 꽃이 피었습니다"
     desc: "몰래 다가가다가 들키세요"
+  - id: sky_traces
+    name: "하늘에서 본 것"
+    desc: "하늘에서만 보이는 옛 흔적 다섯 곳을 모두 찾으세요"
 ```
 
 ## 확인

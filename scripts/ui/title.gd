@@ -27,7 +27,8 @@ var _slot := 1
 var _choice := { species = "HERO", look = 0 }
 var _cells := []
 var _on_yes: Callable
-var _recolor_at := -1.0    # 색을 끄는 동안에는 칠하지 않고, 손을 멈추면 이때 한 번 칠한다 (칠하기가 무겁다)
+var _recolor_at := -1.0    # 색을 끄는 동안에는 큰 미리보기만 칠하고, 손을 멈추면 이때 생김새 칸들까지 칠한다
+var _live := false         # 색이 바뀌었다: 이번 프레임에 큰 미리보기를 다시 칠한다 (한 프레임에 한 번)
 var _repaint := []         # 아직 새 색으로 칠하지 않은 외형 칸 (한 프레임에 하나씩)
 
 
@@ -44,12 +45,20 @@ func _ready() -> void:
 	$Center/Column/Confirm/Lines/Buttons/Yes.pressed.connect(func(): _on_yes.call())
 	$Center/Column/Confirm/Lines/Buttons/No.pressed.connect(func(): _show(_slots))
 	for pick in [_body, _wing, _mark]:
-		pick.color_changed.connect(func(_c): _recolor_at = Time.get_ticks_msec() / 1000.0 + 0.2)
+		pick.color_changed.connect(func(_c):
+			_live = true
+			_recolor_at = Time.get_ticks_msec() / 1000.0 + 0.2)
 	_build_gallery()
+	get_viewport().size_changed.connect(_fit)   # 휴대폰을 돌리면 폭이 바뀐다
 	_show(_slots)
 
 
 func _process(_dt: float) -> void:
+	if _live:   # 끄는 동안에도 색이 따라온다 (예전에는 손을 멈춰야 바뀌었다). 스치는 색은 담아 두지 않는다
+		_live = false
+		if _choice.species != "LOOK":
+			_preview.sheet = DragonSprites.get_sheet(_choice.species, _colors_now(), preview_look(_choice), false)
+			_preview.queue_redraw()
 	if _recolor_at > 0 and Time.get_ticks_msec() / 1000.0 >= _recolor_at:
 		_recolor_at = -1.0
 		_recolor()
@@ -58,7 +67,25 @@ func _process(_dt: float) -> void:
 		c.setup(c.value, c.look_name, _colors_now())
 
 
+## 휴대폰을 세로로 들면 화면이 좁다 (논리 너비 420). 넓은 판을 그대로 두면 칸 줄의 [저장 코드]와 새 용 판의 [눈을 뜬다]가
+## 화면 밖으로 잘렸다. 좁으면 칸 줄은 단추를 아래 줄로 내리고, 새 용 판은 모습 · 이름 · 색 아래에 생김새를 쌓는다
+func _fit() -> void:
+	var w := get_viewport_rect().size.x
+	var narrow := w < 600
+	$Center/Column.custom_minimum_size.x = minf(560, w - 16)
+	for i in Save.SLOTS: $Center/Column/Slots/Lines.get_node("Slot%d" % (i + 1)).set_narrow(narrow)
+	_create.custom_minimum_size.x = minf(760, w - 16)
+	_confirm.custom_minimum_size.x = minf(420, w - 16)
+	var body := $Center/Column/Create/Lines/Body
+	body.vertical = narrow
+	body.get_node("Left").custom_minimum_size.x = 0 if narrow else 220
+	_gallery.custom_minimum_size.y = 190 if narrow else 96   # 쌓으면 생김새 다섯이 두 줄이 된다
+	_grid.columns = 3 if narrow else 5
+	$Center/Column/Create/Lines/Buttons/Start.custom_minimum_size.x = 160 if narrow else 240
+
+
 func _show(page: Control) -> void:
+	_fit()
 	for p in [_slots, _create, _confirm]: p.visible = p == page
 	if page == _slots:
 		for i in Save.SLOTS: $Center/Column/Slots/Lines.get_node("Slot%d" % (i + 1)).show_slot(i + 1)

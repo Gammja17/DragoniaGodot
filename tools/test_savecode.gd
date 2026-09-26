@@ -64,8 +64,8 @@ func _ready() -> void:
 	var asked := [-1]
 	row.code_pressed.connect(func(n): asked[0] = n)
 	row.show_slot(9)
-	row.get_node("Row/Code").pressed.emit()
-	_check("칸 줄의 [저장 코드]", [row.get_node("Row/Code").visible, asked[0]], [true, 9])
+	row.get_node("Row/Main/Buttons/Code").pressed.emit()
+	_check("칸 줄의 [저장 코드]", [row.get_node("Row/Main/Buttons/Code").visible, asked[0]], [true, 9])
 
 	print("[끝] 실패 %d" % _fails)
 	get_tree().quit(1 if _fails else 0)

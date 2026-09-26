@@ -9,6 +9,7 @@ var _shots := ""       # 두 번째 인자로 폴더를 주면 (창을 띄워 �
 var _n := 0
 var _last_shot := 0
 var _last_text := ""
+var _day0 := -1        # 싸움이 끝난 날 (밤 22시). 결말의 "그날 저녁"은 이튿날 저녁이어야 한다
 
 
 func _ready() -> void:
@@ -24,6 +25,8 @@ func _ready() -> void:
 	add_child(main)
 	await get_tree().process_frame
 	_setup()
+	GameState.dayTime = 22.0 / 24   # 밤늦게 이긴다: 결말의 "그날 저녁"이 시계를 되돌리지 않고 이튿날 저녁으로 가는지 본다
+	_day0 = GameState.day
 	# 화산 꼭대기로
 	World.travel_to("IGNAR_LAIR")
 	await _wait(0.5)
@@ -136,6 +139,9 @@ func _advance() -> void:
 	if Cutscene.title != "" and Cutscene.title != _last_title:
 		_last_title = Cutscene.title
 		_log.append(Cutscene.title)
+		if Cutscene.title == "돌아온 저녁":
+			var ok := GameState.day == _day0 + 1 and absf(GameState.dayTime - 0.76) < 0.02
+			print("[저녁] %s 밤 22시에 이기면 이튿날 저녁으로 (날 %d → %d, 시각 %.2f)" % ["OK  " if ok else "FAIL", _day0, GameState.day, GameState.dayTime])
 	if Cutscene.busy() and not DialogueBox.is_open():
 		Cutscene.rush()
 		return

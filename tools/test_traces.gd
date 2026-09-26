@@ -47,6 +47,7 @@ func _ready() -> void:
 	await _close_scene()
 	_check("속말이 뜬다", _saw("내가 떨어진 자리다"))
 	_check("일지에 적힌다", Traces.journal_rows()[0], ["광장의 금", "광장 바닥돌의 금. 내가 떨어진 자리다."])
+	_check("포코가 그 얘기를 꺼낸다 (소식)", _news("traceFall", "Poco"))
 	var again: bool = await _saw_after(0.4)
 	_check("한 번 찾은 것은 다시 뜨지 않는다", [again, G.story.traces.size()], [false, 1])
 
@@ -77,7 +78,9 @@ func _ready() -> void:
 	await _close_scene()
 	var circle: Dictionary = Traces.LIST[3]
 	_check("모임 전에는 본 것만", Traces.note_of(circle).contains("달맞이"), false)
+	_check("모임 전: 엘더가 둥근 돌 얘기를 꺼내고 나중에 하자고 미룬다", _news("traceCircle", "Elder"))
 	G.story.events.append("ev_gathering")
+	_check("모임 뒤에는 미루지 않는다 (그 얘기는 모임이 받는다)", _news("traceCircle", "Elder"), false)
 	_check("첫 모임 뒤에는 모임 자리였다", Traces.note_of(circle).contains("달맞이 모임 자리였다"))
 
 	# 불탄 도시: 모르가스 어른을 떠올린다
@@ -85,6 +88,7 @@ func _ready() -> void:
 	await _close_scene()
 	_check("불탄 도시: 모르가스 어른을 떠올린다", _saw("모르가스가 예순 해 전에 끝내 막지 못했다는"))
 	_check("다섯을 다 찾았다", [Traces.found_count(), Traces.LIST.size()], [5, 5])
+	_check("다섯 곳을 다 보면 굴에 그려 둔다 (살림살이)", [_saw("잊기 전에 굴에 그려 두자"), Den.owned("KEEP_MAP")], [true, 1])
 
 	# 내려앉으면 흔적이 스러진다 (그리기)
 	p.land()
@@ -152,6 +156,12 @@ func _play(sec: float) -> void:
 		await get_tree().process_frame
 		for e in GameState.entities.enemies: e.remove = true
 		_note_line()
+
+
+## 마을 용이 그 소식을 인사로 꺼낼 수 있나 (npcTalk 의 SITUATION_LINES)
+func _news(id: String, nm: String) -> bool:
+	var s: Dictionary = Data.get_module("npcTalk").SITUATION_LINES.filter(func(x): return x.get("id") == id)[0]
+	return s.lines.has(nm) and s.when.call(GameState, World.any_npc(nm))
 
 
 func _check(what: String, got, want = true) -> void:

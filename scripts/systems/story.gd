@@ -412,6 +412,7 @@ static func on_flag(flag: String) -> void:
 		"gron_dead": _kill_npc("Gron")
 		"grown_poco": grow_up("Poco")   # 포코의 성체 시험 (p3). 장면의 grow 박자가 먼저 부르고, 건너뛰어도 여기서
 		"grown_haru": grow_up("Haru")   # 하루의 성년례 (hr2)
+		"biryu_rest": GameState.story.biryuRest = GameState.day + 3   # 비류가 제 눈으로 폭포를 오르다 다리를 다쳤다: 사흘 동안 경주를 쉰다 (b1)
 		"nuri_found": _warm({ Dan = 25, Soi = 25, Nuri = 15 })   # 3장: 골짜기 끝에서 누리를 데려온 날, 누리네가 마음을 연다
 		# 이그나르 앞에서 고르는 순간 결말이 흐른다 (걸어서 돌아가 보고하고 잠들 필요 없이)
 		"ignar_slain":

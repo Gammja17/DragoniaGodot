@@ -557,6 +557,56 @@
    "cost": {},
    "gift": true,
    "note": "폭포 꼭대기 물살에 닳은 위 세상 돌. 하루가 준 것이다."
+  },
+  "KEEP_FLAG": {
+   "name": "두 마을 깃발",
+   "sheet": "keepsakes",
+   "tile": [
+    0,
+    0
+   ],
+   "span": [
+    1,
+    1
+   ],
+   "cozy": 3,
+   "wall": true,
+   "cost": {},
+   "gift": true,
+   "note": "달맞이 모임 겨루기에서 처음 이긴 밤에 리운이 건넨 깃발. 흰 쪽은 구름마루, 잿빛 쪽은 아랫마을이다."
+  },
+  "KEEP_MAP": {
+   "name": "하늘에서 본 곳",
+   "sheet": "keepsakes",
+   "tile": [
+    1,
+    0
+   ],
+   "span": [
+    2,
+    1
+   ],
+   "cozy": 3,
+   "wall": true,
+   "cost": {},
+   "gift": true,
+   "note": "하늘에서만 보이던 다섯 곳을 기억나는 대로 그려 둔 그림."
+  },
+  "KEEP_PRINT": {
+   "name": "첫 날갯짓 발도장",
+   "sheet": "keepsakes",
+   "tile": [
+    0,
+    1
+   ],
+   "span": [
+    1,
+    1
+   ],
+   "cozy": 2,
+   "cost": {},
+   "gift": true,
+   "note": "아이가 처음 날아오른 날, 굴 앞 진흙에 찍힌 발자국을 떠 왔다."
   }
  },
  "FURNITURE_IDS": [
@@ -588,6 +638,9 @@
   "WINDOW",
   "NIGHTSKY",
   "PEBBLE_NURI",
-  "STONE_HARU"
+  "STONE_HARU",
+  "KEEP_FLAG",
+  "KEEP_MAP",
+  "KEEP_PRINT"
  ]
 }

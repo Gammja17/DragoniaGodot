@@ -2536,6 +2536,74 @@
     "Poco": "피, 피 나! 괜찮아?!",
     "Gron": "죽지는 마라. 단골 줄어든다."
    }
+  },
+  {
+   "id": "raceWin",
+   "when": {
+    "$fn": "s => (s.story.race?.level || 0) >= 1 && fresh(s.story.race.winDay)",
+    "$at": "SITUATION_LINES.raceWin.when"
+   },
+   "lines": {
+    "Poco": "호수에서 경주해서 이겼다며? 나도 보고 싶었는데! 다음엔 나도 불러!",
+    "Seiran": "비류가 호수에서 졌다고 하루 종일 투덜대더라. …네가 이겼다며?",
+    "Doran": "호수 위로 쌩 하고 날아가던 게 자네였구먼. 비류를 이겼다며? 덕분에 물고기가 죄 숨어 버렸어."
+   }
+  },
+  {
+   "id": "contestWin",
+   "when": {
+    "$fn": "s => fresh(s.story.contest?.winDay)",
+    "$at": "SITUATION_LINES.contestWin.when"
+   },
+   "lines": {
+    "Elder": "허허, 겨루기는 잘 봤다. 스무 해 만에 그 불가가 그렇게 시끌벅적했구나.",
+    "Riun": "겨루기는 잘 보았소. 아랫마을에도 제법인 용이 있구려.",
+    "Tiamat": "모임에서 이기는 거 봤어. …다음엔 나도 나가 볼까.",
+    "Poco": "모임에서 이겼지! 나 목이 쉬도록 응원했어!"
+   }
+  },
+  {
+   "id": "kidFlew",
+   "when": {
+    "$fn": "(s, n) => s.story.kidFlew && fresh(s.story.kidFlew.day) && n?.config.name !== s.story.kidFlew.parent",
+    "$at": "SITUATION_LINES.kidFlew.when"
+   },
+   "lines": {
+    "Tiamat": "네 아이가 망루 위로 날아가더라. 나는 법 네가 가르쳤다며? …제법이야.",
+    "Mira": "아이가 나는 거 봤어. 떨어질까 봐 조마조마했는데, 잘 날더라.",
+    "Elder": "허허, 네 아이가 벌써 하늘을 나는구나. 네가 광장에 떨어지던 날이 엊그제 같은데."
+   }
+  },
+  {
+   "id": "traceFall",
+   "when": {
+    "$fn": "s => fresh(s.story.traceDays?.fall)",
+    "$at": "SITUATION_LINES.traceFall.when"
+   },
+   "lines": {
+    "Poco": "하늘에서 광장을 보면 네가 떨어진 자리가 보인다며? 나도 한 번만 태워 줘!"
+   }
+  },
+  {
+   "id": "traceCircle",
+   "when": {
+    "$fn": "s => fresh(s.story.traceDays?.circle) && !s.story.events.includes('ev_gathering')",
+    "$at": "SITUATION_LINES.traceCircle.when"
+   },
+   "lines": {
+    "Elder": "폭포 아래 둥근 돌을 봤다고? …그래, 예전엔 달 밝은 밤마다 두 마을이 거기 둘러앉았단다. 그 얘기는 나중에 하마."
+   }
+  },
+  {
+   "id": "biryuFalls",
+   "when": {
+    "$fn": "s => fresh(s.story.eventDay?.ev_biryu_falls)",
+    "$at": "SITUATION_LINES.biryuFalls.when"
+   },
+   "lines": {
+    "Haru": "비류가 폭포를 한 번에 올랐대! 알에서 나온 날부터 그 얘기만 했는데, 진짜로 해냈어!",
+    "Seiran": "비류가 새벽에 폭포를 올랐다지. 요 며칠은 물소리까지 들떠 있더라."
+   }
   }
  ],
  "TIER_NAMES": [

@@ -77,6 +77,8 @@ const SAMPLES := {
 	"warn": [0.5, ["warn"]],
 	"thud": [0.55, ["thud1", "thud2"]],
 	"freeze": [0.5, ["glass1", "glass2", "glass3"]],
+	"splash": [0.5, ["splash1", "splash2", "splash3"]],   # 물에 내리꽂기 · 비류가 뛰어듦
+	"ring": [0.45, ["ring"]],                             # 경주 · 날기 수업의 고리를 지날 때
 }
 
 static var _synth := {}         # 이름 → 만들어 둔 합성음

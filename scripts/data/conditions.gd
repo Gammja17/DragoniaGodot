@@ -341,6 +341,17 @@ static func _build_c() -> void:
 		# (도란 · 미루의 줄은 평상에서 사과를 들은 뒤로는 되풀이하지 않는다)
 		"npcTalk:SITUATION_LINES.family.when": func(s, _n = null): return s.quests.done.has("m6w") and not s.quests.done.has("m5c") \
 			and not (_n != null and ["Doran", "Miru"].has(_n.config.get("name")) and s.story.get("events", []).has("ev_doran_sorry")),
+		# 내가 한 일을 마을이 알아본다 (소식이 소식인 동안): 비류를 이긴 경주 · 모임 겨루기 · 아이의 첫 비행 · 하늘에서 본 흔적
+		"npcTalk:SITUATION_LINES.raceWin.when": func(s, _n = null): return int(s.story.get("race", {}).get("level", 0)) >= 1 and _fresh(s.story.get("race", {}).get("winDay"), s),
+		"npcTalk:SITUATION_LINES.contestWin.when": func(s, _n = null): return _fresh(s.story.get("contest", {}).get("winDay"), s),
+		# 아이의 다른 부모는 제 아이 얘기를 남 얘기하듯 하지 않는다
+		"npcTalk:SITUATION_LINES.kidFlew.when": func(s, _n = null): return s.story.get("kidFlew") != null and _fresh(s.story.kidFlew.day, s) \
+			and (_n == null or _n.config.get("name") != s.story.kidFlew.parent),
+		"npcTalk:SITUATION_LINES.traceFall.when": func(s, _n = null): return _fresh(s.story.get("traceDays", {}).get("fall"), s),
+		"npcTalk:SITUATION_LINES.biryuFalls.when": func(s, _n = null): return _fresh(s.story.get("eventDay", {}).get("ev_biryu_falls"), s),
+		# 폭포 아래 둥근 돌: 모임이 다시 서기 전에만 (엘더가 "나중에 하마" 하고 미룬다. 5장 첫 모임에서 받는다)
+		"npcTalk:SITUATION_LINES.traceCircle.when": func(s, _n = null): return _fresh(s.story.get("traceDays", {}).get("circle"), s) \
+			and not s.story.get("events", []).has("ev_gathering"),
 
 		# ---- 7장: 사막 길 ----
 		# 바윗골과 불탄 도시는 모래 폭군이 비킨 뒤에 (바실을 잡기 전에 가면 "모래 폭군을 네가 잡았다고 들었다"가 틀린 말이 되던 것)
@@ -377,6 +388,9 @@ static func _build_c() -> void:
 		# 같이 자라기: 포코는 그론을 보낸 다음 날부터 성체 시험을 청하고, 하루는 징검돌 뒤에 성년례를 치른다
 		"quests:QUESTS.p3.needs": func(s): return _dead(s, "Gron") and s.day > int(s.story.get("deathDay", {}).get("Gron", 99999)) and s.story.get("route") != "dark",
 		"quests:QUESTS.hr2.needs": func(s): return s.quests.done.has("hr1") and s.story.get("route") != "dark",
+		# 비류 "폭포를 한 번에": 호수 경주를 세 판 다 이긴 뒤. 새벽(다섯 시~여덟 시 전)에 폭포 아래에서
+		"quests:QUESTS.b1.needs": func(s): return int(s.story.get("race", {}).get("level", 0)) >= 3 and s.story.get("route") != "dark",
+		"chronicle:CHRONICLE.ev_biryu_falls.when": func(c): return c.map == "FALLS" and _step(c.s, "b1") == 0 and c.hour >= 5 and c.hour < 8,
 		"chronicle:CHRONICLE.ev_poco_trial.when": func(c): return c.map == "DOJO" and _step(c.s, "p3") == 0 and c.hour >= 7 and c.hour < 18,
 		"chronicle:CHRONICLE.ev_haru_rite.when": func(c): return c.map == "CLOUDTOP" and _step(c.s, "hr2") == 0 and c.hour >= 6 and c.hour < 18,
 		"quests:QUESTS.sr1.needs": func(s): return s.quests.done.has("m5c") and s.story.get("route") != "dark",   # 샘물이 맑아진 뒤 (5장 모임 때는 물이 흐려 읽지 못했다)

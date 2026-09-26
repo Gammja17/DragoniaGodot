@@ -124,6 +124,15 @@ func _saved() -> void:
 	_has("cozy_den")
 	G.stats.chores = 10
 	_has("chore_regular")
+	G.kids.append({ stage = "TEEN" })
+	_has("kid_flight", false)
+	G.kids[0].flies = true
+	_has("kid_flight")
+	G.kids.clear()
+	G.story.contest = { day = -1, wins = 2, losses = 0, level = { RACE = 1, FISH = 1, DUEL = 0 } }
+	_has("contest_all", false)
+	G.story.contest.level.DUEL = 1
+	_has("contest_all")
 	for id in ["m1", "r1", "w1", "p1", "p2", "t1", "t2", "g1"]: G.quests.done.append(id)
 	_has("requests", false)   # 본 이야기 · 건네받은 속성은 세지 않는다. 부탁은 아직 다섯
 	G.quests.done.append("n1")
@@ -154,7 +163,11 @@ func _saved() -> void:
 	_has("relic_collector")
 	G.story.tryst = { day = -1, fails = 1 }
 	_has("sneak_caught")
-	_check("과제 35개가 모두 한 번씩 열렸다", _seen.size(), 35)
+	G.story.traces = ["fall", "old_fall", "dens", "circle"]
+	_has("sky_traces", false)
+	G.story.traces.append("shadow")
+	_has("sky_traces")
+	_check("과제 38개가 모두 한 번씩 열렸다", _seen.size(), 38)
 
 
 ## 알리기: 한 번에 하나씩, 다 알린 뒤에는 더 알리지 않는다

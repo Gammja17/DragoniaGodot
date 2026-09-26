@@ -52,27 +52,37 @@ layout_mode = 2
 mouse_filter = 2
 script = ExtResource("2")
 
-[node name="Info" type="VBoxContainer" parent="Row"]
+[node name="Main" type="BoxContainer" parent="Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Info" type="VBoxContainer" parent="Row/Main"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 theme_override_constants/separation = 3
 
-[node name="Title" type="Label" parent="Row/Info"]
+[node name="Title" type="Label" parent="Row/Main/Info"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3")
 text = "빈 칸"
 
-[node name="Sub" type="Label" parent="Row/Info"]
+[node name="Sub" type="Label" parent="Row/Main/Info"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
 text = "새 용을 만들어 시작한다"
 
-[node name="When" type="Label" parent="Row/Info"]
+[node name="When" type="Label" parent="Row/Main/Info"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
 
-[node name="Play" type="Button" parent="Row"]
+[node name="Buttons" type="HBoxContainer" parent="Row/Main"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="Play" type="Button" parent="Row/Main/Buttons"]
 custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 4
@@ -80,20 +90,20 @@ focus_mode = 0
 theme_type_variation = &"PrimaryButton"
 text = "이어 하기"
 
-[node name="New" type="Button" parent="Row"]
+[node name="New" type="Button" parent="Row/Main/Buttons"]
 custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
 text = "새 용"
 
-[node name="Code" type="Button" parent="Row"]
+[node name="Code" type="Button" parent="Row/Main/Buttons"]
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
 text = "저장 코드"
 
-[node name="Delete" type="Button" parent="Row"]
+[node name="Delete" type="Button" parent="Row/Main/Buttons"]
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0

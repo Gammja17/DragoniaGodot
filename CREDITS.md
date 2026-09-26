@@ -30,6 +30,7 @@ CC BY-SA 에셋(`behemoth`, `bone`)을 수정한 결과물은 같은 CC BY-SA 3.
 | `dungeon.png` (적, 사냥꾼, 화살) | "Tiny Dungeon" by Kenney (CC0) | https://kenney.nl/assets/tiny-dungeon |
 | `cave.png` (굴 속 바위 바닥·검은 구멍·돌덩이) | 같은 "Zelda-like tilesets and sprites" by ArMM1998 (CC0) | OpenGameArt |
 | `inner.png` (굴에 놓는 살림살이) | 〃 | OpenGameArt |
+| `keepsakes.png` (굴의 기념품: 두 마을 깃발, 하늘에서 본 곳, 첫 날갯짓 발도장) | 이 게임을 위해 VARCO 3D 워크플로우의 이미지 생성(gpt-image-2.5-flare)으로, 위 `dungeon.png`, `inner.png` 의 칸(붉은 깃발, 액자, 돌)을 고쳐 그렸다. 16px 로 되돌린 뒤 몇 점은 손으로 다듬었다 | 직접 제작 |
 
 ## 결투장 그림 (`assets/sprites/arena/`)
 
@@ -109,6 +110,8 @@ CC BY-SA 에셋(`behemoth`, `bone`)을 수정한 결과물은 같은 CC BY-SA 3.
 | `boss/howl.ogg`, `boss/monster_04.ogg`, `boss/roar_02.ogg`, `boss/scream_01.ogg`, `boss/scream_02.ogg`, `boss/breath.ogg` (보스 울음) | "80 CC0 creature SFX" by rubberduck | CC0 | https://opengameart.org/content/80-cc0-creature-sfx |
 | `boss/roar_04~06.ogg`, `boss/die_03.ogg` (보스 울음) | "80 CC0 creature SFX #2" by rubberduck | CC0 | https://opengameart.org/content/80-cc0-creture-sfx-2 |
 | `boss/monster_roar.wav` (바실의 포효. 가장 센 3.5초를 한 채널로 잘라 냄) | "CC0 Deep Monster Roar" by trazzz123 | CC0 | https://opengameart.org/content/cc0-deep-monster-roar |
+| `ring.ogg` (경주와 날기 수업의 고리) | "Interface Sounds" by Kenney, `confirmation_003` | CC0 | https://kenney.nl/assets/interface-sounds |
+| `splash1~3.ogg` (물에 내리꽂기, 비류가 뛰어듦) | "40 CC0 water / splash / slime SFX" by rubberduck, `splash_06`, `splash_08`, `splash_10` | CC0 | https://opengameart.org/content/40-cc0-water-splash-slime-sfx |
 
 나머지 효과음 40여 종은 파일 없이 WebAudio 로 그때그때 만든다 (`src/systems/audio.js`).
 

@@ -45,6 +45,15 @@ func _ready() -> void:
 	_check("모임 날마다 돌아간다: 24일은 폭포 경주", Contest.kind_tonight(), "RACE")
 	_check("모임이 서면 겨룰 수 있다", Contest.open_now())
 	_check("일지: 오늘 밤 겨루기와 맞수", Contest.tonight_note().contains("[폭포 경주], 맞수는 비류"))
+	_check("추적창이 빈 시간에 오늘 밤 겨루기를 짚는다", str(Contest.pastime().title), "오늘 밤 모임 겨루기: 폭포 경주")
+	var real_line: Callable = Quests.training.line
+	Quests.training.line = func(): return { title = "(수련) 오늘의 수련", goal = "카이론을 찾아가 오늘 할 일을 듣는다." }
+	_check("모임 밤에는 오늘의 수련이 남아 있어도 추적창이 겨루기를 먼저 (수련 줄을 비운다)", Quests.tracked_line(), null)
+	var night := G.dayTime
+	G.dayTime = 10.0 / 24
+	_check("모임 날 낮에는 수련을 짚는다", Quests.tracked_line() != null)
+	G.dayTime = night
+	Quests.training.line = real_line
 	var biryu = _here("Biryu")
 	var seiran = _here("Seiran")
 	_check("비류에게 [모임 겨루기: 폭포 경주]", str(Contest.menu_option(biryu).label), "🏆 모임 겨루기: 폭포 경주")
@@ -60,7 +69,9 @@ func _ready() -> void:
 		if G.activity == null: break
 	_check("고리 열을 돌아 모임 자리 앞으로 먼저 오면 이긴다", [G.activity, G.story.contest.wins, Contest.level_of("RACE")], [null, 1, 1])
 	_check("비류의 호수 경주 기록은 그대로", Race.level(), 0)
-	_check("한 밤에 한 판", [Contest.open_now(), Contest.tonight_note()], [false, " 오늘 밤 겨루기는 끝났다."])
+	_check("처음 이긴 밤: 리운이 두 마을 깃발을 건넨다 (굴 살림살이)", Den.owned("KEEP_FLAG"), 1)
+	_check("엘더 · 리운이 겨루기 얘기를 꺼낸다 (소식)", [_news("contestWin", "Elder"), _news("contestWin", "Riun")], [true, true])
+	_check("한 밤에 한 판", [Contest.open_now(), Contest.tonight_note(), Contest.pastime()], [false, " 오늘 밤 겨루기는 끝났다.", null])
 
 	# 서른이틀째 밤: 낚시 겨루기 (세이란). 작은 고기는 안 친다 · 큰 고기를 먼저 건지면 이긴다
 	G.day = 32
@@ -119,6 +130,7 @@ func _ready() -> void:
 	_check("세이란이 먼저 건지면 진다", [Contest.fishing, G.story.contest.losses], [null, 2])
 
 	_check("일지 [기록]", Contest.record_line(), ["달맞이 모임 겨루기", "3승 2패"])
+	_check("깃발은 처음 이긴 밤에 한 번만", Den.owned("KEEP_FLAG"), 1)
 	_check("맞수들이 모임에 나와 있다 (비류 · 세이란 · 유안)", _absent, [])
 	# 모임이 멈추면 겨루기도 멈춘다 (잿빛 날개 길)
 	G.day = 64
@@ -167,6 +179,12 @@ func _play(sec: float) -> void:
 			if b.faction == "ENEMY": b.remove = true   # 유안의 물줄기는 이 시험에서 맞지 않는다
 		for n in GameState.entities.npcs:
 			if n.current_chat and not _said.has(n.current_chat): _said.append(n.current_chat)
+
+
+## 마을 용이 그 소식을 인사로 꺼낼 수 있나 (npcTalk 의 SITUATION_LINES)
+func _news(id: String, nm: String) -> bool:
+	var s: Dictionary = Data.get_module("npcTalk").SITUATION_LINES.filter(func(x): return x.get("id") == id)[0]
+	return s.lines.has(nm) and s.when.call(GameState, World.any_npc(nm))
 
 
 func _check(what: String, got, want = true) -> void:

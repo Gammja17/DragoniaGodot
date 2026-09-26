@@ -62,13 +62,13 @@
     {
      "hue": 0,
      "range": 30,
-     "refL": 0.35,
+     "ref": "#981b1b",
      "target": "body"
     },
     {
      "hue": 48,
      "range": 22,
-     "refL": 0.5,
+     "ref": "#d9b526",
      "target": "wing"
     }
    ]
@@ -151,13 +151,13 @@
     {
      "hue": 0,
      "range": 30,
-     "refL": 0.35,
+     "ref": "#981b1b",
      "target": "body"
     },
     {
      "hue": 48,
      "range": 22,
-     "refL": 0.5,
+     "ref": "#d9b526",
      "target": "wing"
     }
    ]
@@ -240,13 +240,13 @@
     {
      "hue": 215,
      "range": 35,
-     "refL": 0.35,
+     "ref": "#1b4f98",
      "target": "body"
     },
     {
      "hue": 48,
      "range": 22,
-     "refL": 0.5,
+     "ref": "#d9b526",
      "target": "wing"
     }
    ]
@@ -326,13 +326,13 @@
     {
      "hue": 120,
      "range": 40,
-     "refL": 0.35,
+     "ref": "#1b981b",
      "target": "body"
     },
     {
      "hue": 42,
      "range": 22,
-     "refL": 0.45,
+     "ref": "#c39322",
      "target": "wing"
     }
    ]
@@ -1135,19 +1135,19 @@
     {
      "hue": 0,
      "range": 30,
-     "refL": 0.5,
+     "ref": "#e03030",
      "target": "body"
     },
     {
-     "hue": 48,
+     "hue": 45,
      "range": 22,
-     "refL": 0.57,
-     "target": "wing"
+     "ref": "#f2c230",
+     "target": "wing",
+     "belly": true
     },
     {
-     "hue": 215,
-     "range": 35,
-     "refL": 0.6,
+     "marks": true,
+     "ref": "#858585",
      "target": "mark"
     }
    ],

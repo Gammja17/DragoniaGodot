@@ -14,8 +14,8 @@ func _ready() -> void:
 	await get_tree().process_frame
 	get_tree().current_scene = title
 	var row: SaveSlotRow = title.get_node("Center/Column/Slots/Lines/Slot%d" % N)
-	print("[처음 화면] %d번 칸: %s / 이어 하기 단추 %s" % [N, row.get_node("Row/Info/Title").text, row.get_node("Row/Play").visible])
-	row.get_node("Row/New").pressed.emit()
+	print("[처음 화면] %d번 칸: %s / 이어 하기 단추 %s" % [N, row.get_node("Row/Main/Info/Title").text, row.get_node("Row/Main/Buttons/Play").visible])
+	row.get_node("Row/Main/Buttons/New").pressed.emit()
 	await get_tree().process_frame
 	print("[새 용] 만들기 판 보임=%s, 외형 칸 %d개" % [title.get_node("Center/Column/Create").visible, title._cells.size()])
 	title._select(title._cells[1])   # 와이번 프리셋 (색을 바꿀 수 있다)
@@ -33,20 +33,20 @@ func _ready() -> void:
 	await _wait(1.0)
 	var t2 = get_tree().current_scene
 	row = t2.get_node("Center/Column/Slots/Lines/Slot%d" % N)
-	print("[다시 처음 화면] %d번 칸: %s · %s / 이어 하기 단추 %s" % [N, row.get_node("Row/Info/Title").text, row.get_node("Row/Info/Sub").text, row.get_node("Row/Play").visible])
-	row.get_node("Row/Play").pressed.emit()
+	print("[다시 처음 화면] %d번 칸: %s · %s / 이어 하기 단추 %s" % [N, row.get_node("Row/Main/Info/Title").text, row.get_node("Row/Main/Info/Sub").text, row.get_node("Row/Main/Buttons/Play").visible])
+	row.get_node("Row/Main/Buttons/Play").pressed.emit()
 	await _wait(1.5)
 	print("[이어 하기] 이름=%s 종족=%s 지도=%s 프롤로그=%s" % [GameState.player.config.name, GameState.player.species, GameState.map_id, GameState.prologue != null])
 	Hud.current.to_title_requested.emit()
 	await _wait(1.0)
 	t2 = get_tree().current_scene
 	row = t2.get_node("Center/Column/Slots/Lines/Slot%d" % N)
-	row.get_node("Row/Delete").pressed.emit()
+	row.get_node("Row/Main/Buttons/Delete").pressed.emit()
 	await get_tree().process_frame
 	print("[지우기 확인] ", t2.get_node("Center/Column/Confirm/Lines/Text").text.replace("\n", " "))
 	t2.get_node("Center/Column/Confirm/Lines/Buttons/Yes").pressed.emit()
 	await get_tree().process_frame
-	print("[지운 뒤] %d번 칸: %s, 파일 %s" % [N, row.get_node("Row/Info/Title").text, Save.has_save(N)])
+	print("[지운 뒤] %d번 칸: %s, 파일 %s" % [N, row.get_node("Row/Main/Info/Title").text, Save.has_save(N)])
 	get_tree().quit()
 
 

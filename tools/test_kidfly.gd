@@ -70,6 +70,10 @@ func _ready() -> void:
 		if G.activity == null: break
 	_check("고리 넷을 지나 처음 자리로 돌아오면 끝", [G.activity, kid.get("flies", false)], [null, true])
 	_check("아이가 떠 있다", baby.fly_h > 0)
+	_check("처음 날아오른 날의 발도장 (굴 살림살이)", Den.owned("KEEP_PRINT"), 1)
+	_check("티아맷이 아이가 나는 걸 봤다 (소식)", _news("kidFlew", "Tiamat"))
+	G.story.kidFlew.parent = "Tiamat"
+	_check("아이의 다른 부모는 남 얘기하듯 하지 않는다", [_news("kidFlew", "Tiamat"), _news("kidFlew", "Mira")], [false, true])
 
 	# 배운 아이는 내가 날면 같이 난다
 	p.x = 1632; p.y = 1100
@@ -117,6 +121,7 @@ func _ready() -> void:
 	_check("못 배운 애어른은 수련장 조수", kid2.job, "CALM")
 	_check("성년식: 배운 아이의 말", _saw("저는 망루에 설래요"))
 	_check("다 자라면 이제 가르칠 수 없다", KidFlight.can_teach(kid2), false)
+	_check("발도장은 한 번만", Den.owned("KEEP_PRINT"), 1)
 
 	# 결말의 생활 줄 (아이가 하나일 때)
 	G.kids.erase(kid2)
@@ -165,6 +170,12 @@ func _play(sec: float) -> void:
 	while Time.get_ticks_msec() - t < sec * 1000:
 		await get_tree().process_frame
 		for e in GameState.entities.enemies: e.remove = true
+
+
+## 마을 용이 그 소식을 인사로 꺼낼 수 있나 (npcTalk 의 SITUATION_LINES)
+func _news(id: String, nm: String) -> bool:
+	var s: Dictionary = Data.get_module("npcTalk").SITUATION_LINES.filter(func(x): return x.get("id") == id)[0]
+	return s.lines.has(nm) and s.when.call(GameState, World.any_npc(nm))
 
 
 func _check(what: String, got, want = true) -> void:

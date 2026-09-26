@@ -209,7 +209,7 @@ custom_minimum_size = Vector2(0, 1)
 layout_mode = 2
 color = Color(0.415, 0.353, 0.22, 1)
 
-[node name="Body" type="HBoxContainer" parent="Center/Column/Create/Lines"]
+[node name="Body" type="BoxContainer" parent="Center/Column/Create/Lines"]
 layout_mode = 2
 theme_override_constants/separation = 16
 

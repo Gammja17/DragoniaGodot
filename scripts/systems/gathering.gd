@@ -111,7 +111,7 @@ static func try_share() -> bool:
 	Particles.burst(p.x, p.y - 30, "#ffb35c", 1.0, 14)
 	Sfx.play("pickup")
 	Hud.pop("고기 %d개를 불에 올려 두 마을과 나눴다. 불가의 용들과 조금씩 가까워졌다." % SHARE_MEAT, "🔥")
-	if not near.is_empty(): near.pick_random().say(["잘 먹을게!", "오, 굽는 냄새 좋다.", "이런 밤엔 역시 고기지.", "아래 마을 고기 맛이 이렇구나."].pick_random())
+	if not near.is_empty(): near.pick_random().say(["잘 먹을게!", "오, 굽는 냄새 좋다.", "이런 밤엔 역시 고기지.", "아랫마을 고기 맛이 이렇구나."].pick_random())
 	return true
 
 

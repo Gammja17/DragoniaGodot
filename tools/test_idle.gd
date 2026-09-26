@@ -54,6 +54,10 @@ func _ready() -> void:
 	G.stats.fishKinds = book
 	sug = Quests.suggestion()
 	_check("할 거리가 없으면: 성체까지 자라기 (레벨 6 / 10)", str(sug.title).contains("6 / 10"))
+	# 날 수 있게 된 뒤에는 하늘에서만 보이는 흔적도 할 거리 (결말 뒤에도 남는다)
+	p.stage_index = 2
+	_check("날 수 있으면: 하늘에서 본 것 (0 / 5)", str(Quests._pastime(false).title), "하늘에서 본 것 (0 / 5)")
+	p.stage_index = 1
 
 	# 굴 잠자리: 낮에는 낮잠 두 가지, 밤에는 밤잠만
 	G.dayTime = 10.0 / 24

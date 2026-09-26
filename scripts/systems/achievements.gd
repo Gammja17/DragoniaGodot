@@ -80,6 +80,8 @@ static func earned() -> Array:
 		cozy_den = Den.cozy_of(Den.MY_DEN).tier >= 4,                             # 아늑함 '내 집'
 		chore_regular = st.get("chores", 0) >= 10,
 		requests = _requests_done() >= REQUESTS,
+		kid_flight = G.kids.any(func(k): return k.get("flies", false)),   # 아이에게 나는 법을 가르쳤다 (KidFlight)
+		contest_all = Contest.KINDS.all(func(k): return Contest.level_of(k) >= 1) if s.has("contest") else false,   # 모임 겨루기 셋을 한 번씩 이겼다
 		hundred_days = G.day >= 100,
 		# 탐험
 		waystones = Travel.stone_maps().all(func(id): return G.waystones.has(id)),
@@ -88,6 +90,7 @@ static func earned() -> Array:
 		angler = st.get("fish", 0) >= 20,
 		relic_collector = G.relics.size() >= 10,
 		sneak_caught = int(s.get("tryst", {}).get("fails", 0)) >= 1,
+		sky_traces = Traces.found_count() >= Traces.LIST.size(),
 	}
 	return all.keys().filter(func(id): return all[id])
 

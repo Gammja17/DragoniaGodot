@@ -59,6 +59,10 @@ func _ready() -> void:
 		if G.activity == null: break
 	_check("첫 고리로 돌아와 판이 끝났다", G.activity, null)
 	_check("첫 판을 이겼다 · 기록이 남는다", [Race.level(), float(G.story.race.best) > 0], [1, true])
+	_check("도란 · 세이란이 경주 얘기를 꺼낸다 (소식)", [_news("raceWin", "Doran"), _news("raceWin", "Seiran")], [true, true])
+	G.day += 5
+	_check("닷새가 지나면 더는 소식이 아니다", _news("raceWin", "Doran"), false)
+	G.day -= 5
 	_check("일지 기록 줄", str(Race.record_line()[1]).contains("1 / 3판"))
 
 	# 둘째 판: 비류가 먼저 들어오면 진다
@@ -83,6 +87,12 @@ func _play(sec: float) -> void:
 	while Time.get_ticks_msec() - t < sec * 1000:
 		await get_tree().process_frame
 		for e in GameState.entities.enemies: e.remove = true
+
+
+## 마을 용이 그 소식을 인사로 꺼낼 수 있나 (npcTalk 의 SITUATION_LINES)
+func _news(id: String, nm: String) -> bool:
+	var s: Dictionary = Data.get_module("npcTalk").SITUATION_LINES.filter(func(x): return x.get("id") == id)[0]
+	return s.lines.has(nm) and s.when.call(GameState, World.any_npc(nm))
 
 
 func _check(what: String, got, want = true) -> void:

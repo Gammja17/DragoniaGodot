@@ -20,7 +20,7 @@ const RINGS := [[816, 330], [1350, 420], [1760, 760], [1560, 1210], [1160, 1330]
 const WIN_LINES := [
 	"…하, 졌다. 하늘길이 그렇게 곧을 줄이야. 다음엔 물살을 더 읽고 온다.",
 	"또 졌어! 물살 읽는 법까지 새로 익혔는데. …좋아, 마지막 판이다. 이번엔 진짜 온 힘으로 간다.",
-	"…인정. 구름마루에서 나를 이긴 용은 이제 너 하나야. 가끔 붙어 줘. 몸이 굳지 않게.",
+	"…인정. 구름마루에서 나를 이긴 용은 이제 너 하나야. 몸이 굳지 않게 가끔 붙어 줘.",
 ]
 
 
@@ -46,10 +46,16 @@ static func menu_option(npc):
 	var ok := [{ label = "…그래.", on_select = back }]
 	if GameState.player.stage_index < Story._adult():
 		return { label = "🏁 겨루자고 한다", on_select = func(): NpcActions.show(npc, "넌 아직 못 날잖아. 날개가 몸을 들 수 있게 되면 와. 그때 붙자.", ok) }
+	if resting():
+		return { label = "🏁 겨루자고 한다", on_select = func(): NpcActions.show(npc, "다리가 아직 욱신거려. 며칠만 쉬고 붙자. 폭포는 올랐으니까 됐어.", ok) }
 	if GameState.map_id != MAP:
 		return { label = "🏁 겨루자고 한다", on_select = func(): NpcActions.show(npc, "오후엔 아랫마을 호수에서 헤엄쳐. 거기서 붙자. 너는 하늘로, 나는 물로.", ok) }
 	var lv := level()
 	return { label = "🏁 호수 한 바퀴 겨루기 (%s)" % ("비류 %d판째" % (lv + 1) if lv < TIMES.size() else "기록 깨기"), on_select = func(): _offer(npc) }
+
+
+## 비류가 다리를 다쳐 쉬는 중인가 (폭포를 제 눈으로 오른 대가, b1)
+static func resting() -> bool: return int(GameState.story.get("biryuRest", -1)) > GameState.day
 
 
 ## 이긴 판 수 (0~3). 셋을 다 이기면 마지막 판 빠르기로 기록을 깬다
@@ -83,6 +89,7 @@ static func start(npc, course := {}, target := 0.0, on_end = null) -> void:
 	GameState.activity = { type = "RACE", npc = npc, course = course, t = -COUNT, ring = 0, target = target if target > 0 else TIMES[lv],
 		level = lv, count = COUNT + 1.0, onEnd = on_end }
 	_swim(npc, 0.0, 1.0, course)
+	Sfx.play("splash")
 	Hud.pop("비류가 물속으로 뛰어들었다! 물안개 고리를 차례로 빠져나가자. [Shift]를 누르고 있으면 더 빨리 난다.", "🏁")
 
 
@@ -115,7 +122,7 @@ static func update(npc, dt: float) -> void:
 	if Vector2(p.x - goal.x, p.y - goal.y).length() < RING_R:
 		a.ring += 1
 		Particles.burst(goal.x, goal.y - 60, "#bfe9ff", 0.8, 14)
-		Sfx.play("pickup")
+		Sfx.play("ring")
 		if int(a.ring) > c.rings.size():
 			_finish(a.t < a.target, "")
 			return

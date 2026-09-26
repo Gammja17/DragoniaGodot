@@ -148,7 +148,8 @@ static func open_hub(npc, skip_errand := false) -> bool:
 	if running:   # 힌트가 있으면 힌트로 ('그 자리에 가 있기 0/1' 처럼 어디인지 없는 목표 글 대신). 숫자는 셀 게 여럿일 때만
 		var total := Quests.step_total(running)
 		text += "\n\n(%s: %s%s)" % [running.title, Quests._hint_or_goal(running), " %d/%d" % [Quests.progress(running), total] if total > 1 else ""]
-	elif not skip_errand and Quests.rest_offer(npc): text += "\n\n(할 이야기가 더 있는 눈치지만, 오늘은 그만 쉬고 내일 아침에 보자는 듯하다.)"
+	elif not skip_errand and Quests.rest_offer(npc):   # 자정을 넘긴 새벽이면 '내일 아침'이 아니라 몇 시간 뒤다
+		text += "\n\n(할 이야기가 더 있는 눈치지만, %s보자는 듯하다.)" % ("날이 밝으면 " if GameState.dayTime < NightEvents.DAWN else "오늘은 그만 쉬고 내일 아침에 ")
 	elif not skip_errand and Quests.held_offer(npc): text += "\n\n(부탁할 일이 있는 눈치지만, 지금 맡은 일부터 끝내고 오라는 듯하다.)"
 	show(npc, text, opts)
 	return true

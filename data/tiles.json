@@ -937,7 +937,8 @@
   "cave": "assets/tiles/cave.png",
   "inner": "assets/tiles/inner.png",
   "waterfall": "assets/tiles/waterfall.png",
-  "sparkle": "assets/tiles/sparkle.png"
+  "sparkle": "assets/tiles/sparkle.png",
+  "keepsakes": "assets/tiles/keepsakes.png"
  },
  "TILE_SCALE": 3,
  "TILE_SRC": 16,

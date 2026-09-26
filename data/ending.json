@@ -1,7 +1,7 @@
 {
  "SEQUENCES": {
   "guardian": [
-   { "fade": "그날 저녁", "place": "VILLAGE", "at": [17, 15], "time": 0.76, "evening": true },
+   { "fade": "그날 저녁", "late": "이튿날 저녁", "place": "VILLAGE", "at": [17, 15], "time": 0.76, "evening": true },
    { "scene": "evening_guardian", "evening": true },
    { "fade": "다음 날 아침", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true },
    { "morning": "ending" },
@@ -16,7 +16,7 @@
    { "fade": "", "place": "VILLAGE", "at": [17, 13], "time": 0.3, "nextDay": true }
   ],
   "redeem": [
-   { "fade": "그날 저녁", "place": "VILLAGE", "at": [17, 15], "time": 0.76, "evening": true },
+   { "fade": "그날 저녁", "late": "이튿날 저녁", "place": "VILLAGE", "at": [17, 15], "time": 0.76, "evening": true },
    { "scene": "evening_redeem", "evening": true },
    { "fade": "다음 날 아침 · 마을 어귀", "place": "VILLAGE", "at": [26, 12], "time": 0.3, "nextDay": true },
    { "morning": "ending_redeem" },

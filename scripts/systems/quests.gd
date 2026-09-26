@@ -434,6 +434,8 @@ static func suggestion():
 				goal = "레벨 %d부터 스승 카이론에게 [승급 시험]을 청할 수 있다. 다음 이야기는 그 뒤에 이어진다. 숲길에서 싸우거나, 오늘의 수련 · 마을 용들의 부탁을 하면 레벨이 오른다." % st.minLevel }
 		return { who = "Kairon", main = true, kind = "trial", title = "스승에게 [승급 시험]을 청하자",
 			goal = "[%s]로 자랄 때가 됐다. 카이론에게 말을 걸어 [승급 시험]을 청한다." % st.name }
+	var contest = Contest.pastime()   # 오늘 밤 모임 겨루기: 그날 밤뿐이라 부탁 · 수련보다 먼저 짚는다
+	if contest: return contest
 	var side_hint = _side_hint()
 	if side_hint: return side_hint
 	var t = training.line.call()
@@ -444,7 +446,8 @@ static func suggestion():
 		return { who = null, title = "세상을 돌아다녀 보자", goal = "숲길·호수를 걷다 보면 다음 이야기가 열린다. 옛 굴을 탐험해 보거나 마을 용들과 이야기해도 좋다" }
 	var pass_time = _pastime(false)
 	if pass_time: return pass_time
-	return { who = null, title = "한숨 돌리자", goal = "굴을 꾸미거나, 게시판의 잡일을 맡거나, 마을 용들과 이야기해 보자" }
+	return { who = null, title = "한숨 돌리자", goal = "굴을 꾸미거나, 게시판의 잡일을 맡거나, %s마을 용들과 이야기해 보자" \
+		% ("옛 굴을 더 깊이 내려가 보거나, " if Chapters.map_open(GameState, "HOLLOW") else "") }
 
 
 ## 부탁이 있는 용 하나를 짚어 준다 (머리 위 '!'). 가리키는 화살표는 없고 귀띔만 한다. 없으면 null
@@ -457,8 +460,10 @@ static func _side_hint():
 		goal = "머리 위에 '!'가 뜬 용에게 말을 걸어 보자%s%s" % [" (지금 %s)" % p.mapName if p else "", ". 부탁이 있는 용이 더 있다" if side.size() > 1 else ""] }
 
 
-## 본 이야기가 멈춘 동안 지금 바로 할 수 있는 것 하나: 부탁한 용 → 게시판의 새 쪽지 → 물고기 도감. 없으면 null
+## 본 이야기가 멈춘 동안 지금 바로 할 수 있는 것 하나: 오늘 밤 모임 겨루기 → 부탁한 용 → 게시판의 새 쪽지 → 물고기 도감 → 하늘에서 본 것. 없으면 null
 static func _pastime(with_side := true):
+	var contest = Contest.pastime()   # 오늘 밤 모임 겨루기: 그날 밤뿐이라 먼저 짚는다
+	if contest: return contest
 	if with_side:
 		var side_hint = _side_hint()
 		if side_hint: return side_hint
@@ -473,6 +478,10 @@ static func _pastime(with_side := true):
 			return { who = null, main = false, title = "물고기 도감 채우기 (%d / %d)" % [got, total],
 				goal = "물가에서 [E]로 낚싯줄을 드리운다%s. 못 잡은 물고기가 어디서 · 언제 잡히는지는 일지 [기록]에 있다" \
 					% (". 날 수 있으면 물 위에서 덮쳐도 된다" if GameState.player.stage_index >= Story._adult() else "") }
+	# 날 수 있게 된 뒤: 하늘에서만 보이는 흔적 (결말 뒤에도 남는 탐험 거리)
+	if GameState.player.stage_index >= Story._adult() and Traces.found_count() < Traces.LIST.size():
+		return { who = null, main = false, title = "하늘에서 본 것 (%d / %d)" % [Traces.found_count(), Traces.LIST.size()],
+			goal = "날아다니며 바닥을 내려다보자. 걸어서는 안 보이던 흔적이 있다. 가 본 곳 가운데 어디쯤인지는 일지 [기록]에 있다" }
 	return null
 
 
@@ -560,6 +569,8 @@ static func turn_in(q: Dictionary, npc, choice_id = null) -> bool:
 static func tracked_line():
 	var q = tracked_quest()
 	if not q:
+		# 모임이 선 밤에는 겨루기가 먼저다 (그날 밤뿐이고 수련은 날마다 있다). 비워 두면 추적창이 suggestion 으로 짚는다
+		if Gathering.is_gather_now() and Contest.pastime(): return null
 		var t = training.line.call()
 		if t: t.training = true
 		return t

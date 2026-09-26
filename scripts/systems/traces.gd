@@ -32,7 +32,7 @@ const LIST := [
 	  later = { event = "ev_gathering", note = "달맞이 모임 자리였다. 스무 해 만에 두 마을이 다시 둘러앉았다." } },
 	{ id = "shadow", map = "ASH_CITY", at = [1008, 560], shape = "SHADOW", r = 240.0, title = "그을리지 않은 자리",
 	  lines = ["(도시 북쪽 어귀에, 거기만 그을리지 않은 땅이 있다. 날개를 활짝 편 커다란 용 모양이다.)",
-		"(불길이 휩쓸 때 누군가 여기 엎드려 있었던 거다. 도시를 등지고.)",
+		"(불길이 휩쓸 때 누군가 도시를 등지고 여기 엎드려 있었던 거다.)",
 		"(모르가스가 예순 해 전에 끝내 막지 못했다는 그날… 그게 여기였을까.)"],
 	  note = "도시 북쪽 어귀, 날개를 편 용 모양으로 그을리지 않은 땅. 누군가 도시를 등지고 엎드려 있던 자리." },
 ]
@@ -77,12 +77,17 @@ static func _find(t: Dictionary) -> void:
 	var list: Array = GameState.story.get("traces", [])
 	list.append(t.id)
 	GameState.story.traces = list
+	if not GameState.story.has("traceDays"): GameState.story.traceDays = {}
+	GameState.story.traceDays[t.id] = GameState.day   # 마을 용들의 소식 (npcTalk 의 SITUATION_LINES)
 	GameState.player.gain_xp(XP)
 	Sfx.play("relic")
 	var lines: Array = t.lines.duplicate()
 	if t.get("heard"): lines.append(t.heard.yes if GameState.quests.done.has(t.heard.quest) else t.heard.no)
+	if list.size() == LIST.size():   # 다섯 곳을 다 봤다: 굴에 걸어 둘 그림
+		lines.append("(이제 다섯 곳을 다 봤다. 잊기 전에 굴에 그려 두자.)")
 	Chronicle.play_scene("", lines.map(func(s): return { who = "나", text = s }), func():
 		Hud.pop("하늘에서 본 것 %d / %d: %s. 일지 [기록]에 적어 두었다." % [list.size(), LIST.size(), t.title], "🪶")
+		if list.size() == LIST.size(): Den.give_furniture("KEEP_MAP")
 		Save.save_game(), false)
 
 

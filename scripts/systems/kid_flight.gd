@@ -90,7 +90,7 @@ static func update(baby, dt: float) -> void:
 			return
 		a.ring += 1
 		Particles.burst(g.x, g.y - 60, "#bfe9ff", 0.8, 14)
-		Sfx.play("pickup")
+		Sfx.play("ring")
 
 
 static func _finish(win: bool) -> void:
@@ -102,12 +102,16 @@ static func _finish(win: bool) -> void:
 		Hud.pop("날기 수업을 멈췄다. %s 다음에 다시 가르치자." % Family.iga(kid.name), "🪽")
 		return
 	kid.flies = true
+	GameState.story.kidFlew = { day = GameState.day, parent = Kids.parent_of(kid) }   # 마을 용들의 소식
 	Kids.add_affection(baby, 15)
 	baby.grow(10)
 	baby.say(_lines(kid).flyDone)
 	Particles.burst(baby.x, baby.y - 30 - baby.fly_h, "#ffd84a", 1, 18)
 	Sfx.play("relic")
 	Hud.pop("%s 날 줄 알게 됐다! 이제 내가 날면 같이 난다." % Family.iga(kid.name), "🪽")
+	if not GameState.story.get("kidPrint"):   # 처음 날아오른 날의 발도장 (한 번만)
+		GameState.story.kidPrint = true
+		Den.give_furniture("KEEP_PRINT")
 	Save.save_game()
 
 

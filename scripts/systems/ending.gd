@@ -94,9 +94,13 @@ static func _next() -> void:
 ## 다음이 장면이면 덮인 동안 걸어 두어서, 막이 걷히면 이미 띠가 내려와 있다 (장면 사이에 HUD 가 번쩍 보이던 것)
 static func _fade(s: Dictionary) -> void:
 	var handoff: bool = not _steps.is_empty() and (_steps[0].has("scene") or _steps[0].has("morning") or _steps[0].has("quest") or _steps[0].has("lines"))
-	Hud.fade_screen(str(s.fade), func():
-		if s.get("nextDay", false): GameState.day += 1
-		if s.has("time"): GameState.dayTime = float(s.time)
+	# 그 시각을 이미 지났으면(밤늦게 싸움이 끝났다) 시계를 되돌리지 않는다. late 가 있으면 이튿날 그 시각으로
+	# (22시에 이긴 뒤 "그날 저녁" 18시에 해가 지고 있던 것), 없으면 지금 시각 그대로
+	var behind: bool = s.has("time") and not s.get("nextDay", false) and GameState.dayTime > float(s.time)
+	var late: bool = behind and s.has("late")
+	Hud.fade_screen(str(s.late if late else s.fade), func():
+		if s.get("nextDay", false) or late: GameState.day += 1
+		if s.has("time") and (late or not behind): GameState.dayTime = float(s.time)
 		GameState.weather.type = "CLEAR"
 		GameState.event = null
 		var place = s.get("place")

@@ -55,6 +55,7 @@ static func open_now() -> bool:
 	if GameState.map_id != Gathering.GATHER_MAP or not Gathering.is_gather_now(): return false
 	if GameState.story.get("eventDay", {}).get("ev_gathering", -1) == GameState.day: return false   # 첫 모임 밤은 모임만
 	if not GameState.story.get("events", []).has("ev_gathering"): return false
+	if kind_tonight() == "RACE" and Race.resting(): return false   # 비류가 다리를 다쳐 쉬는 밤
 	return int(_c().day) != GameState.day and fishing == null and not GameState.activity
 
 
@@ -152,12 +153,16 @@ static func _result(npc, kind: String, win: bool, detail: String) -> void:
 	var p = GameState.player
 	if win:
 		c.wins = int(c.wins) + 1
+		c.winDay = GameState.day   # 마을 용들의 소식
 		c.level[kind] = level_of(kind) + 1   # 진 쪽은 다음 모임까지 연습한다
 		p.gold += PRIZE[lv]
 		var got := NpcActions.add_relation(npc, 6)
 		npc.say(LINES[kind].lose)
 		Vfx.spawn_effect("RING", p.x, p.y, { size = 1.4 })
 		Hud.pop("모임 겨루기에서 이겼다!%s (%dG · %s)" % [" " + detail if detail != "" else "", PRIZE[lv], NpcActions.gain_note(got)], "🏆")
+		if int(c.wins) == 1:   # 처음 이긴 밤: 굴에 걸어 둘 기념품
+			Hud.pop("리운이 두 마을 깃발을 건넸다. \"스무 해 만의 대표구려. 굴에 걸어 두시오.\"", "🏳️")
+			Den.give_furniture("KEEP_FLAG")
 	else:
 		c.losses = int(c.losses) + 1
 		NpcActions.add_relation(npc, 1)
@@ -173,10 +178,22 @@ static func record_line() -> Array:
 	return ["달맞이 모임 겨루기", "%d승 %d패" % [int(c.wins), int(c.losses)]]
 
 
+## 추적창이 빈 시간에 짚는 한 줄 (Quests._pastime): 오늘 밤 모임 겨루기. 모임 날이 아니거나 이미 겨뤘으면 null
+static func pastime():
+	if tonight_note() == "" or int(_c().day) == GameState.day: return null
+	if kind_tonight() == "RACE" and Race.resting(): return null   # 비류가 쉬는 밤
+	var kind := kind_tonight()
+	var rival := Names.npc(RIVAL[kind])
+	return { who = null, main = false, title = "오늘 밤 모임 겨루기: %s" % NAME[kind],
+		goal = "지금 구름 폭포 아래에서 모임이 열리고 있다. %s에게 말을 걸면 나설 수 있다" % rival if Gathering.is_gather_now() \
+			else "해가 지면 구름 폭포 아래로. 오늘 밤 맞수는 %s" % rival }
+
+
 ## 일지 [마을] 달맞이 모임 줄에 덧붙는 말 (모임 날, 첫 모임 뒤로)
 static func tonight_note() -> String:
 	if not GameState.story.get("events", []).has("ev_gathering") or not Gathering.is_gather_day(): return ""
 	if GameState.story.get("eventDay", {}).get("ev_gathering", -1) == GameState.day: return ""   # 첫 모임 밤은 모임만
 	if int(_c().day) == GameState.day: return " 오늘 밤 겨루기는 끝났다."
+	if kind_tonight() == "RACE" and Race.resting(): return " 오늘 밤 겨루기는 쉰다. 비류가 다리를 다쳤다."
 	var kind := kind_tonight()
 	return " 오늘 밤 겨루기는 [%s], 맞수는 %s." % [NAME[kind], Names.npc(RIVAL[kind])]

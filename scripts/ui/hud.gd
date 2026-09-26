@@ -125,7 +125,7 @@ func _fit_mobile(s: Vector2) -> void:
 	right.pivot_offset = Vector2(right.size.x, 0)
 	right.quest.tight = not portrait
 	_max_toasts = MAX_TOASTS if portrait else 2
-	right.quest.refresh()
+	if is_instance_valid(GameState.player): right.quest.refresh()   # 게임 씬이 막 열릴 때는 아직 주인공이 없다 (휴대폰에서 시작마다 오류가 났다)
 	var top := 196.0 if portrait else 70.0
 	var half := s.x / 2 - 10 if portrait else 290.0
 	_toasts.offset_top = top; _toasts.offset_bottom = top

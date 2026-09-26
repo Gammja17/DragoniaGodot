@@ -154,7 +154,8 @@ static func finale(b) -> void:
 	Cutscene.music = "none"          # 음악을 걷는다. 이야기 장면이 다음 곡을 고른다
 	Sfx.play("dieBig")
 	Sfx.play("stinger")
-	(Engine.get_main_loop() as SceneTree).create_timer(0.35, true, false, true).timeout.connect(func(): BossVoice.cry(b.id, "fall"))   # 쿵 소리가 가라앉은 뒤에
+	var id: String = b.id   # 0.35초 뒤에는 보스가 이미 치워졌을 수 있다 (걷는 봇이 쓰러뜨리자마자 지도를 떠나자 오류가 났다)
+	(Engine.get_main_loop() as SceneTree).create_timer(0.35, true, false, true).timeout.connect(func(): BossVoice.cry(id, "fall"))   # 쿵 소리가 가라앉은 뒤에
 	var fallen: String = b.def.get("fallen", "쓰러뜨렸다")
 	Cutscene.show_card(b.def.name, fallen, 2.6)
 	(Engine.get_main_loop() as SceneTree).create_timer(3.2, true, false, true).timeout.connect(func():

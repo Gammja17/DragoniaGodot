@@ -308,6 +308,9 @@ static func _build_c() -> void:
 		"chapters:CHAPTERS.c3.hold.MORGATH_LAIR.when": func(s): return s.quests.active.has("m4") or s.quests.done.has("m4") or _boss(s, "MORGATH"),
 
 		# ---- 4장: 굶는 계절 ----
+		# 모르가스를 보낸 뒤 마을로 돌아오면, 해 질 녘 빈 걸이대 (잘고라를 잡으러 갈 까닭. 고기를 소이에게 건네는 m5h 가 걸린다)
+		"chronicle:CHRONICLE.ev_hunger.when": func(c): return c.map == "VILLAGE" and c.done.call("m4") and not c.active.call("m5h") and not c.done.call("m5h") \
+			and not c.active.call("m5") and not c.done.call("m5") and not c.s.raid.active,
 		# 뿌리골의 부탁은 쌍두룡을 보낸 뒤에 ("쌍두룡을 보내 준 게 너라고 들었단다")
 		"quests:QUESTS.r1.needs": func(s): return _boss(s, "ZALGORA"),
 

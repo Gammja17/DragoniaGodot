@@ -61,6 +61,14 @@ static func cur_step(q: Dictionary):
 	return s[i] if i < s.size() else null
 ## 대목을 다 끝내서 보고만 남은 상태
 static func is_complete(q: Dictionary) -> bool: return _entry(q) != null and step_index(q) >= steps(q).size()
+## 이 보스를 잡으라는 대목이 지금 걸려 있는가
+static func hunting(boss_id: String) -> bool:
+	for q in active_quests():
+		var st = cur_step(q)
+		if st and st.goal.get("type") == "boss" and st.goal.get("id") == boss_id: return true
+	return false
+
+
 static func active_quests() -> Array: return all().filter(func(q): return GameState.quests.active.has(q.id))
 
 static func _goal_count(g) -> int: return int(g.count) if g and g.get("count") else 1

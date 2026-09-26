@@ -593,7 +593,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "내 굴 잠자리 앞에서 [Space]. 자고 일어나야 다음 수련을 받고 아침 이야기가 이어진다. 어른이 되면 아무도 재워 주지 않는다"
+text = "내 굴 잠자리 앞에서 [Space]. 자고 일어나야 다음 수련을 받고 아침 이야기가 이어진다. 낮에는 한낮 · 해 질 녘까지 낮잠을 자며 시간을 보낼 수 있다. 어른이 되면 아무도 재워 주지 않는다"
 autowrap_mode = 3
 
 [node name="Row18" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]

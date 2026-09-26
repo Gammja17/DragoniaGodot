@@ -404,10 +404,12 @@ static func suggestion():
 	# 본 이야기가 내일 아침을 기다리는 날은 그렇다고 말한다 (엉뚱한 부탁이나 할 말 없는 엘더를 가리키던 것)
 	if waits_for_morning():
 		var side_now := all().filter(func(q): return not q.get("auto") and q.act != "main" and _ready_quest(q)) if resting() else []
+		var pass_time = _pastime(false) if side_now.is_empty() else null
 		return { who = null, main = false, title = "오늘은 여기까지",
 			goal = ("큰일을 치렀다. 다음 이야기는 내일 아침에 이어진다. 오늘은 마을 용들과 어울리거나 굴에서 푹 쉬자." if resting()
 				else "오늘 할 일은 끝났다. 마을 서쪽 끝 내 굴에서 자면 내일 이야기가 이어진다.")
-				+ (" %s에게 할 말이 있는 눈치다." % Names.npc(side_now[0].giver) if not side_now.is_empty() else "") }
+				+ (" %s에게 할 말이 있는 눈치다." % Names.npc(side_now[0].giver) if not side_now.is_empty() else "")
+				+ (" 할 거리: %s." % pass_time.title if pass_time else "") }
 	# 본 이야기는 누구에게 가면 되는지 바로 알려 주고, 곁가지 부탁은 "누군가 할 말이 있는 눈치" 정도로만 귀띔한다
 	for q in all():
 		if not q.get("auto") and q.act == "main" and _ready_quest(q):
@@ -422,25 +424,56 @@ static func suggestion():
 	if trial and not active_quests().any(func(q): return q.act == "main") and not (trial.get("needs") and not trial.needs.call(GameState)):
 		var st: Dictionary = Story._stages()[int(trial.stage)]
 		if GameState.player.level < int(st.minLevel):
+			# 숲에서 사냥만 하며 며칠을 보내던 것: 지금 할 수 있는 일을 짚고, 그 일로도 레벨이 오른다고 붙인다
+			var pass_time = _pastime()
+			if pass_time:
+				pass_time.kind = "trial"
+				pass_time.goal = "%s. [%s]까지 레벨 %d / %d, 이 일로도 레벨이 오른다" % [pass_time.goal, st.name, GameState.player.level, st.minLevel]
+				return pass_time
 			return { who = null, main = false, kind = "trial", title = "[%s]까지 자라기 (레벨 %d / %d)" % [st.name, GameState.player.level, st.minLevel],
 				goal = "레벨 %d부터 스승 카이론에게 [승급 시험]을 청할 수 있다. 다음 이야기는 그 뒤에 이어진다. 숲길에서 싸우거나, 오늘의 수련 · 마을 용들의 부탁을 하면 레벨이 오른다." % st.minLevel }
 		return { who = "Kairon", main = true, kind = "trial", title = "스승에게 [승급 시험]을 청하자",
 			goal = "[%s]로 자랄 때가 됐다. 카이론에게 말을 걸어 [승급 시험]을 청한다." % st.name }
-	var side := all().filter(func(q): return not q.get("auto") and _ready_quest(q))
-	if not side.is_empty():
-		var where := []
-		for q in side:
-			var p = Routine.plan_for(q.giver)
-			if p and not where.has(p.mapName): where.append(p.mapName)
-		return { who = side[0].giver, main = false, title = "누군가 할 말이 있는 눈치다",
-			goal = "마을 용들에게 말을 걸어 보자. 머리 위에 '!'가 뜬 용이 있다" + (" (%s 쪽)" % " · ".join(where.slice(0, 2)) if not where.is_empty() else "") }
+	var side_hint = _side_hint()
+	if side_hint: return side_hint
 	var t = training.line.call()
 	if t: return { who = "Kairon", title = "오늘의 수련", goal = t.goal if t.get("goal") else "카이론을 찾아간다" }
 	# 본 이야기 줄기에서 저절로 열릴 차례인 것만 센다. 조건이 따로 없는 것(밀회 s1 · 어둠의 길 m7d)은 사건이 불러 주는 것이라
 	# 첫날부터 "숲길·호수를 걷다 보면 다음 이야기가 열린다"가 떴다 (호수는 아직 닫혀 있었다)
 	if all().any(func(q): return q.get("auto") and q.act == "main" and q.get("requires") and _ready_quest(q)):
 		return { who = null, title = "세상을 돌아다녀 보자", goal = "숲길·호수를 걷다 보면 다음 이야기가 열린다. 옛 굴을 탐험해 보거나 마을 용들과 이야기해도 좋다" }
+	var pass_time = _pastime(false)
+	if pass_time: return pass_time
 	return { who = null, title = "한숨 돌리자", goal = "굴을 꾸미거나, 게시판의 잡일을 맡거나, 마을 용들과 이야기해 보자" }
+
+
+## 부탁이 있는 용 하나를 짚어 준다 (머리 위 '!'). 가리키는 화살표는 없고 귀띔만 한다. 없으면 null
+static func _side_hint():
+	var side := all().filter(func(q): return not q.get("auto") and q.act != "main" and _ready_quest(q))
+	if side.is_empty(): return null
+	var nm: String = side[0].giver
+	var p = Routine.plan_for(nm)
+	return { who = nm, main = false, title = "%s에게 할 말이 있는 눈치다" % Names.npc(nm),
+		goal = "머리 위에 '!'가 뜬 용에게 말을 걸어 보자%s%s" % [" (지금 %s)" % p.mapName if p else "", ". 부탁이 있는 용이 더 있다" if side.size() > 1 else ""] }
+
+
+## 본 이야기가 멈춘 동안 지금 바로 할 수 있는 것 하나: 부탁한 용 → 게시판의 새 쪽지 → 물고기 도감. 없으면 null
+static func _pastime(with_side := true):
+	if with_side:
+		var side_hint = _side_hint()
+		if side_hint: return side_hint
+	var note = Chores.fresh_note()
+	if note:
+		return { who = null, main = false, title = "게시판에 새 쪽지: %s" % note.title,
+			goal = "%s (%s). 마을 광장 게시판에서 [E]로 떼어 간다" % [goal_text(note.goal), Chores._reward_line(Chores._reward(note))] }
+	if Chapters.map_open(GameState, "LAKE"):
+		var got: int = GameState.stats.get("fishKinds", {}).size()
+		var total := DiveFish.kinds().size()
+		if got < total:
+			return { who = null, main = false, title = "물고기 도감 채우기 (%d / %d)" % [got, total],
+				goal = "물가에서 [E]로 낚싯줄을 드리운다%s. 못 잡은 물고기가 어디서 · 언제 잡히는지는 일지 [기록]에 있다" \
+					% (". 날 수 있으면 물 위에서 덮쳐도 된다" if GameState.player.stage_index >= Story._adult() else "") }
+	return null
 
 
 ## NPC 머리 위 표시: '?' 지금 찾아갈 곳, '!' 새 부탁, 없으면 ""

@@ -306,6 +306,10 @@ static func open_nest_menu() -> void:
 	var opts := []
 	if busy: opts = [{ label = "나중에", on_select = _close }]
 	else:
+		# 낮에는 한숨 자며 시간을 보낼 수 있다 (할 일을 기다리며 서성이던 것)
+		var h := GameState.dayTime * 24.0
+		if h >= 5.0 and h < 11.0: opts.append({ label = "한숨 잔다 (한낮까지)", on_select = func(): nap(12.0) })
+		if h >= 5.0 and h < 17.0: opts.append({ label = "낮잠을 잔다 (해 질 녘까지)", on_select = func(): nap(18.0) })
 		opts.append({ label = "잠을 잔다 (다음 날 아침까지)", on_select = sleep })
 		if not GameState.den.built: opts.append({ label = "둥지를 짓는다 (나뭇가지 %d/8, 30G)" % GameState.den.twigs, on_select = _build_nest })
 		if Den.in_my_den(): opts.append({ label = "🪑 굴을 꾸민다", on_select = func():
@@ -313,7 +317,7 @@ static func open_nest_menu() -> void:
 			DenPanel.show_panel() })
 		opts.append({ label = "아직 안 졸려", on_select = _close })
 	DialogueBox.current.show_dialogue({ name = "둥지", on_close = _close, options = opts,
-		text = "지금은 잠들 수 없다. 주변이 너무 소란스럽다." if busy else "%d일째. 자고 일어나면 다음 날 아침이 된다.\n(굴의 아늑함: %s. %s)" % [GameState.day, rest.tier.name, rest.tier.note] })
+		text = "지금은 잠들 수 없다. 주변이 너무 소란스럽다." if busy else "%d일째. 밤잠을 자면 다음 날 아침에, 낮잠을 자면 그날 안에 깬다.\n(굴의 아늑함: %s. %s)" % [GameState.day, rest.tier.name, rest.tier.note] })
 
 
 static func _build_nest() -> void:
@@ -371,6 +375,22 @@ static func sleep() -> void:
 		GameState.story.today = {}
 		Quests.notify("sleep")           # "하룻밤 자고 나서" 로 이어지는 대목
 		Save.save_game(), play_morning_scene)
+
+
+## 낮잠: 정한 시각(24시 기준)까지 쉰다. 날은 넘어가지 않고, 쉰 만큼 체력이 차고 배가 조금 꺼진다.
+## 알 · 아이가 자라는 것과 "하룻밤 자고 나서"로 이어지는 대목은 밤잠에만
+static func nap(until_hour: float) -> void:
+	_close()
+	if GameState.dayTime * 24.0 >= until_hour: return
+	Sfx.play("sleep")
+	Hud.fade_screen("한낮" if until_hour < 15.0 else "해 질 녘", func():
+		var p = GameState.player
+		var hours: float = until_hour - GameState.dayTime * 24.0
+		GameState.dayTime = until_hour / 24.0
+		GameState.raidTimer = maxf(GameState.raidTimer, 45)   # 눈 뜨자마자 습격당하지 않게
+		p.hp = minf(p.max_hp, p.hp + p.max_hp * 0.15 * hours)
+		p.hunger = maxf(0.0, p.hunger - 2.0 * hours * (1.0 - Den.cozy_rest().heal))   # 굴이 아늑할수록 배가 덜 꺼진다
+		Save.save_game(), func(): Hud.pop("한숨 푹 잤다. 몸이 한결 가볍다.", "😴"))
 
 
 ## 잠을 청했는데 습격이 오는 밤. 날은 넘어가지 않고, 한밤의 마을 광장에서 싸움이 시작된다

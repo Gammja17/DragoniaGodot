@@ -91,7 +91,7 @@ func _ready() -> void:
 	G.player.stage_index = 1
 	G.player.level = 5
 	var sug = Quests.suggestion()
-	_check("레벨이 모자라면: 성체까지 자라기 (레벨 5 / 10)", sug.get("kind") == "trial" and str(sug.title).contains("5 / 10"))
+	_check("레벨이 모자라면: 할 일을 짚고 성체까지 레벨 5 / 10 을 붙인다", sug.get("kind") == "trial" and (str(sug.title) + str(sug.goal)).contains("5 / 10"))
 	G.player.level = 10
 	sug = Quests.suggestion()
 	_check("레벨이 차면: 스승에게 승급 시험을 청하자 (화살표는 카이론)", sug.get("kind") == "trial" and sug.who == "Kairon" and sug.main)

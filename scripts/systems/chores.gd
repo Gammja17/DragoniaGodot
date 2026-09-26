@@ -39,6 +39,17 @@ static func refresh_board() -> Dictionary:
 	return c
 
 
+## 게시판에 붙어 있고 아직 떼어 가지 않은 쪽지 하나 (추적창이 귀띔한다). 두 장을 다 떼어 왔으면 null
+static func fresh_note():
+	var c := refresh_board()
+	if c.taken.size() >= MAX_TAKEN: return null
+	for id in c.offers:
+		if c.taken.has(id) or c.done.has(id): continue
+		var ch = _by_id(id)
+		if ch and _open(ch): return ch
+	return null
+
+
 ## 지금 붙을 수 있는 쪽지인가 (when). 쪽지를 쓴 용이 떠났거나 더는 할 수 없는 일이면 붙지 않는다
 static func _open(ch: Dictionary) -> bool: return not ch.get("when") or ch.when.call(GameState)
 

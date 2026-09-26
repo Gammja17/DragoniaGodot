@@ -56,6 +56,39 @@ static func _migrate_legacy() -> void:
 	DirAccess.rename_absolute(ProjectSettings.globalize_path(LEGACY), ProjectSettings.globalize_path(path(1)))
 
 
+# ---------- 저장 코드 (다른 기기에서 이어 하기) ----------
+const CODE_HEAD := "DRAGONIA1."   # 코드 머리. 모양이 바뀌면 숫자를 올린다
+
+## 그 칸의 기록을 압축해 글자로 바꾼다 (세이브 8KB 남짓 → 코드 3천 자 남짓). 기록이 없으면 ""
+static func export_code(n: int) -> String:
+	var p := path(n)
+	if not FileAccess.file_exists(p): return ""
+	return CODE_HEAD + Marshalls.raw_to_base64(FileAccess.get_file_as_bytes(p).compress(FileAccess.COMPRESSION_GZIP))
+
+
+## 저장 코드를 풀어 기록(JSON 글)으로. 메신저가 끼워 넣은 줄바꿈 · 띄어쓰기는 걸러 낸다. 잘못된 코드면 ""
+static func decode_code(code: String) -> String:
+	var clean := code.replace(" ", "").replace("\n", "").replace("\r", "").replace("\t", "")
+	if not clean.begins_with(CODE_HEAD): return ""
+	var packed := Marshalls.base64_to_raw(clean.substr(CODE_HEAD.length()))
+	if packed.is_empty(): return ""
+	var text := packed.decompress_dynamic(4 << 20, FileAccess.COMPRESSION_GZIP).get_string_from_utf8()
+	var data = JSON.parse_string(text)
+	if not (data is Dictionary and data.has("player") and data.has("mapId")): return ""
+	return text
+
+
+## 저장 코드를 그 칸에 들인다 (그 칸의 기록은 지워진다). 들였으면 true
+static func import_code(code: String, n: int) -> bool:
+	var text := decode_code(code)
+	if text == "": return false
+	var f := FileAccess.open(path(n), FileAccess.WRITE)
+	if f == null: return false
+	f.store_string(text)
+	f.close()
+	return true
+
+
 ## JSON 은 숫자를 모두 실수로 돌려준다. 딱 떨어지는 수는 정수로 되돌린다
 ## (날짜 비교나 배열 속 단계 번호가 정수로 저장된 값과 맞아야 한다)
 static func _intify(v):

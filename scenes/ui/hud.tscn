@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3]
+[gd_scene load_steps=41 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1"]
 [ext_resource type="FontFile" path="res://assets/fonts/Mulmaru.woff2" id="2"]
@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/den_panel.tscn" id="13"]
 [ext_resource type="PackedScene" path="res://scenes/ui/touch_layer.tscn" id="14"]
 [ext_resource type="PackedScene" path="res://scenes/ui/fx_panel.tscn" id="fx"]
+[ext_resource type="PackedScene" path="res://scenes/ui/save_code_panel.tscn" id="savecode"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_mobile_status.tscn" id="mstatus"]
 
 [sub_resource type="Gradient" id="rule_grad"]
@@ -480,6 +481,8 @@ vertical_alignment = 1
 [node name="Help" parent="." instance=ExtResource("10")]
 
 [node name="Fx" parent="." instance=ExtResource("fx")]
+
+[node name="SaveCode" parent="." instance=ExtResource("savecode")]
 
 [node name="NameInput" parent="." instance=ExtResource("5")]
 

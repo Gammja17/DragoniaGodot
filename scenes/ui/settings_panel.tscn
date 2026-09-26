@@ -270,7 +270,20 @@ layout_mode = 2
 focus_mode = 0
 text = "보기"
 
-[node name="ToTitle" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="19"]
+[node name="SaveCode" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="19"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/SaveCode" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "저장 코드 (다른 기기에서 이어 하기)"
+
+[node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/SaveCode" index="1"]
+layout_mode = 2
+focus_mode = 0
+text = "복사하기"
+
+[node name="ToTitle" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="20"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/ToTitle" index="0"]
@@ -283,9 +296,10 @@ layout_mode = 2
 focus_mode = 0
 text = "저장하고 처음 화면으로"
 
-[node name="Note" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="20"]
+[node name="Note" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="21"]
 layout_mode = 2
 text = "게임은 자동으로 저장된다. 기록 칸은 셋이고, 처음 화면에서 고른다.
+다른 기기(PC → 폰)에서 이어 하려면 [저장 코드]를 복사해 그 기기의 처음 화면 [저장 코드] → [붙여 넣기]로 넣는다.
 [테스트] 줄은 승급 시험 조건을 채워 주는 것뿐이다. 시험 자체는 카이론에게 청해야 한다."
 label_settings = SubResource("note")
 autowrap_mode = 3

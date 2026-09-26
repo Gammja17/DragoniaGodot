@@ -37,6 +37,8 @@ func _ready() -> void:
 		row.play_pressed.connect(_play)
 		row.new_pressed.connect(_new)
 		row.delete_pressed.connect(_delete)
+		row.code_pressed.connect(_code)
+	$SaveCode.imported.connect(func(_n): _show(_slots))
 	$Center/Column/Create/Lines/Buttons/Start.pressed.connect(_start)
 	$Center/Column/Create/Lines/Buttons/Back.pressed.connect(func(): _show(_slots))
 	$Center/Column/Confirm/Lines/Buttons/Yes.pressed.connect(func(): _on_yes.call())
@@ -103,6 +105,13 @@ func _delete(n: int) -> void:
 	_ask("%d번 칸의 %s(Lv.%d) 기록을 지울까?\n지운 기록은 되돌릴 수 없다." % [n, s.name, s.level], "지운다", func():
 		Save.delete(n)
 		_show(_slots))
+
+
+## 저장 코드: 차 있는 칸은 코드를 복사하고(다른 코드로 바꿀 수도 있다), 빈 칸은 다른 기기의 코드를 붙여 넣는다
+func _code(n: int) -> void:
+	Sfx.play("ui")
+	if Save.has_save(n): $SaveCode.open_export(n, true)
+	else: $SaveCode.open_import(n)
 
 
 # ---------- 새 용 ----------

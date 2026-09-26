@@ -7,6 +7,7 @@ extends GamePanel
 signal help_pressed
 signal fx_pressed
 signal to_title_pressed
+signal save_code_pressed
 
 const DLG_NAMES := { 1: "작게", 2: "보통", 3: "크게", 4: "아주 크게" }
 
@@ -60,6 +61,7 @@ func _ready() -> void:
 		close()
 		help_pressed.emit())
 	_btn("ToTitle").pressed.connect(func(): to_title_pressed.emit())
+	_btn("SaveCode").pressed.connect(func(): save_code_pressed.emit())
 	opened.connect(_refresh)
 
 

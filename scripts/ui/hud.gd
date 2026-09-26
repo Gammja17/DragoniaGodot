@@ -28,6 +28,7 @@ const TOAST_W := 400.0   # 이보다 긴 알림은 줄을 나눈다 (좌우 판 
 @onready var right: HudRight = $Right
 @onready var bottom: HudBottom = $Bottom
 @onready var settings: SettingsPanel = $Settings
+@onready var save_code: SaveCodePanel = $SaveCode
 @onready var help: GamePanel = $Help
 @onready var fx: FxPanel = $Fx
 @onready var journal: JournalPanel = $Journal
@@ -85,6 +86,9 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_fit_screen)
 	_fit_screen()
 	settings.to_title_pressed.connect(func(): to_title_requested.emit())
+	settings.save_code_pressed.connect(func():   # 지금 판을 저장하고 그 칸의 코드를 복사한다
+		Save.save_game()
+		save_code.open_export(Save.slot))
 	$HelpChip.visible = false
 	# 장 카드는 누르면 넘어간다 (터치에는 Esc 가 없다)
 	$ChapterCard.gui_input.connect(func(ev):

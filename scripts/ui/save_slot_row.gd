@@ -1,10 +1,12 @@
 class_name SaveSlotRow
 extends PanelContainer
 ## 처음 화면의 세이브 칸 한 줄. 차 있으면 [이어 하기](금빛) [새로 시작] [지우기], 비어 있으면 [새 용](금빛) 만.
+## [저장 코드]는 늘 있다: 차 있으면 그 기록을 코드로 복사하고, 비어 있으면 다른 기기의 코드를 붙여 넣는다.
 
 signal play_pressed(n: int)
 signal new_pressed(n: int)
 signal delete_pressed(n: int)
+signal code_pressed(n: int)
 
 var slot := 1
 
@@ -13,6 +15,7 @@ func _ready() -> void:
 	$Row/Play.pressed.connect(func(): play_pressed.emit(slot))
 	$Row/New.pressed.connect(func(): new_pressed.emit(slot))
 	$Row/Delete.pressed.connect(func(): delete_pressed.emit(slot))
+	$Row/Code.pressed.connect(func(): code_pressed.emit(slot))
 
 
 func show_slot(n: int) -> void:

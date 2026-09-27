@@ -143,7 +143,7 @@ func _render_quests() -> void:
 	# 게시판에서 떼어 온 잡일. 이야기와 섞이지 않게 맨 아래에 따로 둔다
 	var chores := Chores.taken()
 	if not chores.is_empty():
-		_section("게시판 잡일", chores.map(func(c): return ["%s — %s" % [c.title, c.goal], "완료 · 게시판으로" if c.complete else c.text]))
+		_section("게시판 잡일", chores.map(func(c): return ["%s: %s" % [c.title, c.goal], "완료, 게시판으로" if c.complete else c.text]))
 
 
 ## 일지를 닫고 그 장면을 다시 튼다 (컷씬 없이)
@@ -161,7 +161,7 @@ func _render_story() -> void:
 	var cur: Dictionary = Chapters.current(GameState)
 	var groups := []
 	for c in Data.get_module("chapters").CHAPTERS:
-		var head := "%s · %s" % [c.title, c.name]
+		var head := "%s %s" % [c.title, c.name]
 		if groups.is_empty() or groups[-1].head != head: groups.append({ head = head, lines = [], now = false })
 		var g: Dictionary = groups[-1]
 		if c.done.call(GameState): g.lines.append_array(c.get("recap", []).filter(_recap_ok).map(func(l): return l.text))
@@ -193,7 +193,7 @@ func _now_box() -> void:
 	var box: Control = $Templates/Now.duplicate()
 	var q = Quests.tracked_quest()
 	if q:
-		box.get_node("Lines/Head").text = "지금 할 일 · %s" % q.title
+		box.get_node("Lines/Head").text = "지금 할 일: %s" % q.title
 		box.get_node("Lines/Text").text = q.get("summary", "")
 	else:
 		var s: Dictionary = Quests.suggestion()
@@ -249,7 +249,7 @@ func _render_record() -> void:
 	var book: Dictionary = GameState.stats.get("fishKinds", {})
 	var fish_rows := []
 	for k in DiveFish.kinds():
-		if book.has(k.id): fish_rows.append([k.name, "%d마리 · %s" % [int(book[k.id]), k.note]])
+		if book.has(k.id): fish_rows.append([k.name, "%d마리, %s" % [int(book[k.id]), k.note]])
 		else: fish_rows.append(["???", k.hint, true])
 	_section("물고기 도감 %d / %d" % [DiveFish.kinds().filter(func(k): return book.has(k.id)).size(), DiveFish.kinds().size()], fish_rows)
 	# 하늘에서 본 것: 걸어서는 모르던 흔적. 못 찾은 것은 가 본 곳이면 어디쯤인지만. 날 수 있게 되기 전에는 안 띄운다
@@ -266,7 +266,7 @@ func _render_record() -> void:
 			if got.has(a.id): rows.append(["✔ " + a.name, "이뤘다"])
 			elif g == "이야기": rows.append(["???", "이야기를 따라가다 보면 알게 된다", true])   # 결말 · 보스는 미리 말하지 않는다
 			else: rows.append([a.name, a.desc, true])
-		_section("업적 · %s" % g, rows)
+		_section("업적: %s" % g, rows)
 	# 정체의 단서. 승급 의식과 사건에서 모인다
 	var clues_def: Dictionary = Data.get_module("chronicle").CLUES
 	var clues: Array = GameState.story.get("clues", []).filter(func(id): return clues_def.has(id))
@@ -284,7 +284,7 @@ func _render_sound() -> void:
 	])
 	_note("음량은 [Esc] 설정 창에서 바꾼다.")
 	_section("빌려 쓴 소리", [
-		["배경음 15곡", "Music by Eric Matyas · www.soundimage.org"],
+		["배경음 15곡", "Music by Eric Matyas, www.soundimage.org"],
 		["효과음 일부", "Kenney (CC0)"],
 		["나머지 효과음", "코드로 그때그때 만든다"],
 	])
@@ -296,7 +296,7 @@ func _render_folk() -> void:
 	var t := GameState.dayTime * 24
 	var hour := floori(t)
 	var minute := floori(fmod(t, 1.0) * 60 / 10.0) * 10
-	_section("%d일째 %02d:%02d · %s" % [GameState.day, hour, minute, NightEvents.day_phase_name()], [])
+	_section("%d일째 %02d:%02d, %s" % [GameState.day, hour, minute, NightEvents.day_phase_name()], [])
 	# 달맞이 모임. 엘더가 첫 모임(m5g)을 알려 주기 전에는 모임이 있는 줄도 모르고,
 	# 스무 해 끊겼던 모임은 그 첫 모임 때 다시 서므로 그 전에는 날짜를 세지 않는다 (여드레째 밤이 와도 아무도 가지 않는다)
 	if Gathering.is_gather_day() or Gathering.invited_up():
@@ -322,7 +322,7 @@ func _render_folk() -> void:
 				break
 		if GameState.partner and GameState.partner.config.name == r.name: tier = "짝"
 		card.get_node("Lines/Head/Name").text = r.label
-		card.get_node("Lines/Head/Job").text = "%s · %s" % [r.job, tier]
+		card.get_node("Lines/Head/Job").text = "%s / %s" % [r.job, tier]
 		card.get_node("Lines/Where").text = ("📍 " if r.near else "") + r.where
 		card.get_node("Lines/Doing").text = r.doing
 		if r.near:
@@ -341,9 +341,9 @@ func _render_relics() -> void:
 	var kins: Dictionary = Data.get_module("systems_relics").KINS
 	var worn := Relics.equipped()
 	_section("끼운 것 %d / %d칸" % [worn.size(), mx], [])
-	var n1 := _note("가진 유물을 눌러 끼우고 뺀다. 몸이 자라면 끼울 수 있는 칸이 늘어난다 (어린 용 2칸 · 성체 3칸 · 고룡 4칸)." if mx < 4 else "가진 유물을 눌러 끼우고 뺀다. 끼운 것만 힘이 된다.")
+	var n1 := _note("가진 유물을 눌러 끼우고 뺀다. 몸이 자라면 끼울 수 있는 칸이 늘어난다 (어린 용 2칸, 성체 3칸, 고룡 4칸)." if mx < 4 else "가진 유물을 눌러 끼우고 뺀다. 끼운 것만 힘이 된다.")
 	n1.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	var n2 := _note("공명 — 같은 갈래를 둘 끼우면: " + " · ".join(kins.keys().map(func(k): return "%s %s (%s)" % ["◆" if Relics.resonates(k) else "◇", kins[k].name, kins[k].bonus])))
+	var n2 := _note("공명. 같은 갈래를 둘 끼우면: " + ", ".join(kins.keys().map(func(k): return "%s %s (%s)" % ["◆" if Relics.resonates(k) else "◇", kins[k].name, kins[k].bonus])))
 	n2.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	# 칸
 	var slots := HBoxContainer.new()
@@ -372,7 +372,7 @@ func _render_relics() -> void:
 		var on := Relics.has(id)
 		var row: Button = RELIC_ROW.instantiate()
 		_list.add_child(row)
-		var nm: String = ("[%s] " % defs[r.skill].name if r.get("skill") and defs.has(r.skill) else "") + ("%s · %s" % [r.name, kins[r.kin].name] if r.get("kin") else r.name)
+		var nm: String = ("[%s] " % defs[r.skill].name if r.get("skill") and defs.has(r.skill) else "") + ("%s (%s)" % [r.name, kins[r.kin].name] if r.get("kin") else r.name)
 		row.get_node("Row/Name").text = nm
 		row.get_node("Row/Desc").text = r.desc
 		row.tooltip_text = r.desc
@@ -383,7 +383,7 @@ func _render_relics() -> void:
 		row.pressed.connect(func():
 			Relics.toggle(id)
 			render())
-	var missing := table.keys().filter(func(id): return not Relics.owns(id)).map(func(id): return ["???", "큰 용이 지니고 있다" if table[id].get("boss") else "상자·금빛 정예·옛 굴 깊은 곳에서", true])
+	var missing := table.keys().filter(func(id): return not Relics.owns(id)).map(func(id): return ["???", "큰 용이 지니고 있다" if table[id].get("boss") else "상자, 금빛 정예, 옛 굴 깊은 곳에서", true])
 	if not missing.is_empty(): _section("", missing)
 	var mats := Forge.mats()
 	_section("대장간 재료", mats.keys().map(func(k): return [mats[k].name, "%d개. %s" % [Forge.mat_count(k), mats[k].desc]]))
@@ -440,14 +440,14 @@ func _tree_note(title: String, text: String) -> void:
 func _render_growth() -> void:
 	var p = GameState.player
 	var g: Dictionary = Data.get_module("growth")
-	_tree_note("레벨 %d · %s" % [p.level, p.stage.name], "레벨이 오를 때마다 성장 포인트 2, 승급 시험을 넘을 때마다 3을 받는다. 위 칸일수록 더 자란 몸(어린 용·성체·고룡)이라야 찍을 수 있다. 마디를 눌러 조건과 효과를 본다.")
+	_tree_note("레벨 %d, %s" % [p.level, p.stage.name], "레벨이 오를 때마다 성장 포인트 2, 승급 시험을 넘을 때마다 3을 받는다. 위 칸일수록 더 자란 몸(어린 용, 성체, 고룡)이라야 찍을 수 있다. 마디를 눌러 조건과 효과를 본다.")
 	var branches := []
 	for key in g.BRANCHES:
 		var b: Dictionary = g.BRANCHES[key]
 		var tiers := []
 		for t in 4: tiers.append(g.GROWTH_NODES.filter(func(n): return n.branch == key and n.tier == t))
 		branches.append({ key = key, title = b.name, sub = b.get("sub", ""), color = b.color, tiers = tiers })
-	_tree.build(branches, "%s · 레벨 %d" % [p.stage.name, p.level], func(node, _c):
+	_tree.build(branches, "%s, 레벨 %d" % [p.stage.name, p.level], func(node, _c):
 		var st := Growth.node_status(node)
 		var rank: int = st.rank
 		return {
@@ -525,7 +525,7 @@ func _render_picked() -> void:
 		var rank := Skills.rank(id)
 		var cost = Growth.skill_upgrade_cost(id)
 		info_name.text = "%s  %d / %d단" % [def.name, rank, Data.get_module("skills").MAX_SKILL_RANK] if rank else "%s (아직 못 배움)" % def.name
-		info_text.text = "%s · 재사용 대기 %.1f초" % [def.desc, Skills.cooldown(id)] if rank else _source_text(id)
+		info_text.text = "%s (재사용 대기 %.1f초)" % [def.desc, Skills.cooldown(id)] if rank else _source_text(id)
 		if rank:
 			for s in Data.get_module("skills").SKILL_SLOTS:
 				var on: bool = GameState.player.slots.get(s) == id

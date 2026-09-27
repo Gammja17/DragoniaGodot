@@ -111,7 +111,7 @@ static func _reward_line(r: Dictionary) -> String:
 	if r.get("gold"): parts.append("%dG" % r.gold)
 	if r.get("meat"): parts.append("고기 %d" % r.meat)
 	if r.get("xp"): parts.append("경험치 %d" % r.xp)
-	return " · ".join(parts)
+	return ", ".join(parts)
 
 
 ## 게시판을 연다 (마을 광장의 BOARD 소품에서 [E])
@@ -123,15 +123,15 @@ static func open_board() -> void:
 	for id in c.taken:
 		var ch = _by_id(id)
 		if not ch: continue
-		if _filled(ch): opts.append({ label = "✅ 값을 받는다 — %s (%s)" % [ch.title, _reward_line(_reward(ch))], on_select = func(): _pay_out(ch) })
-		else: opts.append({ label = "📌 %s — %s %d/%d" % [ch.title, Quests.goal_text(ch.goal), _progress(ch), _count(ch)], on_select = func(): _drop(ch) })
+		if _filled(ch): opts.append({ label = "✅ 값을 받는다: %s (%s)" % [ch.title, _reward_line(_reward(ch))], on_select = func(): _pay_out(ch) })
+		else: opts.append({ label = "📌 %s: %s %d/%d" % [ch.title, Quests.goal_text(ch.goal), _progress(ch), _count(ch)], on_select = func(): _drop(ch) })
 	# 새로 붙은 쪽지
 	var room: int = MAX_TAKEN - c.taken.size()
 	for id in c.offers:
 		if c.taken.has(id) or c.done.has(id): continue
 		var ch = _by_id(id)
 		if not ch or not _open(ch): continue   # 아침에 붙은 뒤로 사정이 바뀌었다 (쪽지를 쓴 용이 떠났다)
-		if room > 0: opts.append({ label = "📄 %s — %s (%s)" % [ch.title, Quests.goal_text(ch.goal), _reward_line(_reward(ch))], on_select = func(): _read(ch) })
+		if room > 0: opts.append({ label = "📄 %s: %s (%s)" % [ch.title, Quests.goal_text(ch.goal), _reward_line(_reward(ch))], on_select = func(): _read(ch) })
 		else: opts.append({ label = "📄 %s (이미 두 장을 떼어 왔다)" % ch.title, on_select = func(): _board("한 번에 두 장까지만 떼어 갈 수 있다. 하던 것부터 끝내라.") })
 	opts.append({ label = "돌아선다", on_select = _close })
 	_board("%d일째 아침에 붙은 쪽지들이다.\n(잡일은 이야기와 상관없다. 하고 싶을 때만 떼어 가면 된다.)" % GameState.day, opts)
@@ -145,21 +145,21 @@ static func _board(text: String, options = null) -> void:
 
 static func _read(ch: Dictionary) -> void:
 	_board(ch.note, [
-		{ label = "📌 떼어 간다 — %s" % Quests.goal_text(ch.goal), on_select = func(): _take(ch) },
+		{ label = "📌 떼어 간다: %s" % Quests.goal_text(ch.goal), on_select = func(): _take(ch) },
 		{ label = "그냥 둔다", on_select = open_board },
 	])
 
 
 static func _take(ch: Dictionary) -> void:
 	_c().taken[ch.id] = 0
-	Hud.pop("잡일: %s — %s" % [ch.title, Quests.goal_text(ch.goal)], "📌")
+	Hud.pop("잡일: %s (%s)" % [ch.title, Quests.goal_text(ch.goal)], "📌")
 	Sfx.play("quest")
 	Save.save_game()
 	open_board()
 
 
 static func _drop(ch: Dictionary) -> void:
-	_board("%s\n\n(%s — %d/%d)" % [ch.note, Quests.goal_text(ch.goal), _progress(ch), _count(ch)], [
+	_board("%s\n\n(%s %d/%d)" % [ch.note, Quests.goal_text(ch.goal), _progress(ch), _count(ch)], [
 		{ label = "🗑️ 쪽지를 도로 붙여 둔다", on_select = func():
 			_c().taken.erase(ch.id)
 			Save.save_game()

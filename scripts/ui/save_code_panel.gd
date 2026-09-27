@@ -45,7 +45,7 @@ func open_export(n: int, allow_import := false) -> void:
 ## 붙여 넣은 코드를 이 칸에 들인다
 func open_import(n: int) -> void:
 	slot = n
-	title = "저장 코드로 불러오기 · %d번 칸" % n
+	title = "저장 코드로 불러오기 (%d번 칸)" % n
 	_code.text = ""
 	_code.editable = true
 	_note.text = "다른 기기에서 복사한 저장 코드를 붙여 넣는다." + ("\n이 칸의 기록은 지워지고 코드에 담긴 기록으로 바뀐다." if Save.has_save(n) else "")

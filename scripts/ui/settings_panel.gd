@@ -71,7 +71,7 @@ func _btn(row: String) -> Button: return _rows.get_node("%s/Button" % row)
 func _refresh() -> void:
 	for key in ["Music", "Sfx"]:
 		_rows.get_node("%s/Num" % key).text = str(roundi(_rows.get_node("%s/Slider" % key).value))
-	_btn("Mute").text = "꺼짐 · 켜기" if Prefs.get_value("sound", "muted", false) else "켜짐 · 끄기"
+	_btn("Mute").text = "꺼짐" if Prefs.get_value("sound", "muted", false) else "켜짐"
 	_btn("Zoom").text = GameCamera.current.zoom_name()
 	_btn("UiSize").text = UiScale.setting_name()
 	_btn("Dlg").text = DLG_NAMES[DialogueBox.step]
@@ -80,7 +80,7 @@ func _refresh() -> void:
 	if not p: return
 	_rows.get_node("Level/Label").text = "레벨 %d → 16" % p.level
 	_rows.get_node("Elements/Label").text = "속성 %d / 3" % p.elements.size()
-	_rows.get_node("Lessons/Label").text = "수련 %d / %d · 보스 %d" % [GameState.story.lessons.size(), Data.get_module("story").LESSONS.size(), GameState.bossesDefeated.size()]
+	_rows.get_node("Lessons/Label").text = "수련 %d / %d, 보스 %d" % [GameState.story.lessons.size(), Data.get_module("story").LESSONS.size(), GameState.bossesDefeated.size()]
 
 
 # ---------- 테스트 (뒷이야기를 확인하려고 둔 것이라 진행이 그대로 건너뛰어진다) ----------

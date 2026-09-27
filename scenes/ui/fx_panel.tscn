@@ -58,7 +58,7 @@ note = "아래 번짐부터 채도까지를 한꺼번에 켜고 끈다. 느린 �
 layout_mode = 2
 key = "bloom"
 label = "빛 번짐"
-note = "불길·번개·밝은 빛이 둘레로 번지는 세기. 기본 85%. 0%면 번지지 않는다."
+note = "불길, 번개, 밝은 빛이 둘레로 번지는 세기. 기본 85%. 0%면 번지지 않는다."
 min_value = 0.0
 max_value = 2.0
 
@@ -74,7 +74,7 @@ max_value = 0.95
 layout_mode = 2
 key = "aberration"
 label = "색 어긋남"
-note = "화면 가장자리에서 빨강·파랑이 살짝 벌어지는 렌즈 느낌. 기본 100%."
+note = "화면 가장자리에서 빨강과 파랑이 살짝 벌어지는 렌즈 느낌. 기본 100%."
 min_value = 0.0
 max_value = 3.0
 
@@ -103,7 +103,7 @@ label_settings = SubResource("section")
 layout_mode = 2
 key = "brightness"
 label = "밝기"
-note = "화면 전체를 밝게·어둡게. 기본 100%."
+note = "화면 전체를 밝게 또는 어둡게. 기본 100%."
 min_value = 0.6
 max_value = 1.4
 
@@ -125,28 +125,28 @@ max_value = 1.6
 
 [node name="Head11" type="Label" parent="Frame/Lines/Body/Scroll/Rows"]
 layout_mode = 2
-text = "조명 · 날씨"
+text = "조명과 날씨"
 label_settings = SubResource("section")
 
 [node name="night" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("3")]
 layout_mode = 2
 key = "night"
 label = "밤의 어둠"
-note = "밤·굴 속이 어두워지는 정도. 0%면 늘 낮처럼 밝다 (광원도 안 보인다). 기본 100%."
+note = "밤과 굴 속이 어두워지는 정도. 0%면 늘 낮처럼 밝다 (광원도 안 보인다). 기본 100%."
 min_value = 0.0
 max_value = 1.0
 
 [node name="clouds" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("4")]
 layout_mode = 2
 key = "clouds"
-label = "구름 그림자 · 반딧불이"
+label = "구름 그림자, 반딧불이"
 note = "낮에 땅 위를 지나가는 구름 그림자와 밤의 반딧불이."
 
 [node name="weather" parent="Frame/Lines/Body/Scroll/Rows" instance=ExtResource("4")]
 layout_mode = 2
 key = "weather"
-label = "비 · 눈 · 불티"
-note = "비·폭풍의 빗줄기와 번갯불, 설원의 눈, 화산의 불티. 꺼도 날씨의 효과(브레스 세기)는 그대로다."
+label = "비, 눈, 불티"
+note = "빗줄기와 번갯불, 설원의 눈, 화산의 불티. 꺼도 날씨의 효과(브레스 세기)는 그대로다."
 
 [node name="Reset" type="Button" parent="Frame/Lines/Body" index="2"]
 layout_mode = 2

@@ -286,7 +286,7 @@ func _flush_level_up() -> void:
 	if _lv_pending == null or not p or GameState.isDialogueOpen or Cutscene.on or GameState.prologue: return
 	if Time.get_ticks_msec() < _region_until: return
 	var lv: Control = $LevelUp
-	lv.get_node("Sub").text = GameInput.words("Lv.%d · 성장 포인트 +%d ([G] 성장)" % [_lv_pending.level, _lv_pending.points])
+	lv.get_node("Sub").text = GameInput.words("Lv.%d, 성장 포인트 +%d ([G] 성장)" % [_lv_pending.level, _lv_pending.points])
 	_lv_pending = null
 	_lv_at = Time.get_ticks_msec()
 	lv.visible = true

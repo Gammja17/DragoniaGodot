@@ -598,7 +598,7 @@ func take_damage(dmg: float, silent := false, _from = null) -> void:
 		var gone := Party.on_player_down()
 		if GameState.dungeon: Hud.pop("쓰러졌다가 겨우 일어났습니다." + (" 기운을 차리느라 고기 %d개를 먹었습니다." % lost if lost > 0 else ""), "💀")   # 굴에서는 그 자리에서 일어난다
 		else: Hud.pop("쓰러졌습니다… 마을 용들이 업어 와 " + ("고기를 먹여 살렸습니다. (고기 -%d)" % lost if lost > 0 else "돌봐 주었습니다."), "💀")
-		if not gone.is_empty(): Hud.pop("%s 오늘은 마을로 돌아갑니다." % Util.josa("·".join(gone), "은", "는"), "🏠")
+		if not gone.is_empty(): Hud.pop("%s 오늘은 마을로 돌아갑니다." % Util.josa(", ".join(gone), "은", "는"), "🏠")
 		hp = max_hp
 		hunger = maxf(hunger, 40)
 		World.revive_in_village()
@@ -708,7 +708,7 @@ func _update_talk() -> bool:
 	var dive_tip: String = DiveFish.tip(self) if flying else ""
 	if nest_near:
 		tip_at = nest_near
-		tip = "Space · E 둥지에서 잔다" if Den.in_my_den() else "Space 둥지에서 쉬기"
+		tip = "Space / E 둥지에서 잔다" if Den.in_my_den() else "Space 둥지에서 쉬기"
 	elif stone_first:
 		tip_at = stone
 		tip = "Space 석비로 건너뛴다"
@@ -723,7 +723,7 @@ func _update_talk() -> bool:
 		tip = "E 내 굴에 들어간다 (둥지)" if mouth.den_id == "DEN_MINE" else "E 굴에 들어간다"
 	elif thing:
 		tip_at = thing.at
-		tip = "E · Space %s" % thing.label
+		tip = "E / Space %s" % thing.label
 	elif Den.in_my_den():
 		tip_at = self
 		tip = "E 굴 꾸미기"

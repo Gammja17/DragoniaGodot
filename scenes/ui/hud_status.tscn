@@ -159,7 +159,7 @@ theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("chip")
 theme_override_styles/hover = SubResource("chip_hover")
 theme_override_styles/pressed = SubResource("chip_hover")
-text = "🌟 성장 포인트 0 · 누르면 성장 나무"
+text = "🌟 성장 포인트 0, 누르면 성장 나무"
 
 [node name="Inv" type="GridContainer" parent="Lines"]
 layout_mode = 2

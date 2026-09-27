@@ -110,7 +110,7 @@ static func update(dt: float) -> void:
 	if fishing != null:
 		var f: Dictionary = fishing
 		f.t += dt
-		Hud.current.set_boss_bar("낚시 겨루기 · 세이란이 물을 읽는 중", 1.0 - f.t / f.target)
+		Hud.current.set_boss_bar("낚시 겨루기: 세이란이 물을 읽는 중", 1.0 - f.t / f.target)
 		if GameState.map_id != Gathering.GATHER_MAP:   # 폭포를 떠났다
 			fishing = null
 			Hud.current.set_boss_bar(null)
@@ -159,7 +159,7 @@ static func _result(npc, kind: String, win: bool, detail: String) -> void:
 		var got := NpcActions.add_relation(npc, 6)
 		npc.say(LINES[kind].lose)
 		Vfx.spawn_effect("RING", p.x, p.y, { size = 1.4 })
-		Hud.pop("모임 겨루기에서 이겼다!%s (%dG · %s)" % [" " + detail if detail != "" else "", PRIZE[lv], NpcActions.gain_note(got)], "🏆")
+		Hud.pop("모임 겨루기에서 이겼다!%s (%dG, %s)" % [" " + detail if detail != "" else "", PRIZE[lv], NpcActions.gain_note(got)], "🏆")
 		if int(c.wins) == 1:   # 처음 이긴 밤: 굴에 걸어 둘 기념품
 			Hud.pop("리운이 두 마을 깃발을 건넸다. \"스무 해 만의 대표구려. 굴에 걸어 두시오.\"", "🏳️")
 			Den.give_furniture("KEEP_FLAG")

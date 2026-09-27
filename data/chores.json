@@ -4,7 +4,7 @@
    "id": "c_slime",
    "title": "미끈한 것들",
    "min": 1,
-   "note": "빨래터에 슬라임이 자꾸 기어들어! 여섯 마리만 치워 주면 내가 빨래 한 번 해 줄게! — 포코",
+   "note": "빨래터에 슬라임이 자꾸 기어들어! 여섯 마리만 치워 주면 내가 빨래 한 번 해 줄게! (포코)",
    "goal": {
     "type": "kill",
     "target": "SLIME",
@@ -26,7 +26,7 @@
     "$fn": "s => !(s.story.dead || []).includes('Gron')",
     "$at": "CHORES.c_goblin.when"
    },
-   "note": "숲의 고블린 놈들 때문에 낮잠을 못 자겠다. 다섯 마리만 조용히 시켜라. — 그론",
+   "note": "숲의 고블린 놈들 때문에 낮잠을 못 자겠다. 다섯 마리만 조용히 시켜라. (그론)",
    "goal": {
     "type": "kill",
     "target": "GOBLIN",
@@ -44,7 +44,7 @@
    "id": "c_bat",
    "title": "골짜기의 날것들",
    "min": 4,
-   "note": "달빛 골짜기 흡혈박쥐 여섯. 밤 순찰 나가는 애들이 자꾸 물린다. — 티아맷",
+   "note": "달빛 골짜기 흡혈박쥐 여섯. 밤 순찰 나가는 애들이 자꾸 물린다. (티아맷)",
    "goal": {
     "type": "kill",
     "target": "BAT",
@@ -62,7 +62,7 @@
    "id": "c_meat",
    "title": "부엌이 비었다",
    "min": 1,
-   "note": "고기 다섯 덩이만 구해 다오. 누가 가져오든 값은 쳐 주마. 낚시로 잡은 것도 괜찮단다. — 엘더",
+   "note": "고기 다섯 덩이만 구해 다오. 누가 가져오든 값은 쳐 주마. 낚시로 잡은 것도 괜찮단다. (엘더)",
    "goal": {
     "type": "collect",
     "count": 5
@@ -78,7 +78,7 @@
    "id": "c_any12",
    "title": "숲을 한 바퀴",
    "min": 3,
-   "note": "숲이 시끄럽다. 아무거나 열둘. 종류는 안 따진다. — 카이론",
+   "note": "숲이 시끄럽다. 아무거나 열둘. 종류는 안 따진다. (카이론)",
    "goal": {
     "type": "killAny",
     "count": 12
@@ -95,7 +95,7 @@
    "id": "c_elite",
    "title": "금빛 우두머리",
    "min": 6,
-   "note": "금빛으로 빛나는 놈 둘. 무리가 커지기 전에 머리를 쳐야 한다. — 티아맷",
+   "note": "금빛으로 빛나는 놈 둘. 무리가 커지기 전에 머리를 쳐야 한다. (티아맷)",
    "goal": {
     "type": "elite",
     "count": 2
@@ -116,7 +116,7 @@
     "$fn": "s => !(s.story.dead || []).includes('Gron')",
     "$at": "CHORES.c_chest.when"
    },
-   "note": "옛 용들이 묻어 둔 상자가 숲에 남아 있다. 다섯 개만 찾아 열어 봐라. 내용물은 네 거다. — 그론",
+   "note": "옛 용들이 묻어 둔 상자가 숲에 남아 있다. 다섯 개만 찾아 열어 봐라. 내용물은 네 거다. (그론)",
    "goal": {
     "type": "chest",
     "count": 5
@@ -136,7 +136,7 @@
     "$fn": "s => !(s.story.dead || []).includes('Gron')",
     "$at": "CHORES.c_upgrade.when"
    },
-   "note": "모루가 식으면 못 쓴다. 비늘 두 번만 두드리고 가라. 값은 깎아 준다. — 그론",
+   "note": "모루가 식으면 못 쓴다. 비늘 두 번만 두드리고 가라. 값은 깎아 준다. (그론)",
    "goal": {
     "type": "upgrade",
     "count": 2
@@ -157,7 +157,7 @@
     "$fn": "s => (s.story.dead || []).includes('Gron') && s.day - (s.story.deathDay || {}).Gron >= 3",
     "$at": "CHORES.c_upgrade_ember.when"
    },
-   "note": "아저씨가 늘 그랬거든. 모루는 식으면 못 쓴다고. 비늘 두 번만 두드리고 가. 수고비는 챙겨 줄게. — 엠버",
+   "note": "아저씨가 늘 그랬거든. 모루는 식으면 못 쓴다고. 비늘 두 번만 두드리고 가. 수고비는 챙겨 줄게. (엠버)",
    "goal": {
     "type": "upgrade",
     "count": 2
@@ -174,7 +174,7 @@
    "id": "c_tag",
    "title": "놀아 줄 용 구함",
    "min": 1,
-   "note": "술래잡기 두 판 하자! 이기면 내 간식 줄게! 지면 안 줘! — 포코",
+   "note": "술래잡기 두 판 하자! 이기면 내 간식 줄게! 지면 안 줘! (포코)",
    "goal": {
     "type": "tag",
     "count": 2
@@ -191,7 +191,7 @@
    "id": "c_spar",
    "title": "수련장 상대",
    "min": 5,
-   "note": "대련 한 판. 허수아비는 반격을 안 해서 안 늘어. — 티아맷",
+   "note": "대련 한 판. 허수아비는 반격을 안 해서 안 늘어. (티아맷)",
    "goal": {
     "type": "spar",
     "count": 1
@@ -211,7 +211,7 @@
     "$fn": "s => !(s.story.route === 'dark' && s.quests.done.includes('m7d')) && !s.story.endingSeen",
     "$at": "CHORES.c_raid.when"
    },
-   "note": "습격 두 번만 대신 막아 다오. 이번 주는 손이 모자라다. — 엘더",
+   "note": "습격 두 번만 대신 막아 다오. 이번 주는 손이 모자라다. (엘더)",
    "goal": {
     "type": "raid",
     "count": 2
@@ -228,7 +228,7 @@
    "id": "c_delve",
    "title": "굴 아래 심부름",
    "min": 7,
-   "note": "굴 지하 두 층까지. 아래쪽 공기가 어떤지 보고만 와라. — 카이론",
+   "note": "굴 지하 두 층까지. 아래쪽 공기가 어떤지 보고만 와라. (카이론)",
    "goal": {
     "type": "delve",
     "count": 2
@@ -250,7 +250,7 @@
     "$fn": "s => mapOpen(s, 'LAKE')",
     "$at": "CHORES.c_fish3.when"
    },
-   "note": "호숫가에서 물고기 셋만 낚아다 주게. 미루가 생선국을 끓인다는구먼. — 도란",
+   "note": "호숫가에서 물고기 셋만 낚아다 주게. 미루가 생선국을 끓인다는구먼. (도란)",
    "goal": {
     "type": "fish",
     "count": 3
@@ -271,7 +271,7 @@
     "$fn": "s => (s.story.events || []).includes('ev_gathering') && s.story.route !== 'dark'",
     "$at": "CHORES.c_fish_moon.when"
    },
-   "note": "모임 날엔 두 마을이 다 먹어야 혀. 물고기 다섯 마리만 부탁혀. — 도란",
+   "note": "모임 날엔 두 마을이 다 먹어야 혀. 물고기 다섯 마리만 부탁혀. (도란)",
    "goal": {
     "type": "fish",
     "count": 5
@@ -292,7 +292,7 @@
     "$fn": "s => !!s.story.endingSeen",
     "$at": "CHORES.c_deep5.when"
    },
-   "note": "이제 네 앞을 막을 놈도 없다. 몸이 녹슬기 전에 굴 다섯 층을 네 발로 내려가 봐라. — 카이론",
+   "note": "이제 네 앞을 막을 놈도 없다. 몸이 녹슬기 전에 굴 다섯 층을 네 발로 내려가 봐라. (카이론)",
    "goal": {
     "type": "delve",
     "count": 5
@@ -313,7 +313,7 @@
     "$fn": "s => !!s.story.endingSeen",
     "$at": "CHORES.c_elite3.when"
    },
-   "note": "습격은 멎었지만 숲의 금빛 놈들은 그대로야. 셋만 부탁해. — 티아맷",
+   "note": "습격은 멎었지만 숲의 금빛 놈들은 그대로야. 셋만 부탁해. (티아맷)",
    "goal": {
     "type": "elite",
     "count": 3

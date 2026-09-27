@@ -218,7 +218,7 @@ const KEY_WORDS := {
 	touch = { Space = "말", Shift = "대시", E = "말", C = "먹기", J = "일지", K = "일지", B = "일지", G = "일지", Z = "비행" },
 }
 var _key_re := RegEx.create_from_string("\\[([A-Za-z]+)\\]")
-var _lead_re := RegEx.create_from_string("^((?:Space|E)(?: · (?:Space|E))*) ")   # 머리 위 안내 "Space 대화" · "E · Space 줍는다"
+var _lead_re := RegEx.create_from_string("^((?:Space|E)(?: / (?:Space|E))*) ")   # 머리 위 안내 "Space 대화", "E / Space 줍는다"
 
 
 func words(text: String) -> String:
@@ -236,8 +236,8 @@ func words(text: String) -> String:
 	var lead := _lead_re.search(text)
 	if lead:
 		var names := []
-		for k in lead.get_string(1).split(" · "):
+		for k in lead.get_string(1).split(" / "):
 			var n := "[%s]" % keys.get(k, k)
 			if not names.has(n): names.append(n)
-		text = " · ".join(names) + text.substr(lead.get_end() - 1)
+		text = " / ".join(names) + text.substr(lead.get_end() - 1)
 	return text

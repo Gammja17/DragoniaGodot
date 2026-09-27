@@ -724,7 +724,7 @@ static func _stamp(dt: float) -> void:
 
 ## 싸움 중 자막. 세상을 멈추지 않고 화면 아래쪽에 한마디를 띄운다 (보스가 판을 바꿀 때)
 static func say_over(who: String, text: String, sec := 3.2) -> void:
-	subtitle = "%s — %s" % [who, text] if who != "" else text
+	subtitle = "%s: %s" % [who, text] if who != "" else text
 	_subtitle_at = Time.get_ticks_msec()
 	_subtitle_ms = int(sec * 1000)
 

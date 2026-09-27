@@ -192,7 +192,7 @@ static func _family() -> String:
 	var names := []
 	if GameState.partner: names.append(Names.npc(GameState.partner.config.name))
 	for k in GameState.kids: names.append(k.name)
-	return " · ".join(PackedStringArray(names))
+	return ", ".join(PackedStringArray(names))
 
 
 static func _roll_credits(end_text: String) -> void:
@@ -204,7 +204,7 @@ static func _roll_credits(end_text: String) -> void:
 		if r.get("family") and family == "": continue   # 식구가 없으면 "내 식구" 줄을 통째로 뺀다
 		var row: Dictionary = r.duplicate()
 		var t: String = str(row.get("text", ""))
-		t = t.replace("{name}", nm).replace("{IseulTail}", " · %s" % Names.npc("Iseul") if hatched else "").replace("{Family}", family)
+		t = t.replace("{name}", nm).replace("{IseulTail}", ", %s" % Names.npc("Iseul") if hatched else "").replace("{Family}", family)
 		# {Elder} 같은 자리에는 그 용의 이름 (지어 준 이름이 있으면 그것)
 		var re := RegEx.new()
 		re.compile("\\{([A-Za-z]+)\\}")
@@ -224,6 +224,6 @@ static func _finish() -> void:
 	GameState.story.flags.ending = true
 	GameState.raidTimer = maxf(GameState.raidTimer, 300)
 	GameState.bannerUntil = GameState.play_time + 25   # 끝난 뒤 한동안은 사건 장면을 띄우지 않는다 (숨 돌릴 틈)
-	Hud.pop("결말을 보았다. 여기서부터는 마음 가는 대로 — 마을의 하루는 계속된다.", "🌅")   # 마지막 장의 끝줄을 되풀이하지 않는다
+	Hud.pop("결말을 보았다. 여기서부터는 마음 가는 대로. 마을의 하루는 계속된다.", "🌅")   # 마지막 장의 끝줄을 되풀이하지 않는다
 	Quests.changed()
 	Save.save_game()

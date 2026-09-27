@@ -68,7 +68,7 @@ static func _bring_home() -> void:
 			"xp":
 				var xp := roundi(30 * bonus)
 				p.gain_xp(xp); got.append("%s 경험치 %d" % [kid.name, xp])
-	if not got.is_empty(): Hud.pop("아이들이 들고 왔다: %s" % " · ".join(got), "🎒")
+	if not got.is_empty(): Hud.pop("아이들이 들고 왔다: %s" % ", ".join(got), "🎒")
 
 
 # ---------- 가족 나들이 (NpcActions 의 '함께' 메뉴) ----------

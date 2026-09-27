@@ -155,7 +155,7 @@ static func _wanted():
 		if World.dens().has(place.map):
 			var d: Dictionary = World.dens()[place.map]
 			var p := World.at(d.at)
-			place = { map = d.outer, x = p.x, y = p.y, label = "%s · %s" % [Names.npc(who), d.name], who = who }
+			place = { map = d.outer, x = p.x, y = p.y, label = "%s (%s)" % [Names.npc(who), d.name], who = who }
 	return place
 
 
@@ -182,7 +182,7 @@ static func _compute():
 	for p in GameState.entities.props:
 		if p.portal and p.portal.to == hop: gate = p
 	if not gate: return null
-	var dest: String = "%s · %s" % [Names.npc(w.who), Names.map(w.map)] if w.get("who") else Names.map(w.map)
+	var dest: String = "%s (%s)" % [Names.npc(w.who), Names.map(w.map)] if w.get("who") else Names.map(w.map)
 	return { x = gate.x, y = gate.y, label = "%s 쪽" % dest, entity = gate, far = true, dest = w.map }
 
 

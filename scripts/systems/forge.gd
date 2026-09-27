@@ -33,7 +33,7 @@ static func can_afford(cost: Dictionary) -> bool:
 static func cost_text(cost: Dictionary) -> String:
 	var parts := []
 	for k in cost: parts.append("%s %d/%d" % [mats()[k].name, mat_count(k), cost[k]])
-	return " · ".join(parts)
+	return ", ".join(parts)
 
 
 ## 두드린다. 성공하면 true

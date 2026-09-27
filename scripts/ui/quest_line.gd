@@ -76,7 +76,7 @@ func refresh() -> void:
 	var key: String = line.title + "|" + line.goal
 	if _last_key != "" and key != _last_key: _flash = 1.6
 	_last_key = key
-	get_parent().get_node("More").text = "+ 맡은 일 %d개 · [J] 일지" % line.more if line.more > 0 else "" if suggest else "[J] 일지"
+	get_parent().get_node("More").text = "+ 맡은 일 %d개, [J] 일지" % line.more if line.more > 0 else "" if suggest else "[J] 일지"
 	get_parent().get_node("More").visible = not compact
 
 

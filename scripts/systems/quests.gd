@@ -161,7 +161,7 @@ static func reward_text(q: Dictionary, rel_got := -1.0) -> String:
 	if r.get("meat"): parts.append("고기 %d" % r.meat)
 	if r.get("relation") and rel_got != 0: parts.append("호감 상승")
 	if r.get("furniture"): parts.append("살림살이: %s" % Den.furniture()[r.furniture].name)
-	return " · ".join(parts) if not parts.is_empty() else "-"
+	return ", ".join(parts) if not parts.is_empty() else "-"
 
 
 # ---------- 장면 대기줄 ----------
@@ -347,7 +347,7 @@ static func _where_is(nm: String) -> String:
 ## (뿌리골의 모스 · 바윗골의 가람을 "마을 어딘가에 있다"고 하던 것)
 static func whereabouts(nm: String) -> String:
 	var plan = Routine.plan_for(nm)
-	if plan: return "지금 %s에 있다 · %s" % [plan.mapName, plan.doing]
+	if plan: return "지금 %s에 있다. %s" % [plan.mapName, plan.doing]
 	var home = Guide.home_of(nm)
 	return "%s에 있다" % Names.map(home.map) if home else "마을 어딘가에 있다"
 
@@ -374,9 +374,9 @@ static func _where_line(q: Dictionary) -> String:
 			if g.type == "talk" or g.type == "bring": who = g.target
 	if not who: return ""
 	var plan = Routine.plan_for(who)
-	if plan: return "%s · %s" % [Names.npc(who), plan.mapName]
+	if plan: return "%s (%s)" % [Names.npc(who), plan.mapName]
 	var home = Guide.home_of(who)   # 일과가 없는 용은 사는 곳
-	return "%s · %s" % [Names.npc(who), Names.map(home.map)] if home else ""
+	return "%s (%s)" % [Names.npc(who), Names.map(home.map)] if home else ""
 
 
 ## 의뢰인 이름과, 일과를 아는 용이라면 지금 어디 있는지까지
@@ -431,7 +431,7 @@ static func suggestion():
 				pass_time.goal = "%s. [%s]까지 레벨 %d / %d, 이 일로도 레벨이 오른다" % [pass_time.goal, st.name, GameState.player.level, st.minLevel]
 				return pass_time
 			return { who = null, main = false, kind = "trial", title = "[%s]까지 자라기 (레벨 %d / %d)" % [st.name, GameState.player.level, st.minLevel],
-				goal = "레벨 %d부터 스승 카이론에게 [승급 시험]을 청할 수 있다. 다음 이야기는 그 뒤에 이어진다. 숲길에서 싸우거나, 오늘의 수련 · 마을 용들의 부탁을 하면 레벨이 오른다." % st.minLevel }
+				goal = "레벨 %d부터 스승 카이론에게 [승급 시험]을 청할 수 있다. 다음 이야기는 그 뒤에 이어진다. 숲길에서 싸우거나, 오늘의 수련이나 마을 용들의 부탁을 하면 레벨이 오른다." % st.minLevel }
 		return { who = "Kairon", main = true, kind = "trial", title = "스승에게 [승급 시험]을 청하자",
 			goal = "[%s]로 자랄 때가 됐다. 카이론에게 말을 걸어 [승급 시험]을 청한다." % st.name }
 	var contest = Contest.pastime()   # 오늘 밤 모임 겨루기: 그날 밤뿐이라 부탁 · 수련보다 먼저 짚는다
@@ -443,7 +443,7 @@ static func suggestion():
 	# 본 이야기 줄기에서 저절로 열릴 차례인 것만 센다. 조건이 따로 없는 것(밀회 s1 · 어둠의 길 m7d)은 사건이 불러 주는 것이라
 	# 첫날부터 "숲길·호수를 걷다 보면 다음 이야기가 열린다"가 떴다 (호수는 아직 닫혀 있었다)
 	if all().any(func(q): return q.get("auto") and q.act == "main" and q.get("requires") and _ready_quest(q)):
-		return { who = null, title = "세상을 돌아다녀 보자", goal = "숲길·호수를 걷다 보면 다음 이야기가 열린다. 옛 굴을 탐험해 보거나 마을 용들과 이야기해도 좋다" }
+		return { who = null, title = "세상을 돌아다녀 보자", goal = "숲길과 호수를 걷다 보면 다음 이야기가 열린다. 옛 굴을 탐험해 보거나 마을 용들과 이야기해도 좋다" }
 	var pass_time = _pastime(false)
 	if pass_time: return pass_time
 	return { who = null, title = "한숨 돌리자", goal = "굴을 꾸미거나, 게시판의 잡일을 맡거나, %s마을 용들과 이야기해 보자" \
@@ -476,7 +476,7 @@ static func _pastime(with_side := true):
 		var total := DiveFish.kinds().size()
 		if got < total:
 			return { who = null, main = false, title = "물고기 도감 채우기 (%d / %d)" % [got, total],
-				goal = "물가에서 [E]로 낚싯줄을 드리운다%s. 못 잡은 물고기가 어디서 · 언제 잡히는지는 일지 [기록]에 있다" \
+				goal = "물가에서 [E]로 낚싯줄을 드리운다%s. 못 잡은 물고기가 어디서, 언제 잡히는지는 일지 [기록]에 있다" \
 					% (". 날 수 있으면 물 위에서 덮쳐도 된다" if GameState.player.stage_index >= Story._adult() else "") }
 	# 날 수 있게 된 뒤: 하늘에서만 보이는 흔적 (결말 뒤에도 남는 탐험 거리)
 	if GameState.player.stage_index >= Story._adult() and Traces.found_count() < Traces.LIST.size():

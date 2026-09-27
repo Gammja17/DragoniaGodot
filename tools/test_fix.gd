@@ -202,7 +202,7 @@ func _ready() -> void:
 	_check("일지 · 첫 모임 날", _texts(j).any(func(t): return t.contains("스무 해 만에 달맞이 모임이 다시 선다")), true)
 	GameState.partner = tia
 	j.render()
-	_check("일지 · 짝은 '짝'", _texts(j).any(func(t): return t.ends_with("· 짝")), true)
+	_check("일지 · 짝은 '짝'", _texts(j).any(func(t): return t.ends_with("/ 짝")), true)
 	_check("일지 · '연인'은 없다", _texts(j).any(func(t): return t.contains("연인")), false)
 	GameState.partner = null
 

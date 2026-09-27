@@ -139,7 +139,7 @@ horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="Center/Column"]
 layout_mode = 2
-text = "·   하늘에서 떨어진 용   ·"
+text = "하늘에서 떨어진 용"
 label_settings = SubResource("sub")
 horizontal_alignment = 1
 
@@ -316,7 +316,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "날개 · 지느러미 색"
+text = "날개와 지느러미 색"
 
 [node name="Pick" type="ColorPickerButton" parent="Center/Column/Create/Lines/Body/Left/Colors/Wing"]
 custom_minimum_size = Vector2(44, 24)
@@ -332,7 +332,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "문양 · 눈 색"
+text = "문양과 눈 색"
 
 [node name="Pick" type="ColorPickerButton" parent="Center/Column/Create/Lines/Body/Left/Colors/Mark"]
 custom_minimum_size = Vector2(44, 24)
@@ -349,7 +349,7 @@ theme_override_constants/separation = 6
 [node name="Label" type="Label" parent="Center/Column/Create/Lines/Body/Right"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
-text = "생김새 다섯 · 색은 왼쪽에서 고른다"
+text = "생김새 다섯. 색은 왼쪽에서 고른다"
 
 [node name="Gallery" type="ScrollContainer" parent="Center/Column/Create/Lines/Body/Right"]
 custom_minimum_size = Vector2(0, 96)

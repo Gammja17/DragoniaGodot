@@ -8,7 +8,7 @@ class_name Flow
 ## GameState.flow = { m: 기세 0~100, idle, slow: 느려진 세상의 남은 시간, edge: 간발 뒤 강화 시간, stacks/stackT: 굶주린 불꽃 }
 
 const TIERS := [30, 60, 100]
-const TIER_NAMES := ["", "기세", "기세 · 거셈", "기세 · 절정"]
+const TIER_NAMES := ["", "기세", "거센 기세", "기세 절정"]
 const TIER_DMG := [1.0, 1.1, 1.2, 1.35]
 const TIER_COLORS := ["#8a7a5a", "#ffd07a", "#ff9a3c", "#ff5a3c"]
 const EDGE_RANGE := 78        # 이만큼 가까이 스친 것을 피했으면 간발

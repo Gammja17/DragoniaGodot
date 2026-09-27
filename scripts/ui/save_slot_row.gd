@@ -46,8 +46,8 @@ func show_slot(n: int) -> void:
 		var c: Dictionary = d.player.config
 		portrait.sheet = DragonSprites.get_sheet(c.get("species", "LOOK"), c.get("colors", {}), int(c.get("look", 0)))
 		portrait.queue_redraw()
-		_info.get_node("Title").text = "%s · Lv.%d %s" % [s.name, s.level, s.stage]
-		_info.get_node("Sub").text = "%s%s · %d일째" % ["%s · " % s.chapter if s.chapter else "", s.map, s.day]
+		_info.get_node("Title").text = "%s, Lv.%d %s" % [s.name, s.level, s.stage]
+		_info.get_node("Sub").text = "%s%s, %d일째" % ["%s, " % s.chapter if s.chapter else "", s.map, s.day]
 		_info.get_node("When").text = "마지막 저장 %s" % s.saved.left(16).replace("T", " ")
 		_info.get_node("When").visible = true
 		_info.get_node("Title").add_theme_color_override("font_color", Color("#ece3cf"))

@@ -251,7 +251,7 @@ func update(dt: float) -> void:
 
 	animator.play_base("move" if moving else "idle")
 	animator.update(dt)
-	var phase_name: String = (" · " + phases[phase].name) if phases else (" (분노)" if phase2 else "")
+	var phase_name: String = (" (" + phases[phase].name + ")") if phases else (" (분노)" if phase2 else "")
 	Hud.current.set_boss_bar(def.name + phase_name, hp / def.hp)
 
 

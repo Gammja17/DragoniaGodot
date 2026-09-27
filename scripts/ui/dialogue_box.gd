@@ -92,10 +92,10 @@ func show_dialogue(opts: Dictionary) -> void:
 	var job: String = str(npc.job) if npc and npc.job else ""
 	var rel = npc.relation if npc and npc.config.get("fixed") else null
 	_job.text = job
-	_tier.text = "" if rel == null else ("· " if job != "" else "") + TIERS[_tier_of(rel)]
+	_tier.text = "" if rel == null else ("/ " if job != "" else "") + TIERS[_tier_of(rel)]
 	# 오늘 이 용과 쌓은 호감 (하루 상한이 있다는 걸 알 수 있게. 쌓은 게 없으면 적지 않는다)
 	var today: float = NpcActions.gained_today(npc) if rel != null else 0.0
-	if today > 0: _tier.text += " · 오늘 ♥ %d/%d" % [roundi(today), roundi(NpcActions.DAILY_GAIN)]
+	if today > 0: _tier.text += ", 오늘 ♥ %d/%d" % [roundi(today), roundi(NpcActions.DAILY_GAIN)]
 	var narration: bool = opts.get("narration", false)
 	# 해설이면 초상화와 이름 줄만 감춘다 (글은 초상화 옆 칸에 있어서 머리줄째 감추면 글도 사라진다)
 	_portrait.visible = not narration

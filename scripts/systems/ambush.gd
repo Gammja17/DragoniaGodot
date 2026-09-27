@@ -56,7 +56,7 @@ static func update(dt: float) -> void:
 		_end(false)
 		return
 
-	Hud.current.set_boss_bar(CAPTAIN_NAME + (" · 최후의 돌진" if a.phase == 3 else " · 그물" if a.phase == 2 else ""), maxf(0, cap.hp / cap.max_hp))
+	Hud.current.set_boss_bar(CAPTAIN_NAME + (" (최후의 돌진)" if a.phase == 3 else " (그물)" if a.phase == 2 else ""), maxf(0, cap.hp / cap.max_hp))
 
 	if a.phase == 1 and cap.hp <= cap.max_hp * 0.6:
 		a.phase = 2

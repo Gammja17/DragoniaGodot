@@ -485,9 +485,9 @@ static func _shade(r: Dictionary, p, me: Vector2) -> void:
 static func _status(r: Dictionary) -> String:
 	for w in r.watchers:
 		var who := Util.josa(Names.npc(w.name), "이", "가")
-		if w.phase == "warn": return "몰래 다가가기 · %s 돌아보려 한다" % who
-		if w.phase == "look": return "몰래 다가가기 · %s 보고 있다!" % who
-	return "몰래 다가가기 · " + ("둘이 이야기하는 중" if r.variant == "mira" else "유안이 순찰하는 중")
+		if w.phase == "warn": return "몰래 다가가기: %s 돌아보려 한다" % who
+		if w.phase == "look": return "몰래 다가가기: %s 보고 있다!" % who
+	return "몰래 다가가기: " + ("둘이 이야기하는 중" if r.variant == "mira" else "유안이 순찰하는 중")
 
 
 # ---------- 들켰을 때 · 엿들었을 때 ----------
@@ -505,7 +505,7 @@ static func _caught(view: SneakView, w: Dictionary) -> void:
 	w.e.emote("!")
 	Sfx.play("warn")
 	p.modulate = Color(1, 1, 1, p.modulate.a)
-	Hud.current.set_boss_bar("몰래 다가가기 · 들켰다!", r.progress)
+	Hud.current.set_boss_bar("몰래 다가가기: 들켰다!", r.progress)
 
 
 ## 들킨 뒤의 우스운 장면. 들킨 횟수에 따라 다르다

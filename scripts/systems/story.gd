@@ -65,7 +65,7 @@ static func next_trial():
 	if t == null: return null
 	var st: Dictionary = _stages()[int(t.stage)]
 	t.blocked = null
-	if p.level < st.minLevel: t.blocked = "아직 이르다. 몸이 더 여물어야 버틴다. (레벨 %d 필요 · 지금 %d)" % [st.minLevel, p.level]
+	if p.level < st.minLevel: t.blocked = "아직 이르다. 몸이 더 여물어야 버틴다. (레벨 %d 필요, 지금 %d)" % [st.minLevel, p.level]
 	elif t.get("needs") and not t.needs.call(GameState): t.blocked = t.why
 	return t
 
@@ -116,7 +116,7 @@ static func try_awaken() -> bool:
 	for el in GIFTS:
 		if not p.elements.has(el): lacks.append(GIFTS[el])
 	if not lacks.is_empty():
-		Hud.pop("둥지 안이 따뜻하다. 아직 품지 못한 것이 있다: %s" % " · ".join(lacks), "🪹"); return true
+		Hud.pop("둥지 안이 따뜻하다. 아직 품지 못한 것이 있다: %s" % ", ".join(lacks), "🪹"); return true
 	Chronicle.play_scene("빈 둥지", [
 		{ who = "나", text = "(둥지 안에 손을 대자 돌이 따뜻했다. 삼백 년 전에도, 얼마 전에도 누가 여기서 태어났다.)" },
 		{ who = "나", text = "(품고 있던 속성들이 한꺼번에 뜨거워진다. 불과 얼음과 번개, 풀과 땅과 물. 서로 밀어내지 않고 하나로 엮인다.)" },

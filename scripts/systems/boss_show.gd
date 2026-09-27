@@ -54,7 +54,7 @@ static func intro(b) -> void:
 		# 보스마다 짠 등장: 카메라·소리·이름패까지 data/enemies BOSSES[id].intro 에 박자로 적혀 있다
 		Chronicle.play_scene("", b.def.intro.duplicate(true), func():
 			b.finish_rise()   # 장면을 건너뛰어도 몸은 다 일어선 채로 싸운다
-			Hud.pop("%s — 싸움이 시작된다" % b.def.name, "⚔️"))
+			Hud.pop("%s 싸움이 시작된다" % Util.josa(b.def.name, "과의", "와의"), "⚔️"))
 		return
 	var col := _el_color(b)
 	var lines := [{ do = [
@@ -68,14 +68,14 @@ static func intro(b) -> void:
 	] }]
 	# 보스마다 한마디가 있으면 (data/enemies BOSSES[id].intro)
 	for l in b.def.get("intro", []): lines.append(l)
-	Chronicle.play_scene("", lines, func(): Hud.pop("%s — 싸움이 시작된다" % b.def.name, "⚔️"))
+	Chronicle.play_scene("", lines, func(): Hud.pop("%s 싸움이 시작된다" % Util.josa(b.def.name, "과의", "와의"), "⚔️"))
 
 
 ## 판이 바뀌는 순간
 static func phase(b, ph: Dictionary) -> void:
 	slow(SLOW_PHASE, SLOW_PHASE_SEC)
 	if ph.get("say"): say(b, ph.say)
-	else: Cutscene.say_over("", "— %s —" % ph.name, 2.2)
+	else: Cutscene.say_over("", str(ph.name), 2.2)
 
 
 ## 싸우는 중에 보스가 하는 말. 여러 줄이면 SAY_SEC 간격으로 잇는다 (그 사이 쓰러지거나 떠나면 거기서 그친다)

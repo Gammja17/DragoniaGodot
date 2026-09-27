@@ -12,7 +12,7 @@ close_label = "닫기 (P)"
 [node name="Meta" type="Label" parent="Frame/Lines/Body" index="0"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.639, 0.604, 0.529, 1)
-text = "최대 20명 · 지금 0명"
+text = "최대 20명, 지금 0명"
 
 [node name="Scroll" type="ScrollContainer" parent="Frame/Lines/Body" index="1"]
 layout_mode = 2

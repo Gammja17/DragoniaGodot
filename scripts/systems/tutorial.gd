@@ -72,7 +72,7 @@ static func _hints() -> Array:
 		{ id = "skill4", icon = "📖", who = ["Kairon"],
 		  when = func(s): return s.player.skills.size() > Data.get_module("skills").SKILL_SLOTS.size() and not s.tutorial.get("tab_skills"),
 		  say = { Kairon = "기술은 한 번에 셋까지만 몸에 붙는다. 뭘 쓸지는 네가 골라라." },
-		  text = "[K] 스킬 나무에서 [Q]·[F]·[R]에 끼울 스킬을 고른다." },
+		  text = "[K] 스킬 나무에서 [Q], [F], [R]에 끼울 스킬을 고른다." },
 		{ id = "relic", icon = "💎", who = ["Gron"],
 		  when = func(s): return not s.relics.is_empty() and not s.tutorial.get("tab_relics"),
 		  say = { Gron = "야, 그 반짝이는 거 어디서 났냐. …좋은 물건이다. 비늘 밑에 끼워 둬야 힘이 돼. 몸이 클수록 끼울 데도 늘어나고." },

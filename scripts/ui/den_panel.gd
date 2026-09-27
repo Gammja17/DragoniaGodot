@@ -59,7 +59,7 @@ func _render() -> void:
 		b.add_theme_color_override("font_color", Color("#1a1206") if on else Color("#cdc4af"))
 		b.add_theme_color_override("font_hover_color", Color("#1a1206") if on else Color("#ece3cf"))
 	var cozy := Den.cozy_of(Den.MY_DEN)
-	$Frame/Lines/Body/Meta/Cozy.text = "아늑함 %d · %s" % [cozy.score, cozy.name]
+	$Frame/Lines/Body/Meta/Cozy.text = "아늑함 %d, %s" % [cozy.score, cozy.name]
 	$Frame/Lines/Body/Meta/Note.text = cozy.note
 	var list: VBoxContainer = $Frame/Lines/Body/Scroll/List
 	for c in list.get_children():
@@ -80,7 +80,7 @@ func _render() -> void:
 				var maker = Den.maker_of(id)
 				var who: String = "%s 맡긴다" % Util.josa(Names.npc(maker), "에게", "에게") if maker else "내 손으로 엮는다"
 				var waiting: int = GameState.story.get("orders", []).filter(func(o): return o.id == id).size()
-				_item(id, "%s · %s%s" % [who, Den.cost_text(id), " · 내일 아침 %d개 도착" % waiting if waiting > 0 else ""], not Den.can_afford(id), func():
+				_item(id, "%s, %s%s" % [who, Den.cost_text(id), ", 내일 아침 %d개 도착" % waiting if waiting > 0 else ""], not Den.can_afford(id), func():
 					if not Den.craft(id): Hud.pop("재료나 골드가 모자랍니다.", "🪵")
 					_render())
 		"placed":
@@ -103,7 +103,7 @@ func _item(id: String, extra: String, poor: bool, fn: Callable) -> void:
 	var b: Button = ITEM.instantiate()
 	$Frame/Lines/Body/Scroll/List.add_child(b)
 	b.get_node("Row/Info/Name").text = f.name
-	b.get_node("Row/Info/Cozy").text = "아늑함 +%d%s%s" % [f.cozy, " · 벽에 건다" if f.get("wall") else "", " · 빛난다" if f.get("light") else ""]
+	b.get_node("Row/Info/Cozy").text = "아늑함 +%d%s%s" % [f.cozy, ", 벽에 건다" if f.get("wall") else "", ", 빛난다" if f.get("light") else ""]
 	b.get_node("Row/Info/Extra").text = extra
 	# 목록에 쓸 작은 그림. 가구마다 시트가 다르다
 	var at := AtlasTexture.new()

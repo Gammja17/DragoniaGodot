@@ -302,7 +302,7 @@ func draw_crisp(ci: CanvasItem, _zoom: float) -> void:
 	Fonts.draw_centered(ci, bold, nm, 0, 0, 12, Color("#ffd84a") if elite else Color("#e8dcc4"))
 	if affix:
 		var ax: Dictionary = Data.get_module("affixes").AFFIXES[affix.id]
-		var tag: String = ax.name + ("·" + ELITE_ELEMENT_KO[affix.element] if affix.get("element") else "")
+		var tag: String = ax.name + ("(" + ELITE_ELEMENT_KO[affix.element] + ")" if affix.get("element") else "")
 		var font := Fonts.regular()
 		var tw := ceilf(Fonts.text_width(font, tag, 12)) + 10
 		ci.draw_rect(Rect2(-tw / 2, -30, tw, 14), Color(8 / 255.0, 7 / 255.0, 14 / 255.0, 0.72))

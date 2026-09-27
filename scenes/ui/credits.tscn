@@ -79,7 +79,7 @@ offset_right = -24.0
 offset_bottom = -16.0
 grow_horizontal = 0
 grow_vertical = 0
-text = "[Space] 꾹 누르면 빨리 · [Esc] 건너뛰기"
+text = "[Space] 꾹 누르면 빨리, [Esc] 건너뛰기"
 label_settings = SubResource("small_text")
 horizontal_alignment = 2
 

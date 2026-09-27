@@ -158,7 +158,7 @@ static func cost_text(id: String) -> String:
 	for m in c:
 		if m == "gold": continue
 		parts.append("%s %d/%d" % [mats[m].name if mats.has(m) else m, Forge.mat_count(m), c[m]])
-	return " · ".join(parts) if not parts.is_empty() else "그냥 주워 오면 된다"
+	return ", ".join(parts) if not parts.is_empty() else "그냥 주워 오면 된다"
 
 
 static func can_afford(id: String) -> bool:

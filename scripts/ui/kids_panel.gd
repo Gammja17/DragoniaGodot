@@ -16,7 +16,7 @@ func refresh() -> void:
 	for c in list.get_children():
 		list.remove_child(c)
 		c.queue_free()
-	$Frame/Lines/Body/Meta.text = "최대 %d명 · 지금 %d명" % [Data.get_module("core_config").MAX_KIDS, GameState.kids.size()]
+	$Frame/Lines/Body/Meta.text = "최대 %d명, 지금 %d명" % [Data.get_module("core_config").MAX_KIDS, GameState.kids.size()]
 	var empty: Label = $Frame/Lines/Body/Empty
 	empty.visible = GameState.kids.is_empty()
 	empty.text = "아직 아이가 없다. 짝에게 말을 걸어 [♥ 마음을 전한다] → [우리… 아이를 가질까?]를 골라 보자." if GameState.partner \
@@ -27,8 +27,8 @@ func refresh() -> void:
 		row.get_node("Row/Info/Name").text = k.name
 		# 짝이 바뀌어도 아이마다 제 부모가 따로 있다
 		var parent := Kids.parent_of(k)
-		row.get_node("Row/Info/Stage").text = STAGE_NAMES.get(k.stage, k.stage) + (" · %s 낳은 아이" % Util.josa(Names.npc(parent), "과", "와") if parent != "" else "") \
-			+ (" · 날 줄 안다" if k.get("flies", false) else "")
+		row.get_node("Row/Info/Stage").text = STAGE_NAMES.get(k.stage, k.stage) + (", %s 낳은 아이" % Util.josa(Names.npc(parent), "과", "와") if parent != "" else "") \
+			+ (", 날 줄 안다" if k.get("flies", false) else "")
 		row.get_node("Row/Hearts").text = "♥".repeat(mini(5, roundi(k.affection / 20.0)))
 		row.get_node("Row/Rename").pressed.connect(func():
 			NameInput.ask("아이의 새 이름 (12자까지)", k.name, func(n: String):

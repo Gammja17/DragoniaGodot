@@ -52,6 +52,6 @@ func refresh() -> void:
 	if p.slow_timer > 0: bad.append("둔화")
 	if p.hunger_level == 2: bad.append("굶주림")
 	elif p.hunger_level == 1: bad.append("출출함")
-	_buffs.text = " · ".join(good + bad)
+	_buffs.text = ", ".join(good + bad)
 	_buffs.visible = _buffs.text != ""
 	_buffs.add_theme_color_override("font_color", Color("#ff8a7a") if not bad.is_empty() else Color("#ffe9a0"))

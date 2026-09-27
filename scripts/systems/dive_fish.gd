@@ -208,7 +208,7 @@ static func caught(kind: Dictionary, p) -> void:
 	var meat := int(kind.get("meat", 1))
 	p.inventory.meat += meat
 	p.gain_xp((20 if kind.get("big") else 6) + (30 if first else 0))
-	Vfx.spawn_text(p.x, p.y - 100 * p.stage.scale, "%s · 고기 +%d" % [kind.name, meat], "#9fe3ff", 16)
+	Vfx.spawn_text(p.x, p.y - 100 * p.stage.scale, "%s, 고기 +%d" % [kind.name, meat], "#9fe3ff", 16)
 	if kind.get("bite"):   # 이빨고기는 잡히면서도 문다
 		p.hp = maxf(1.0, p.hp - float(kind.bite))
 		p.hurt_flash = 0.2

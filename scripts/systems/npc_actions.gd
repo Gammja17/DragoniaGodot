@@ -443,7 +443,7 @@ static func _kid_play(npc, kp: Dictionary, kind: String) -> void:
 			var par = World.any_npc(pn)
 			if par: add_relation(par, 3)
 		for i in 3: Vfx.spawn_effect("HEART", npc.x + Util.rand_range(-30, 30), npc.y - 50 - Util.rand_range(0, 30), { color = "#ffd07a", size = 1 })
-		Hud.pop("%s하고 놀아 줬다. %s의 호감이 조금 올랐다." % [Names.npc(npc.config.name), "·".join(kp.parents.map(Names.npc))], "🐉")
+		Hud.pop("%s하고 놀아 줬다. %s의 호감이 조금 올랐다." % [Names.npc(npc.config.name), ", ".join(kp.parents.map(Names.npc))], "🐉")
 		Sfx.play("quest"))
 
 
@@ -582,7 +582,7 @@ static func _blessing(npc) -> void:
 	p.hp = p.max_hp
 	p.hunger = 100.0
 	Vfx.spawn_effect("RING", p.x, p.y - 40, { size = 2 })
-	Hud.pop("엘더의 축복: 오늘 하루 경험치 +25%, 체력·배부름 가득", "✨")
+	Hud.pop("엘더의 축복: 오늘 하루 경험치 +25%, 체력과 배부름 가득", "✨")
 	show(npc, "고대의 바람이 네 날개를 밀어 주기를.", [{ label = "감사합니다.", on_select = close }])
 
 
@@ -590,7 +590,7 @@ static func _blessing(npc) -> void:
 # 잡은 것에서 나온 소재를 모아 직접 두드린다. 골드는 고기와, 급할 때 소재를 비싸게 사는 데만 쓴다.
 
 static func _mat_line() -> String:
-	return " · ".join(Forge.mats().keys().map(func(k): return "%s %d" % [Forge.mats()[k].name, Forge.mat_count(k)]))
+	return ", ".join(Forge.mats().keys().map(func(k): return "%s %d" % [Forge.mats()[k].name, Forge.mat_count(k)]))
 
 
 ## 그론이 떠난 뒤의 대장간. 사흘은 불이 안 붙고, 다시 붙는 날 그론이 만들다 만 것을 엠버가 내민다

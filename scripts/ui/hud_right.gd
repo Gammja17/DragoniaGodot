@@ -28,7 +28,7 @@ func refresh() -> void:
 		if GameState.map_id != _last_map: _last_map = GameState.map_id
 		_name.text = Names.map(GameState.map_id)
 		var ev = NightEvents.event_name()
-		_sub.text = "%s · %s" % [ev if ev else NightEvents.day_phase_name(), Weather.weather_name()]
+		_sub.text = "%s, %s" % [ev if ev else NightEvents.day_phase_name(), Weather.weather_name()]
 		_sub.visible = true
 	_raid.text = Raid.status_text()
 	_raid.visible = _raid.text != ""

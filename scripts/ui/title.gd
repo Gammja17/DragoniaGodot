@@ -81,6 +81,7 @@ func _fit() -> void:
 	_confirm.custom_minimum_size.x = minf(420, w - 16)
 	var body := $Center/Column/Create/Lines/Body
 	body.vertical = narrow
+	body.get_node("Right/Label").text = "생김새 다섯. 색은 %s에서 고른다" % ("위" if narrow else "왼쪽")   # 쌓으면 색 고르는 칸이 위에 있다
 	body.get_node("Left").custom_minimum_size.x = 0 if narrow else 220
 	_gallery.custom_minimum_size.y = 190 if narrow else 96   # 쌓으면 생김새 다섯이 두 줄이 된다
 	_grid.columns = 3 if narrow else 5

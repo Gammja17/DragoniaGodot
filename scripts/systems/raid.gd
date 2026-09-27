@@ -26,7 +26,7 @@ static func status_text() -> String:
 	if not raid.active and raid.count == 0: return ""   # 아직 습격을 겪기 전
 	if raid.active:
 		var ob = raid.get("objective")
-		return "습격 중! 남은 사냥꾼 %d" % GameState.entities.humans.size() + (" · %s 지켜라" % Util.josa(Names.npc(ob.name), "을", "를") if ob and not ob.failed else "")
+		return "습격 중! 남은 사냥꾼 %d" % GameState.entities.humans.size() + (". %s 지켜라" % Util.josa(Names.npc(ob.name), "을", "를") if ob and not ob.failed else "")
 	if not _still_coming(): return ""   # 나팔은 다시 울리지 않는다
 	var t := maxi(0, ceili(GameState.raidTimer))
 	return "다음 습격 %d:%02d" % [t / 60, t % 60]

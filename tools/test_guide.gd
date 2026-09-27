@@ -101,7 +101,7 @@ func _life() -> void:
 	G.quests.done.erase("m6")
 	G.quests.done.append("m7d")
 	_check("어둠 · 두고 온 것들", Ending.life_lines("dark"), [L.dark.partner.replace("{partner}", "미라"), L.dark.kids, L.dark.den, L.dark.gathering])
-	_check("크레딧 · 내 식구", Ending._family(), "미라 · %s · %s" % [kid.name, kid2.name])
+	_check("크레딧 · 내 식구", Ending._family(), "미라, %s, %s" % [kid.name, kid2.name])
 
 	# 되돌린다
 	for b in [baby, baby2]: b.remove = true
@@ -425,9 +425,9 @@ func _story_tab() -> void:
 	G.quests.active = { m0 = { step = 1, n = 0 } }
 	G.quests.tracked = "m0"
 	var s := _story()
-	_check("처음 · 장 머리", s.heads, ["1장 · 웨스턴 마을"])
+	_check("처음 · 장 머리", s.heads, ["1장 웨스턴 마을"])
 	_check("처음 · 요약 줄 없음", s.paras.size(), 0)
-	_check("처음 · 지금 할 일은 추적 중인 퀘스트", s.now.begins_with("지금 할 일 · 낯선 아침 | 눈을 떠 보니"), true)
+	_check("처음 · 지금 할 일은 추적 중인 퀘스트", s.now.begins_with("지금 할 일: 낯선 아침 | 눈을 떠 보니"), true)
 
 	# 1장을 끝냄 (쇠붙이가 뭐냐고 물었다): 최근 장이 위, 고른 줄만
 	G.quests.done = ["m0", "m1", "m2"]
@@ -435,14 +435,14 @@ func _story_tab() -> void:
 	G.quests.active = { m3 = { step = 0, n = 0 } }
 	G.quests.tracked = "m3"
 	s = _story()
-	_check("1장 뒤 · 최근 장이 위", s.heads, ["2장 · 나팔 소리", "1장 · 웨스턴 마을"])
+	_check("1장 뒤 · 최근 장이 위", s.heads, ["2장 나팔 소리", "1장 웨스턴 마을"])
 	_check("1장 뒤 · 물어본 줄", _has(s, "인간이 놓는 덫"), true)
 	_check("1장 뒤 · 안 물은 줄은 없다", _has(s, "말없이 품에"), false)
 	_check("1장 뒤 · 못 본 첫 밤은 없다", _has(s, "긴 울음"), false)
 	G.story.events.append("ev_first_night")
 	s = _story()
 	_check("1장 뒤 · 본 첫 밤은 있다", _has(s, "긴 울음"), true)
-	_check("1장 뒤 · 지금 할 일", s.now.begins_with("지금 할 일 · 나팔 소리"), true)
+	_check("1장 뒤 · 지금 할 일", s.now.begins_with("지금 할 일: 나팔 소리"), true)
 
 	# 맡은 일이 없으면 다음에 할 만한 일
 	G.quests.active = {}
@@ -456,11 +456,11 @@ func _story_tab() -> void:
 	G.quests.active = { m4 = { step = 1, n = 0 } }
 	G.quests.tracked = "m4"
 	s = _story()
-	_check("3장 반 · 3장 머리는 하나", s.heads.count("3장 · 골짜기의 옛 수호룡"), 1)
-	_check("3장 반 · 맨 위가 3장", s.heads[0], "3장 · 골짜기의 옛 수호룡")
+	_check("3장 반 · 3장 머리는 하나", s.heads.count("3장 골짜기의 옛 수호룡"), 1)
+	_check("3장 반 · 맨 위가 3장", s.heads[0], "3장 골짜기의 옛 수호룡")
 	_check("3장 반 · 모르가스 줄", _has(s, "모르가스가 일어났다"), true)
 	_check("3장 반 · 폭포 줄은 아직", _has(s, "폭포 길이 녹았다"), false)
-	_check("3장 반 · 지금 할 일", s.now.begins_with("지금 할 일 · 골짜기의 옛 수호룡"), true)
+	_check("3장 반 · 지금 할 일", s.now.begins_with("지금 할 일: 골짜기의 옛 수호룡"), true)
 
 	# 끝까지. 길마다 제 줄만, 맨 위에는 결말 알림
 	G.bossesDefeated = { MORGATH = true, ZALGORA = true, GLACIA = true, BASIL = true, IGNAR = true }

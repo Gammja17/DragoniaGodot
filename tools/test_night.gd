@@ -127,7 +127,7 @@ func _ready() -> void:
 	G.quests.tracked = "m6"
 	G.quests.done = done_was.filter(func(id): return not ["r1", "e1", "w1"].has(id)) + ["r1"]
 	aim = Guide._wanted()
-	_check("고룡 대목 · 아직 안 맡은 바윗골의 가람부터", [aim.get("who") if aim else null, Quests.tracked_line().where], ["Garam", "가람 · 바윗골"])
+	_check("고룡 대목 · 아직 안 맡은 바윗골의 가람부터", [aim.get("who") if aim else null, Quests.tracked_line().where], ["Garam", "가람 (바윗골)"])
 	G.quests.active.e1 = { step = 0, n = 0 }
 	aim = Guide._wanted()
 	_check("고룡 대목 · 맡은 부탁이면 그 대목 (바윗골의 아이 돌)", aim.get("who") if aim else null, "Dol")

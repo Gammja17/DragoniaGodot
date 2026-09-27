@@ -34,8 +34,8 @@ static func update() -> void:
 		on_close = close,
 		options = o.picks.map(func(id):
 			var r: Dictionary = Relics.table()[id]
-			var tag: String = " · %s" % kins[r.kin].name if r.get("kin") else ""
-			return { label = "💎 %s%s — %s" % [r.name, tag, r.desc], on_select = func():
+			var tag: String = " (%s)" % kins[r.kin].name if r.get("kin") else ""
+			return { label = "💎 %s%s: %s" % [r.name, tag, r.desc], on_select = func():
 				close.call()
 				Relics.grant(id, GameState.player.x, GameState.player.y) }),
 	})

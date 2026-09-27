@@ -11,7 +11,7 @@ static func _close() -> void:
 
 static func _show(baby, kid: Dictionary, text: String, options: Array) -> void:
 	GameState.isDialogueOpen = true
-	var title := "%s · %s · %s" % [kid.name, Data.get_module("npcTalk").KID_PERSONALITIES[kid.personality], "♥".repeat(maxi(1, roundi(kid.affection / 20.0)))]
+	var title := "%s (%s) %s" % [kid.name, Data.get_module("npcTalk").KID_PERSONALITIES[kid.personality], "♥".repeat(maxi(1, roundi(kid.affection / 20.0)))]
 	DialogueBox.current.show_dialogue({ name = title, text = text, sheet = baby.sheet, on_close = _close, options = options })
 
 

@@ -423,7 +423,7 @@ static func install() -> void:
 				id = "training", title = "오늘은 무엇을 할까" if plan.stage == "offered" else _plan_title(plan), giver = Names.npc("Kairon"),
 				summary = "스승은 하루에 하나만 가르친다. 무엇을 할지는 그날 스승이 정한다.",
 				hint = "오늘 수련은 끝났다. 자고 나면 내일 것이 정해진다." if done else _hint_of(plan),
-				goal = "-" if done else _hint_of(plan), reward = "경험치 · 스승의 호감",
+				goal = "-" if done else _hint_of(plan), reward = "경험치, 스승의 호감",
 				progress = prog, chapter = "", done = done, complete = false, tracked = false,
 			},
 		marker = func(npc): return "!" if npc.config.name == "Kairon" and pending() else null,

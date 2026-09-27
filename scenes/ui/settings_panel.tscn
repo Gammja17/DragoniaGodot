@@ -112,7 +112,7 @@ text = "전체 (O)"
 [node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Mute" index="1"]
 layout_mode = 2
 focus_mode = 0
-text = "켜짐 · 끄기"
+text = "켜짐"
 
 [node name="ScreenHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="4"]
 layout_mode = 2
@@ -125,7 +125,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Zoom" index="0"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "시점 (V · 휠)"
+text = "시점 (V, 휠)"
 
 [node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Zoom" index="1"]
 layout_mode = 2
@@ -143,7 +143,7 @@ text = "좌우 정보 창 (U)"
 [node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Ui" index="1"]
 layout_mode = 2
 focus_mode = 0
-text = "접기 · 펴기"
+text = "접기 / 펴기"
 
 [node name="UiSize" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="7"]
 layout_mode = 2
@@ -151,7 +151,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/UiSize" index="0"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "UI 크기 (글자 · 판)"
+text = "UI 크기 (글자와 판)"
 
 [node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/UiSize" index="1"]
 layout_mode = 2
@@ -177,7 +177,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Fx" index="0"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "화면 효과 (L) · 빛 번짐 · 밤의 어둠 · 색"
+text = "화면 효과 (L): 빛 번짐, 밤의 어둠, 색"
 
 [node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Fx" index="1"]
 layout_mode = 2
@@ -195,7 +195,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Guide" index="0"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "목표 화살표 · 자동 이동"
+text = "목표 화살표, 자동 이동"
 
 [node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Guide" index="1"]
 layout_mode = 2
@@ -210,7 +210,7 @@ autowrap_mode = 3
 
 [node name="TestHead" type="Label" parent="Frame/Lines/Body/Scroll/Rows" index="13"]
 layout_mode = 2
-text = "테스트 (진행을 건너뛴다 · 쓰면 도전 과제가 꺼진다)"
+text = "테스트 (진행을 건너뛴다. 쓰면 도전 과제가 꺼진다)"
 label_settings = SubResource("section")
 
 [node name="Level" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Rows" index="14"]
@@ -245,7 +245,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/Lessons" index="0"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "수련 0 / 8 · 보스 0"
+text = "수련 0 / 8, 보스 0"
 
 [node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/Lessons" index="1"]
 layout_mode = 2
@@ -289,7 +289,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Frame/Lines/Body/Scroll/Rows/ToTitle" index="0"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "다른 기록 불러오기 · 새 용"
+text = "다른 기록 불러오기, 새 용"
 
 [node name="Button" type="Button" parent="Frame/Lines/Body/Scroll/Rows/ToTitle" index="1"]
 layout_mode = 2

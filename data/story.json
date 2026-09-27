@@ -470,7 +470,7 @@
     },
     {
      "who": "Kairon",
-     "text": "인간들이 왜 저러는지는 알아 둬라. 예순 해 전에—"
+     "text": "인간들이 왜 저러는지는 알아 둬라. 예순 해 전에…"
     },
     {
      "who": "Elder",
@@ -617,7 +617,7 @@
   },
   {
    "id": "dream_thunder",
-   "title": "재 냄새가 나는 꿈 · 둘",
+   "title": "재 냄새가 나는 꿈 (둘)",
    "when": {
     "$fn": "s => s.bossesDefeated.ZALGORA && s.story.scenes.includes('ch5')",
     "$at": "SCENES.6.when"
@@ -659,7 +659,7 @@
   },
   {
    "id": "dream_city",
-   "title": "재 냄새가 나는 꿈 · 셋",
+   "title": "재 냄새가 나는 꿈 (셋)",
    "when": {
     "$fn": "s => s.quests.done.includes('m5c') && s.story.scenes.includes('ch6')",
     "$at": "SCENES.7.when"

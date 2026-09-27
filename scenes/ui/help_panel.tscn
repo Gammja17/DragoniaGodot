@@ -70,7 +70,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "탁 누르면 대시(무적) · 꾹 누르면 달리기"
+text = "탁 누르면 대시(무적), 꾹 누르면 달리기"
 autowrap_mode = 3
 
 [node name="Row2" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col1"]
@@ -184,7 +184,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "스킬 나무 (끼우기·강화) · G 성장 나무 · X 필살기"
+text = "스킬 나무 (끼우기, 강화) / G 성장 나무 / X 필살기"
 autowrap_mode = 3
 
 [node name="Row8" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col1"]
@@ -203,7 +203,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "말 걸기. 상대가 없으면 눈앞의 것(상자 · 열매 · 석비 · 굴)을 쓴다. 따라오는 짝보다 눈앞의 물건이 먼저다"
+text = "말 걸기. 상대가 없으면 눈앞의 것(상자, 열매, 석비, 굴)을 쓴다. 따라오는 짝보다 눈앞의 물건이 먼저다"
 autowrap_mode = 3
 
 [node name="Row9" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col1"]
@@ -222,7 +222,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "말은 걸지 않고 눈앞의 것만 쓴다. 상자 · 열매 · 줍기 · 낚시 · 석비 · 굴 · 게시판"
+text = "말은 걸지 않고 눈앞의 것만 쓴다. 상자, 열매, 줍기, 낚시, 석비, 굴, 게시판"
 autowrap_mode = 3
 
 [node name="Row10" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col1"]
@@ -322,7 +322,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "일지 (퀘스트 · 지금까지 이야기 · 지도 · 소지품 · 마을 용들 · 기록 · 유물 · 도감)"
+text = "일지 (퀘스트, 지금까지 이야기, 지도, 소지품, 마을 용들, 기록, 유물, 도감)"
 autowrap_mode = 3
 
 [node name="Row3" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
@@ -333,7 +333,7 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(84, 0)
 layout_mode = 2
 size_flags_vertical = 0
-text = "M · I"
+text = "M / I"
 label_settings = SubResource("key")
 
 [node name="Text" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2/Row3"]
@@ -341,7 +341,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "세계 지도 · 소지품 (일지의 탭으로 바로 간다)"
+text = "세계 지도 / 소지품 (일지의 탭으로 바로 간다)"
 autowrap_mode = 3
 
 [node name="Row4" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
@@ -360,7 +360,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "시점 확대·축소 (V 로도 넘어간다)"
+text = "시점 확대, 축소 (V 로도 넘어간다)"
 autowrap_mode = 3
 
 [node name="Row5" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
@@ -379,7 +379,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "날아오르기 · 내려앉기 (성체부터). 하늘에선 벽도 물도 없지만 배가 빨리 꺼진다. 물 위에선 물고기 그림자를 [Space]로 덮친다"
+text = "날아오르기, 내려앉기 (성체부터). 하늘에선 벽도 물도 없지만 배가 빨리 꺼진다. 물 위에선 물고기 그림자를 [Space]로 덮친다"
 autowrap_mode = 3
 
 [node name="Row6" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
@@ -398,7 +398,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "가족 · O 소리 끄기 · U 좌우 UI 접기 · Esc 설정 · 창 닫기"
+text = "가족 / O 소리 끄기 / U 좌우 UI 접기 / Esc 설정, 창 닫기"
 autowrap_mode = 3
 
 [node name="Sep" type="Label" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
@@ -555,7 +555,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "수련·보스 말고도 혼자 깨우치거나, 둘을 익히면 열리는 것이 있다"
+text = "수련과 보스 말고도 혼자 깨우치거나, 둘을 익히면 열리는 것이 있다"
 autowrap_mode = 3
 
 [node name="Row16" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]
@@ -593,7 +593,7 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.804, 0.769, 0.686, 1)
-text = "내 굴 잠자리 앞에서 [Space]. 자고 일어나야 다음 수련을 받고 아침 이야기가 이어진다. 낮에는 한낮 · 해 질 녘까지 낮잠을 자며 시간을 보낼 수 있다. 어른이 되면 아무도 재워 주지 않는다"
+text = "내 굴 잠자리 앞에서 [Space]. 자고 일어나야 다음 수련을 받고 아침 이야기가 이어진다. 낮에는 한낮이나 해 질 녘까지 낮잠을 자며 시간을 보낼 수 있다. 어른이 되면 아무도 재워 주지 않는다"
 autowrap_mode = 3
 
 [node name="Row18" type="HBoxContainer" parent="Frame/Lines/Body/Scroll/Columns/Col2"]

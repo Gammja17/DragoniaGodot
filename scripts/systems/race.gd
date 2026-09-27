@@ -106,7 +106,7 @@ static func update(npc, dt: float) -> void:
 			a.count = n
 			Vfx.spawn_text(p.x, p.y - 150, str(n), "#ffd84a", 28)
 			Sfx.play("pop")
-		Hud.current.set_boss_bar("%s · 곧 출발" % c.title, 1.0)
+		Hud.current.set_boss_bar("%s: 곧 출발" % c.title, 1.0)
 		_swim(npc, 0.0, a.target, c)
 		return
 	if a.count > 0:
@@ -114,7 +114,7 @@ static func update(npc, dt: float) -> void:
 		Vfx.spawn_text(p.x, p.y - 150, "출발!", "#ffd84a", 28)
 		Sfx.play("dash")
 	_swim(npc, a.t, a.target, c)
-	Hud.current.set_boss_bar("%s · %.1f초" % [c.title, a.t], 1.0 - a.t / a.target)
+	Hud.current.set_boss_bar("%s %.1f초" % [c.title, a.t], 1.0 - a.t / a.target)
 	if not p.flying or GameState.map_id != c.map:   # 내려앉았거나 판을 떠났다
 		_finish(false, "내려앉으면 끝이지. 다음엔 끝까지 날아.")
 		return
@@ -175,7 +175,7 @@ static func _finish(win: bool, line: String) -> void:
 		p.gold += [30, 50, 80][lv]
 		p.gain_xp([200, 300, 400][lv])
 		npc.say(WIN_LINES[lv])
-		Hud.pop("비류를 이겼다! %.1f초 (%dG · %s)" % [t, [30, 50, 80][lv], NpcActions.gain_note(got)], "🏆")
+		Hud.pop("비류를 이겼다! %.1f초 (%dG, %s)" % [t, [30, 50, 80][lv], NpcActions.gain_note(got)], "🏆")
 	else:
 		var first: bool = r.get("winDay", -1) != GameState.day   # 되풀이한 판은 하루 한 번만 조금
 		if first:
@@ -192,7 +192,7 @@ static func record_line() -> Array:
 	var r = GameState.story.get("race")
 	if r == null: return ["비류와 호수 경주", "아직 안 겨뤘다", true]
 	var best := float(r.get("best", 0.0))
-	return ["비류와 호수 경주", ("가장 빠른 %.1f초 · " % best if best > 0 else "") + "%d / %d판 이김" % [int(r.get("level", 0)), TIMES.size()]]
+	return ["비류와 호수 경주", ("가장 빠른 %.1f초, " % best if best > 0 else "") + "%d / %d판 이김" % [int(r.get("level", 0)), TIMES.size()]]
 
 
 ## 고리 그리기 (효과 층): 다음 고리는 금빛으로 깜빡이고, 그다음 둘은 흐리게. 떠 있는 고리 밑에는 그림자

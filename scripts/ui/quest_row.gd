@@ -18,7 +18,7 @@ func setup(r: Dictionary, open: bool) -> void:
 	st.border_color = Color("#3b414c") if r.get("upcoming") else Color("#4e5560") if r.get("done") else GOOD if r.get("complete") else GOLD_LIT
 	add_theme_stylebox_override("panel", st)
 	modulate.a = 0.5 if r.get("done") or r.get("upcoming") else 1.0
-	$Lines/Head/Row/Mark.text = "·" if r.get("upcoming") else "✔" if r.get("done") else "!" if r.get("complete") else "▶"
+	$Lines/Head/Row/Mark.text = "○" if r.get("upcoming") else "✔" if r.get("done") else "!" if r.get("complete") else "▶"
 	$Lines/Head/Row/Mark.add_theme_color_override("font_color", GOOD if r.get("complete") else GOLD_LIT)
 	$Lines/Head/Row/Title.text = r.title
 	$Lines/Head/Row/Prog.text = "" if r.get("upcoming") else r.get("progress", "")

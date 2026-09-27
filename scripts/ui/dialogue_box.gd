@@ -33,7 +33,7 @@ const SHORT_LABEL := 22
 @onready var _tier: Label = $Pad/Body/Header/Who/Title/Meta/Tier
 @onready var _rel: Control = $Pad/Body/Header/Who/Rel
 @onready var _rel_fill: Control = $Pad/Body/Header/Who/Rel/Fill
-@onready var _text: Label = $Pad/Body/Header/Who/Text        # 초상화 옆 칸 (예전에는 머리줄 밑에 따로 한 층이었다)
+@onready var _text: RichTextLabel = $Pad/Body/Header/Who/Text   # 초상화 옆 칸. 이름에 색을 입히려고 RichTextLabel
 @onready var _options: GridContainer = $Pad/Body/Options
 @onready var _next: Label = $Next          # 컷씬의 '다음' 표시 (넘길 것이 하나뿐이면 단추 대신 모서리의 ▼)
 
@@ -47,13 +47,15 @@ var _list := []
 var _cinematic := false
 var _compact := false
 var _body_color: Color
+var _name_color: Color       # 이름표의 제 색 (마을 용 · 내 아이가 아니면 이 금빛)
 var _style_normal: StyleBoxFlat
 var _style_selected: StyleBoxFlat
 
 
 func _ready() -> void:
 	current = self
-	_body_color = _text.label_settings.font_color
+	_body_color = _text.get_theme_color("default_color")
+	_name_color = _name.label_settings.font_color
 	step = clampi(int(Prefs.get_value("dialogue", "step", 2)), 1, 4)   # 설정의 대사 글자 크기
 	_style_normal = OPTION.instantiate().get_theme_stylebox("normal").duplicate()
 	_style_selected = _style_normal.duplicate()
@@ -88,6 +90,8 @@ func show_dialogue(opts: Dictionary) -> void:
 	_portrait.face = opts.get("face", Face.face_for(opts.get("text", "")))   # 대사에 face 를 안 적었으면 말투로 고른다
 	_portrait.queue_redraw()
 	_name.text = opts.get("name", "")
+	var own = Names.color_of(_name.text)   # 말하는 용의 제 색
+	_name.label_settings.font_color = own if own != null else _name_color
 	var npc = opts.get("npc")
 	var job: String = str(npc.job) if npc and npc.job else ""
 	var rel = npc.relation if npc and npc.config.get("fixed") else null
@@ -101,15 +105,15 @@ func show_dialogue(opts: Dictionary) -> void:
 	_portrait.visible = not narration
 	_title.visible = not narration
 	_rel.visible = rel != null and not narration
-	_text.label_settings.font_color = NARRATION_COLOR if narration else _body_color
+	_text.add_theme_color_override("default_color", NARRATION_COLOR if narration else _body_color)
 	if rel != null: _rel_fill.size.x = (_rel.size.x - 2) * minf(100, rel) / 100.0
-	# 문단 사이의 빈 줄은 한 줄 통째로 띄우지 않고 조금만 띄운다 (body_text 의 paragraph_spacing)
+	# 문단 사이의 빈 줄은 한 줄 통째로 띄우지 않고 조금만 띄운다 (Text 의 paragraph_separation)
 	var plain := GameInput.words(fill_name(opts.get("text", ""))).replace("
 
 ", "
 ")
-	_text.text = Util.keep_words(plain)   # 낱말 가운데서 줄이 바뀌지 않게
-	_per = float(_text.text.length()) / maxf(1.0, plain.length())
+	_text.text = rich(plain)   # 낱말 가운데서 줄이 바뀌지 않게, 이름에는 그 용의 색
+	_per = float(_text.get_parsed_text().length()) / maxf(1.0, plain.length())
 	_text.visible_characters = 0
 	_typed = 0.0
 	_pause = 0.0
@@ -136,7 +140,7 @@ func show_dialogue(opts: Dictionary) -> void:
 	_options.visible = not compact
 	_next.visible = false
 	_compact = compact
-	_text.label_settings.font_size = BODY_SIZES[step - 1]
+	_text.add_theme_font_size_override("normal_font_size", BODY_SIZES[step - 1])
 	_name.label_settings.font_size = NAME_SIZES[step - 1]
 	_select(0)
 	visible = true
@@ -177,7 +181,7 @@ func _process(dt: float) -> void:
 		_typed += dt * (CINE_SPEED if _cinematic else TYPE_SPEED) * _per
 		var now := mini(int(_typed), total)
 		if _cinematic:
-			var s := _text.text
+			var s := _text.get_parsed_text()
 			for i in range(before, mini(now, s.length())):
 				var ch := s[i]
 				var j := i + 1
@@ -203,7 +207,27 @@ func _process(dt: float) -> void:
 
 ## 지금 떠 있는 대사 (낱말을 묶은 문자를 뺀 것)
 func shown_text() -> String:
-	return _text.text.replace(Util.WJ, "")
+	return _text.get_parsed_text().replace(Util.WJ, "")
+
+
+## 대사 글 → RichTextLabel 글. 낱말 가운데서 줄이 바뀌지 않게 글자 사이에 WJ 를 끼우고(Util.keep_words 와 같다),
+## 마을 용 · 내 아이 이름에는 그 용의 색을 입힌다 (Names.spans). 대사의 [E] · [승급 시험] 같은 대괄호는 글자 그대로
+static func rich(plain: String) -> String:
+	var opens := {}
+	var closes := {}
+	for sp in Names.spans(plain):
+		opens[sp[0]] = sp[2].to_html(false)
+		closes[sp[1]] = true
+	var out := PackedStringArray()
+	var n := plain.length()
+	for i in n:
+		if closes.has(i): out.append("[/color]")
+		if opens.has(i): out.append("[color=#%s]" % opens[i])
+		var ch := plain[i]
+		out.append("[lb]" if ch == "[" else "[rb]" if ch == "]" else ch)
+		if i + 1 < n and not (ch in " \n" or plain[i + 1] in " \n"): out.append(Util.WJ)
+	if closes.has(n): out.append("[/color]")
+	return "".join(out)
 
 
 ## 아직 글자를 찍는 중인가

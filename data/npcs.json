@@ -725,5 +725,97 @@
   "WYVERN",
   "HYDRA",
   "BEHEMOTH"
+ ],
+ "NAME_COLORS": {
+  "Elder": "#cbbff0",
+  "Tiamat": "#7f9ff5",
+  "Poco": "#f7b55e",
+  "Gron": "#86d196",
+  "Nara": "#8ec8f2",
+  "Kairon": "#f07878",
+  "Riun": "#e9c763",
+  "Seiran": "#76d9c8",
+  "Haru": "#b79bf2",
+  "Yuan": "#d4949c",
+  "Kirin": "#a6e3b8",
+  "Raze": "#f0b07a",
+  "Mira": "#d9d77a",
+  "Dusk": "#b0a0d8",
+  "Iro": "#f0a0c0",
+  "Sora": "#9cc8f0",
+  "Flint": "#c9b58f",
+  "Ember": "#f58aa8",
+  "Vesna": "#d98a8a",
+  "IGNAR": "#ff9466",
+  "Ignar": "#ff9466",
+  "Doran": "#98b3cc",
+  "Miru": "#f4a07e",
+  "Dan": "#c2a78c",
+  "Soi": "#e59ad6",
+  "Nuri": "#b2e07a",
+  "On": "#c2d4f2",
+  "Biryu": "#72d5ee",
+  "Beodeul": "#a9d98a",
+  "Jagal": "#d6c29c",
+  "Heukdan": "#b3a9c9",
+  "Jaetbyeol": "#cf97ea",
+  "Iseul": "#a3c9ff",
+  "Moss": "#9dc88a",
+  "Fern": "#d2e88a",
+  "Garam": "#d9a071",
+  "Dol": "#e3bc8f",
+  "MORGATH": "#c0cff5",
+  "ZALGORA": "#f28080",
+  "GLACIA": "#9fd4f7",
+  "BASIL": "#e8c078"
+ },
+ "NAME_WORDS": [
+  "Haru",
+  "Nara",
+  "Nuri",
+  "Miru",
+  "Iseul",
+  "Beodeul",
+  "Heukdan",
+  "Garam",
+  "Sora",
+  "Dan",
+  "Iro",
+  "Moss",
+  "Fern",
+  "Mira"
+ ],
+ "NAME_PLATE_ONLY": [
+  "Dol",
+  "On",
+  "Jagal"
+ ],
+ "NAME_NOT": {
+  "하루": [
+   "하루도",
+   "하루만",
+   "하루를 마무리",
+   "하루는 내일도"
+  ],
+  "미루": [
+   "미루라고 했"
+  ],
+  "이슬": [
+   "이슬처럼"
+  ]
+ },
+ "KID_COLORS": [
+  "#f59b9b",
+  "#f5bd7a",
+  "#e6de78",
+  "#a9df86",
+  "#7fdcb0",
+  "#7ccfe6",
+  "#8fb0f7",
+  "#b39cf4",
+  "#e39be2",
+  "#f59cc2",
+  "#cdb892",
+  "#a3c4a8"
  ]
 }
